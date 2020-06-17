@@ -1,0 +1,134 @@
+%YAML:1.0
+#--------------------------------------------------------------------------------------------
+# Stereo Rectification. Only if you need to pre-rectify the images.
+#--------------------------------------------------------------------------------------------
+LEFT.K: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data:[381.914307, 0.000000, 168.108963, 0.000000, 383.797882, 126.979446, 0.000000, 0.000000, 1.000000]
+# Camera: left distortion coef
+LEFT.D: !!opencv-matrix
+   rows: 1
+   cols: 4
+   dt: d
+   data:[-0.333236, 0.925076, 0.003847, 0.000916]
+# Camera: right intrinsics
+RIGHT.K: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data:[381.670013, 0.000000, 129.929291, 0.000000, 382.582397, 120.092186, 0.000000, 0.000000, 1.000000]
+# Camera: right distortion coef
+RIGHT.D: !!opencv-matrix
+   rows: 1
+   cols: 4
+   dt: d
+   data:[-0.329342, 0.699034, 0.004927, 0.008194]
+# R matrix
+R.matrix: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data:[0.999906, 0.006813, -0.011930, -0.006722, 0.999948, 0.007680, 0.011981, -0.007599, 0.999899]
+# T matrix
+T.matrix: !!opencv-matrix
+   rows: 3
+   cols: 1
+   dt: d
+   data:[5.382236, 0.067659, -0.039156]
+RIGHT.height: 240
+RIGHT.width: 320
+LEFT.height: 240
+LEFT.width: 320
+LEFT.R:  !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data:[-0.9996285332305457905, -0.01943654356874943701, 0.01910540042625709367, 0.01936495394088304928, -0.9998047774282534661, -0.003924995606112043067, 0.01917795896895698599, -0.003553562401397511276, 0.9998097709484761175]
+RIGHT.R:  !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data:[-0.9998945410795755384, -0.01256947201031375499, 0.007274276090924258233, 0.01259811312008240688, -0.9999130155703577216, 0.003904976159592705911, 0.007224559853628493601, 0.003996206498082817589, 0.9999659174534629713]
+LEFT.P:  !!opencv-matrix
+   rows: 3
+   cols: 4
+   dt: d
+   data:[383.1901394999999866, 0, 164.0078754425048828, 0, 0, 383.1901394999999866, 115.6144552230834961, 0, 0, 0, 1, 0]
+RIGHT.P:  !!opencv-matrix
+   rows: 3
+   cols: 4
+   dt: d
+   data:[383.1901394999999866, 0, 164.0078754425048828, -2062.637287163453493, 0, 383.1901394999999866, 115.6144552230834961, 0, 0, 0, 1, 0]
+#--------------------------------------------------------------------------------------------
+# Camera parameters
+# Camera calibration and distortion parameters (OpenCV)
+Camera.fx: 383.1901395
+Camera.fy: 383.1901395
+Camera.cx: 164.0078754
+Camera.cy: 115.6144552
+Camera.k1: 0.0
+Camera.k2: 0.0
+Camera.p1: 0.0
+Camera.p2: 0.0
+Camera.width: 320
+Camera.height: 240
+# Camera frames per second 
+Camera.fps: 7.0
+# stereo baseline times fx
+Camera.bf: 20.62636536
+# Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
+Camera.RGB: 1
+# Close/Far threshold. Baseline times.
+ThDepth: 35
+# -------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------
+# Regularizer Parameters
+#--------------------------------------------------------------------------------------------
+
+# Laplacian regularizer: It penalizes changes in curvature	
+Regularizer.laplacian: 65
+
+# Inextensibility regularizer: It penalizes the streching
+Regularizer.Inextensibility: 16000
+# Temporal regularizer: Smoothes the changes in the pose of the mesh frame to frame
+Regularizer.temporal: 0.03
+
+#Number of neighbours layers used in the local optimization
+Regularizer.LocalZone: 3
+
+#Number of neighbours layers affected by propagation
+Regularizer.PropagationZone: 0
+
+# Reliability: It uses just the more found keypoints  (Reliability = found / "viewed)	
+Regularizer.Reliability: 0
+#--------------------------------------------------------------------------------------------
+# ORB Parameters
+#--------------------------------------------------------------------------------------------
+# ORB Extractor: Number of features per image
+ORBextractor.nFeatures: 1200
+# ORB Extractor: Scale factor between levels in the scale pyramid   
+ORBextractor.scaleFactor: 1.2
+# ORB Extractor: Number of levels in the scale pyramid
+ORBextractor.nLevels: 8
+# ORB Extractor: Fast threshold
+ORBextractor.iniThFAST: 20
+ORBextractor.minThFAST: 7
+
+#--------------------------------------------------------------------------------------------
+# Viewer Parameters
+#--------------------------------------------------------------------------------------------
+Viewer.KeyFrameSize: 0.05
+Viewer.KeyFrameLineWidth: 1
+Viewer.GraphLineWidth: 0.9
+Viewer.PointSize: 2
+Viewer.CameraSize: 0.08
+Viewer.CameraLineWidth: 3
+Viewer.ViewpointX: 0
+Viewer.ViewpointY: -0.7
+Viewer.ViewpointZ: -1.8
+Viewer.ViewpointF: 500
+Viewer.TemplateLineWidth: 1.4
+Viewer.SaveResults: 1
+

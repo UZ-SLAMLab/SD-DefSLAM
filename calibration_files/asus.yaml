@@ -1,0 +1,79 @@
+%YAML:1.0
+
+#--------------------------------------------------------------------------------------------
+# Camera Parameters. Adjust them!
+#--------------------------------------------------------------------------------------------
+
+# Camera calibration and distortion parameters (OpenCV) 
+Camera.fx: 5.3750018625816267e+02
+Camera.fy: 5.3500712272388637e+02 
+Camera.cx: 3.0975312264235009e+02
+Camera.cy: 2.3370792488282228e+02
+
+Camera.k1: 3.9568822556839085e-02
+Camera.k2: -8.3404411045161164e-02
+Camera.p1: -3.0300263154218266e-03
+Camera.p2: -3.3084887119118082e-03
+Camera.k3: 2.5588909206265043e-02
+
+# Camera frames per second 
+Camera.fps: 7.0
+
+# Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
+Camera.RGB: 1
+
+#--------------------------------------------------------------------------------------------
+# ORB Parameters
+#--------------------------------------------------------------------------------------------
+
+# ORB Extractor: Number of features per image
+ORBextractor.nFeatures: 1200
+
+# ORB Extractor: Scale factor between levels in the scale pyramid 	
+ORBextractor.scaleFactor: 1.2
+
+# ORB Extractor: Number of levels in the scale pyramid	
+ORBextractor.nLevels: 1
+
+# ORB Extractor: Fast threshold
+# Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
+# Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
+# You can lower these values if your images have low contrast			
+ORBextractor.iniThFAST: 15
+ORBextractor.minThFAST: 7
+
+#--------------------------------------------------------------------------------------------
+# Regularizer Parameters
+#--------------------------------------------------------------------------------------------
+
+# Laplacian regularizer: It penalizes changes in curvature	
+Regularizer.laplacian: 12
+
+# Inextensibility regularizer: It penalizes the streching
+Regularizer.Inextensibility: 30000
+# Temporal regularizer: Smoothes the changes in the pose of the mesh frame to frame
+Regularizer.temporal: 0.10
+
+#Number of neighbours layers used in the local optimization
+Regularizer.LocalZone: 1
+
+#Number of neighbours layers affected by propagation
+Regularizer.PropagationZone: 0
+
+# Reliability: It uses just the more found keypoints  (Reliability = found / "viewed)	
+Regularizer.Reliability: 0
+#--------------------------------------------------------------------------------------------
+# Viewer Parameters
+#--------------------------------------------------------------------------------------------
+Viewer.KeyFrameSize: 0.05
+Viewer.KeyFrameLineWidth: 1
+Viewer.GraphLineWidth: 0.9
+Viewer.PointSize: 2
+Viewer.CameraSize: 0.08
+Viewer.CameraLineWidth: 3
+Viewer.ViewpointX: -2.5
+Viewer.ViewpointY: -1
+Viewer.ViewpointZ: -1
+Viewer.ViewpointF: 500
+Viewer.TemplateLineWidth: 0.8
+Viewer.SaveResults: 0

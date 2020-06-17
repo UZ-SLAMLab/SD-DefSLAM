@@ -1,0 +1,5 @@
+/home/jose/DeformableSLAM/Vocabulary/ORBvoc.txt /home/jose/DeformableSLAM/calibration_files/stereo2.yaml /home/jose/DeformableSLAM/videos/Jose/Mandala3/images /home/jose/DeformableSLAM/videos/Jose/Mandala3/images /home/jose/DeformableSLAM/videos/Jose/Mandala3/timestamps/timestamps.txt
+
+/home/jlamarca/DeformableSLAM/Vocabulary/ORBvoc.txt /home/jlamarca/DeformableSLAM/calibration_files/stereo2.yaml /home/jlamarca/DeformableSLAM/videos/Jose/Cuadro1/images /home/jlamarca/DeformableSLAM/videos/Jose/Cuadro1/images /home/jlamarca/DeformableSLAM/videos/Jose/Cuadro1/timestamps/timestamps.txt
+
+/home/jose/DeformableSLAM/Vocabulary/ORBvoc.txt /home/jose/DeformableSLAM/videos/sequence_organs/hamlyn.yaml /home/jose/DeformableSLAM/videos/sequence_organs/camara0 /home/jose/DeformableSLAM/videos/sequence_organs/camara1 /home/jose/DeformableSLAM/videos/sequence_organs/times.txt
