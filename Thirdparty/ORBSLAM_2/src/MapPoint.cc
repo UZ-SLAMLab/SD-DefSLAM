@@ -2,7 +2,7 @@
 * This file is part of ORB-SLAM2.
 *
 * Copyright (C) 2014-2016 Raúl Mur-Artal <raulmur at unizar dot es> (University
-*of Zaragoza) && Shaifali Parashar, Adrien Bartoli (Université Clermont Auvergne)
+*of Zaragoza)
 * For more information see <https://github.com/raulmur/ORB_SLAM2>
 *
 * ORB-SLAM2 is free software: you can redistribute it and/or modify
@@ -388,6 +388,7 @@ namespace ORB_SLAM2
       mfMinDistance = mfMaxDistance / pRefKF->mvScaleFactors[nLevels - 1];
       mNormalVector = normal / n;
     }
+    mNormalVector = mNormalVector / cv::norm(mNormalVector);
   }
 
   float MapPoint::GetMinDistanceInvariance()
@@ -434,6 +435,130 @@ namespace ORB_SLAM2
       nScale = pF->mnScaleLevels - 1;
 
     return nScale;
+  }
+
+  MapPoint::MapPoint(const cv::Mat &Pos, KeyFrame *pRefKF, Map *pMap, cv::Point2f &obs) : mnFirstKFid(pRefKF->mnId), mnFirstFrame(pRefKF->mnFrameId), nObs(0),
+                                                                                          mnTrackReferenceForFrame(0), mnLastFrameSeen(0), mnBALocalForKF(0),
+                                                                                          mnFuseCandidateForKF(0), mnLoopPointForKF(0), mnCorrectedByKF(0),
+                                                                                          mnCorrectedReference(0), mnBAGlobalForKF(0), mpRefKF(pRefKF),
+                                                                                          mnVisible(1), mnFound(1), mbBad(false),
+                                                                                          mpReplaced(static_cast<MapPoint *>(NULL)), mfMinDistance(0),
+                                                                                          mfMaxDistance(0), mpMap(pMap), RealPositionKnown(false),
+                                                                                          assigned(false)
+  {
+    if (!Pos.empty())
+      Pos.copyTo(mWorldPos);
+    mNormalVector = cv::Mat::zeros(3, 1, CV_32F);
+
+    // MapPoints can be created from Tracking and Local Mapping. This mutex avoid
+    // conflicts with id.
+    unique_lock<mutex> lock(mpMap->mMutexPointCreation);
+    mnId = nNextId++;
+
+    KLT_ComputeMatrices(obs);
+
+    mTkw = pRefKF->GetPose();
+    pKF = pRefKF;
+    mObs = obs;
+
+    trackedByKLT = false;
+  }
+
+#define CV_MAKETYPE(depth, cn) (CV_MAT_DEPTH(depth) + (((cn)-1) << CV_CN_SHIFT))
+#define CV_DESCALE(x, n) (((x) + (1 << ((n)-1))) >> (n))
+
+  void MapPoint::KLT_ComputeMatrices(cv::Point2f p)
+  {
+    cv::Size winSize(11, 11);
+    cv::Point2f halfWin((winSize.width - 1) * 0.5f, (winSize.height - 1) * 0.5f);
+
+    mvPatch = vector<cv::Mat>(mpRefKF->imPyr.size() / 2);
+    mvGrad = vector<cv::Mat>(mpRefKF->imPyr.size() / 2);
+    mvMean = vector<float>(mpRefKF->imPyr.size() / 2);
+    mvMean2 = vector<float>(mpRefKF->imPyr.size() / 2);
+
+    for (int level = mpRefKF->imPyr.size() / 2 - 1; level >= 0; level--)
+    {
+      //Get images form the pyramid
+      const cv::Mat I = mpRefKF->imPyr[level * 2];
+      const cv::Mat derivI = mpRefKF->imPyr[level * 2 + 1];
+
+      //Steps for matrix indexing
+      int dstep = (int)(derivI.step / derivI.elemSize1());
+      int stepI = (int)(I.step / I.elemSize1());
+
+      //Buffer for fast memory access
+      int cn = I.channels(), cn2 = cn * 2; //cn should be 1 therefor cn2 should be 2
+      cv::AutoBuffer<short> _buf(winSize.area() * (cn + cn2));
+      int derivDepth = cv::DataType<short>::depth;
+
+      //Integration window buffers
+      cv::Mat IWinBuf(winSize, CV_MAKETYPE(derivDepth, cn), (*_buf));
+      cv::Mat derivIWinBuf(winSize, CV_MAKETYPE(derivDepth, cn2), (*_buf) + winSize.area() * cn);
+
+      //Compute image coordinates in the reference image at the current level
+      cv::Point2f point = p / (1 << level);
+
+      cv::Point2i ipoint;
+      point -= halfWin;
+      ipoint.x = cvFloor(point.x);
+      ipoint.y = cvFloor(point.y);
+
+      //Compute weighs for sub pixel computation
+      float a = point.x - ipoint.x;
+      float b = point.y - ipoint.y;
+      const int W_BITS = 14, W_BITS1 = 14;
+      const float FLT_SCALE = 1.f / (1 << 20);
+      int iw00 = cvRound((1.f - a) * (1.f - b) * (1 << W_BITS));
+      int iw01 = cvRound(a * (1.f - b) * (1 << W_BITS));
+      int iw10 = cvRound((1.f - a) * b * (1 << W_BITS));
+      int iw11 = (1 << W_BITS) - iw00 - iw01 - iw10;
+
+      //Compute sumI, sumI2, meanI, meanI2, Iwin, IdWin
+      float meanI = 0.f, meanI2 = 0.f;
+
+      int x, y;
+      for (y = 0; y < winSize.height; y++)
+      {
+        //Get pointers to the images
+        const uchar *src = I.ptr() + (y + ipoint.y) * stepI + ipoint.x;
+        const short *dsrc = derivI.ptr<short>() + (y + ipoint.y) * dstep + ipoint.x * 2;
+
+        //Get pointers to the window buffers
+        short *Iptr = IWinBuf.ptr<short>(y);
+        short *dIptr = derivIWinBuf.ptr<short>(y);
+
+        x = 0;
+        for (; x < winSize.width * cn; x++, dsrc += 2, dIptr += 2)
+        {
+          //Get sub pixel values from images
+          int ival = CV_DESCALE(src[x] * iw00 + src[x + cn] * iw01 +
+                                    src[x + stepI] * iw10 + src[x + stepI + cn] * iw11,
+                                W_BITS1 - 5);
+          int ixval = CV_DESCALE(dsrc[0] * iw00 + dsrc[cn2] * iw01 +
+                                     dsrc[dstep] * iw10 + dsrc[dstep + cn2] * iw11,
+                                 W_BITS1);
+          int iyval = CV_DESCALE(dsrc[1] * iw00 + dsrc[cn2 + 1] * iw01 + dsrc[dstep + 1] * iw10 +
+                                     dsrc[dstep + cn2 + 1] * iw11,
+                                 W_BITS1);
+
+          //Store values to the window buffers
+          Iptr[x] = (short)ival;
+          dIptr[0] = (short)ixval;
+          dIptr[1] = (short)iyval;
+
+          //Compute accum values for later gain and bias computation
+          meanI += (float)ival;
+          meanI2 += (float)(ival * ival);
+        }
+      }
+      //Compute means for later gain and bias computation
+      mvMean[level] = (meanI * FLT_SCALE) / winSize.area();
+      mvMean2[level] = (meanI2 * FLT_SCALE) / winSize.area();
+
+      mvPatch[level] = IWinBuf.clone();
+      mvGrad[level] = derivIWinBuf.clone();
+    }
   }
 
 } // namespace ORB_SLAM2

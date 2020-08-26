@@ -113,6 +113,25 @@ namespace defSLAM
     // Not to use stereo to initialize
     this->StereoAvailable = (false);
   }
+
+  /**********************
+   * Contructor for the KLT tracker
+   * *****************/
+    GroundTruthFrame::GroundTruthFrame(const cv::Mat &imGray,
+                                     const double &timeStamp,
+                                     ORBextractor *extractor, ORBVocabulary *voc,
+                                     cv::Mat &K, cv::Mat &distCoef,
+                                     const float &bf, const float &thDepth,
+                                     const cv::Mat &ImRGB, const cv::Mat &ImRight, int action,
+                                     cv::Mat _mask)
+      : Frame(imGray, timeStamp, extractor, voc, K, distCoef, bf, thDepth, ImRGB,
+              _mask, action)
+  {
+    this->imRight = (ImRight);
+    // Do not use stereo to initialize
+    this->StereoAvailable = (false);
+    isDepth = false;
+  }
   /*****
    * Estimate3DScale. This method estimates the 3D groundtruth of the
    * map points. It reprojects them into the left image and search for

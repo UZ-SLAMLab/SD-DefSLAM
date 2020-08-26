@@ -16,7 +16,7 @@ ${Pangolin_INCLUDE_DIRS}
 
 FILE(GLOB SRC_ORBSLAM2_FILES
      "src/*.cc") 
-
+ 
 add_library(${PROJECT_NAME} SHARED
 ${SRC_ORBSLAM2_FILES}
 )

@@ -1,22 +1,3 @@
-/**
-* This file is part of ORB-SLAM2.
-*
-* Copyright (C) 2014-2016 Raúl Mur-Artal <raulmur at unizar dot es> (University of Zaragoza)
-* For more information see <https://github.com/raulmur/ORB_SLAM2>
-*
-* ORB-SLAM2 is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* ORB-SLAM2 is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with ORB-SLAM2. If not, see <http://www.gnu.org/licenses/>.
-*/
 #ifndef FRAME_H
 #define FRAME_H
 
@@ -55,7 +36,7 @@ namespace ORB_SLAM2
         Frame(const cv::Mat &imGray, const cv::Mat &imDepth, const double &timeStamp, ORB_SLAM2::ORBextractor *extractor, ORB_SLAM2::ORBVocabulary *voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth, cv::Mat _mask = cv::Mat());
 
         // Constructor for Monocular cameras.
-        Frame(const cv::Mat &imGray, const double &timeStamp, ORB_SLAM2::ORBextractor *extractor, ORB_SLAM2::ORBVocabulary *voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth, const cv::Mat &ImRGB, cv::Mat _mask = cv::Mat());
+        Frame(const cv::Mat &imGray, const double &timeStamp, ORBextractor *extractor, ORBVocabulary *voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth, const cv::Mat &ImRGB, cv::Mat _mask = cv::Mat(), int action = 0);
         //  Frame(const cv::Mat &imGray, const double &timeStamp, ORB_SLAM2::ORBextractor* extractor,ORB_SLAM2::ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth,const cv::Mat &ImRGB, const cv::Mat &ImOut,cv::Mat _mask = cv::Mat());
 
         virtual ~Frame();
@@ -105,6 +86,8 @@ namespace ORB_SLAM2
 
         // Projection of a 3D point in absolute coordinates
         cv::KeyPoint ProjectPoints(const cv::Mat &);
+
+        cv::Mat mOw;
 
     public:
         // Vocabulary used for relocalization.
@@ -228,7 +211,23 @@ namespace ORB_SLAM2
         cv::Mat mRcw;
         cv::Mat mtcw;
         cv::Mat mRwc;
-        cv::Mat mOw; //==mtwc
+        //==mtwc
+
+        ///---------------------------------
+        ///         KLT stuff
+        ///---------------------------------
+    public:
+        void AddAndExtractFeatures(std::vector<cv::KeyPoint> &vNewKeys, std::vector<MapPoint *> &vNewMPs,
+                                   std::vector<bool> &vGood);
+
+        void AssignFeatureToGrid(cv::KeyPoint &p, const size_t idx);
+
+        void UndistortKeyPoints(std::vector<cv::KeyPoint> &mvDistorted, std::vector<cv::KeyPoint> &mvUndistorted);
+
+        void SetTrackedPoints(std::vector<cv::KeyPoint> &vPoints, const std::vector<bool> &vGood, const std::vector<MapPoint *> vpMapPoints);
+
+        void AppendTrackedPoints(std::vector<cv::KeyPoint> &vPoints, const std::vector<bool> &vGood,
+                                 const vector<MapPoint *> &vpMapPoints);
     };
 
 } // namespace ORB_SLAM2

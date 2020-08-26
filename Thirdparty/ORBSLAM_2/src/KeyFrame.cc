@@ -2,7 +2,7 @@
 * This file is part of ORB-SLAM2.
 *
 * Copyright (C) 2014-2016 Raúl Mur-Artal <raulmur at unizar dot es> (University
-*of Zaragoza) && Shaifali Parashar, Adrien Bartoli (Université Clermont Auvergne)
+*of Zaragoza)
 * For more information see <https://github.com/raulmur/ORB_SLAM2>
 *
 * ORB-SLAM2 is free software: you can redistribute it and/or modify
@@ -56,7 +56,7 @@ namespace ORB_SLAM2
         mbFirstConnection(true), mpParent(NULL), mbNotErase(false),
         mbToBeErased(false), mbBad(false), mHalfBaseline(F.mb / 2), mpMap(pMap),
         RGBimage(1024, 1024, F.ImRGB.type(), cv::Scalar(0, 0, 0)),
-        imGray(F.ImGray.clone())
+        imGray(F.ImGray.clone()), mDistCoef(F.mDistCoef), _mask(F._mask)
   {
     mnId = nNextId++;
     mGrid.resize(mnGridCols);
@@ -67,11 +67,13 @@ namespace ORB_SLAM2
         mGrid[i][j] = F.mGrid[i][j];
     }
     SetPose(F.mTcw);
-
     cv::Mat a(RGBimage(cv::Range(0, F.ImRGB.rows), cv::Range(0, F.ImRGB.cols)));
-
     F.ImRGB.copyTo(a);
     F.ImRGB.copyTo(KFimage);
+
+    nKLTfeatures = F.N;
+
+    ExtractCornersAndDescriptors(F.mpORBextractorLeft);
   }
 
   KeyFrame::~KeyFrame()
@@ -766,19 +768,158 @@ namespace ORB_SLAM2
 
     return cv::KeyPoint(u, v, 10);
   }
-  /*void KeyFrame::addFacet(Facet* pFacet){
+  /*void KeyFrame::AddFacet(Facet* pFacet){
     unique_lock<mutex> lock(mMutexFacets);
     mFacetsTex.insert(pFacet);
 }
 
-void KeyFrame::eraseFacet(Facet* pFacet){
+void KeyFrame::EraseFacet(Facet* pFacet){
     unique_lock<mutex> lock(mMutexFacets);
     mFacetsTex.erase(pFacet);
 }
 
-std::set<Facet*> KeyFrame::getFacets(){
+std::set<Facet*> KeyFrame::get_Facets(){
     unique_lock<mutex> lock(mMutexFacets);
     return mFacetsTex;
 }*/
+
+  void KeyFrame::ExtractCornersAndDescriptors(ORBextractor *mpExtractor)
+  {
+    //Extract new corners
+    vector<cv::KeyPoint> mvNewKeys, mvNewKeysUn;
+    cv::Mat mmNewDesc;
+
+    mpExtractor->ExtractKeyPoints(imGray, _mask, mvNewKeys);
+
+    //Undistort new corners
+    UndistortKeyPoints(mvNewKeys, mvNewKeysUn);
+
+    int maxRow = imGray.rows - 19;
+    int maxCol = imGray.cols - 19;
+
+    for (int i = 0; i < mvNewKeys.size(); i++)
+    {
+      if (mvNewKeys[i].pt.x < 19 || mvNewKeys[i].pt.x > maxCol ||
+          mvNewKeys[i].pt.y < 19 || mvNewKeys[i].pt.y > maxRow)
+        continue;
+      vector<size_t> vCloseFeatures = GetFeaturesInArea(mvNewKeysUn[i].pt.x, mvNewKeysUn[i].pt.y, 5);
+      if (vCloseFeatures.size() != 0)
+      {
+        continue;
+      }
+      mvKeys.push_back(mvNewKeys[i]);
+      mvKeysUn.push_back(mvNewKeysUn[i]);
+
+      AssignFeatureToGrid(mvNewKeysUn[i], mvKeys.size() - 1);
+    }
+
+    N = mvKeys.size();
+
+    mpExtractor->ComputeDescriptors(mvKeys, mDescriptors, imGray);
+
+    mvpMapPoints.resize(N, nullptr);
+
+    mvuRight.resize(N, -1); //vector<float>(N,-1);
+    mvDepth.resize(N, -1);
+
+    //Compute Bag of Word structures
+    ComputeBoW();
+  }
+
+  void KeyFrame::UndistortKeyPoints(std::vector<cv::KeyPoint> &mvDistorted, std::vector<cv::KeyPoint> &mvUndistorted)
+  {
+    int N = mvDistorted.size();
+    if (mDistCoef.at<float>(0) == 0.0)
+    {
+      mvUndistorted = mvDistorted;
+      return;
+    }
+
+    // Fill matrix with points
+    cv::Mat mat(N, 2, CV_32F);
+    for (int i = 0; i < N; i++)
+    {
+      mat.at<float>(i, 0) = mvDistorted[i].pt.x;
+      mat.at<float>(i, 1) = mvDistorted[i].pt.y;
+    }
+
+    // Undistort points
+    mat = mat.reshape(2);
+    cv::undistortPoints(mat, mat, mK, mDistCoef, cv::Mat(), mK);
+    mat = mat.reshape(1);
+
+    // Fill undistorted keypoint vector
+    mvUndistorted.resize(N);
+    for (int i = 0; i < N; i++)
+    {
+      cv::KeyPoint kp = mvDistorted[i];
+      kp.pt.x = mat.at<float>(i, 0);
+      kp.pt.y = mat.at<float>(i, 1);
+      mvUndistorted[i] = kp;
+    }
+  }
+
+  void KeyFrame::AssignFeatureToGrid(cv::KeyPoint &p, const size_t idx)
+  {
+    int nGridPosX, nGridPosY;
+    if (PosInGrid(p, nGridPosX, nGridPosY))
+      mGrid[nGridPosX][nGridPosY].push_back(idx);
+  }
+
+  bool KeyFrame::PosInGrid(const cv::KeyPoint &kp, int &posX, int &posY)
+  {
+    posX = round((kp.pt.x - mnMinX) * mfGridElementWidthInv);
+    posY = round((kp.pt.y - mnMinY) * mfGridElementHeightInv);
+
+    //Keypoint's coordinates are undistorted, which could cause to go out of the image
+    if (posX < 0 || posX >= FRAME_GRID_COLS || posY < 0 || posY >= FRAME_GRID_ROWS)
+      return false;
+
+    return true;
+  }
+
+  bool KeyFrame::IsInFrustum(MapPoint *pMP, float viewingCosLimit)
+  {
+    // 3D in absolute coordinates
+    cv::Mat P = pMP->GetWorldPos();
+
+    // 3D in camera coordinates
+    cv::Mat Rcw = Tcw.rowRange(0, 3).colRange(0, 3);
+    cv::Mat tcw = Tcw.rowRange(0, 3).col(3);
+    const cv::Mat Pc = Rcw * P + tcw;
+    const float &PcX = Pc.at<float>(0);
+    const float &PcY = Pc.at<float>(1);
+    const float &PcZ = Pc.at<float>(2);
+
+    // Check positive depth
+    if (PcZ < 0.0f)
+      return false;
+
+    // Project in image and check it is not outside
+    const float invz = 1.0f / PcZ;
+    const float u = fx * PcX * invz + cx;
+    const float v = fy * PcY * invz + cy;
+
+    if (u < mnMinX || u > mnMaxX)
+      return false;
+    if (v < mnMinY || v > mnMaxY)
+      return false;
+
+    // Check distance is in the scale invariance region of the MapPoint
+    const float maxDistance = pMP->GetMaxDistanceInvariance();
+    const float minDistance = pMP->GetMinDistanceInvariance();
+    const cv::Mat PO = P - Ow;
+    const float dist = cv::norm(PO);
+
+    // Check viewing angle
+    cv::Mat Pn = pMP->GetNormal();
+
+    const float viewCos = PO.dot(Pn) / dist;
+
+    if (viewCos < viewingCosLimit)
+      return false;
+
+    return true;
+  }
 
 } // namespace ORB_SLAM2

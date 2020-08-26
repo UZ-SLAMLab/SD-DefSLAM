@@ -71,6 +71,13 @@ namespace defSLAM
                      const cv::Mat &ImRGB, const cv::Mat &imDepth, bool isdepth,
                      cv::Mat _mask = cv::Mat());
 
+    // Initialization for KLT
+    GroundTruthFrame(const cv::Mat &imGray, const double &timeStamp,
+                   ORBextractor *extractor, ORBVocabulary *voc, cv::Mat &K,
+                   cv::Mat &distCoef, const float &bf, const float &thDepth,
+                   const cv::Mat &ImRGB, const cv::Mat &ImRight, int action, 
+                   cv::Mat _mask = cv::Mat());
+
   public:
     /*****
    * Estimate3DScale. This method estimates the 3D groundtruth of the
