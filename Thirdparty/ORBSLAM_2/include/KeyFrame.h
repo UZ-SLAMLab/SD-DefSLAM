@@ -97,9 +97,6 @@ namespace ORB_SLAM2
     int TrackedMapPoints(const int &minObs);
     MapPoint *GetMapPoint(const size_t &idx);
 
-    /*  void addFacet(Facet*);
-    void eraseFacet(Facet* pFacet);
-    std::set<Facet*> getFacets();*/
     // KeyPoint functions
     std::vector<size_t> GetFeaturesInArea(const float &x, const float &y,
                                           const float &r) const;
@@ -175,16 +172,16 @@ namespace ORB_SLAM2
     const float fx, fy, cx, cy, invfx, invfy, mbf, mb, mThDepth;
 
     // Number of KeyPoints
-    const int N;
+    int N;
 
     // KeyPoints, stereo coordinate and descriptors (all associated by an index)
-    const std::vector<cv::KeyPoint> mvKeys;
-    const std::vector<cv::KeyPoint> mvKeysUn;
-    const std::vector<cv::KeyPoint> mvKeysUnCorr;
+    std::vector<cv::KeyPoint> mvKeys;
+    std::vector<cv::KeyPoint> mvKeysUn;
+    std::vector<cv::KeyPoint> mvKeysUnCorr;
 
-    const std::vector<float> mvuRight; // negative value for monocular points
-    const std::vector<float> mvDepth;  // negative value for monocular points
-    const cv::Mat mDescriptors;
+    std::vector<float> mvuRight; // negative value for monocular points
+    std::vector<float> mvDepth;  // negative value for monocular points
+    cv::Mat mDescriptors;
     // std::vector<cv::Mat> Patches;
 
     // BoW
@@ -258,6 +255,26 @@ namespace ORB_SLAM2
     std::mutex mMutexConnections;
     std::mutex mMutexFeatures;
     std::mutex mMutexFacets;
+
+    ///--------------------------------
+    ///           KLT stuff
+    ///--------------------------------
+  public:
+    void ExtractCornersAndDescriptors(ORBextractor *mpExtractor);
+    void UndistortKeyPoints(std::vector<cv::KeyPoint> &mvDistorted, std::vector<cv::KeyPoint> &mvUndistorted);
+
+    cv::Mat mDistCoef;
+
+    void AssignFeatureToGrid(cv::KeyPoint &p, const size_t idx);
+    bool PosInGrid(const cv::KeyPoint &kp, int &posX, int &posY);
+
+    std::vector<cv::Mat> imPyr;
+
+    int nKLTfeatures;
+
+    cv::Mat _mask;
+
+    bool IsInFrustum(MapPoint *pMP, float viewingCosLimit);
   };
 
 } // namespace ORB_SLAM2

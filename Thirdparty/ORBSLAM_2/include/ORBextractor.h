@@ -86,6 +86,12 @@ public:
 
     std::vector<cv::Mat> mvImageMask;
 
+    ///---------------------------------
+    ///            KLT stuff
+    ///---------------------------------
+    void ExtractKeyPoints(cv::InputArray _image, cv::InputArray _mask, std::vector<cv::KeyPoint>& _keypoints);
+    void ComputeDescriptors(std::vector<cv::KeyPoint>& vKeys, cv::Mat& desc, cv::Mat &im);
+
 protected:
 
     void ComputePyramid(cv::Mat image);
