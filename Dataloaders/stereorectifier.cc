@@ -1,0 +1,1 @@
+#include "stereorectifier.h"

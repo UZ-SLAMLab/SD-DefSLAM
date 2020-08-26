@@ -36,6 +36,7 @@ include_directories(
 ${PROJECT_SOURCE_DIR}
 ${PROJECT_SOURCE_DIR}/Thirdparty/ORBSLAM_2/include/
 ${PROJECT_SOURCE_DIR}/Thirdparty/BBS
+${PROJECT_SOURCE_DIR}/Dataloaders
 ${PROJECT_SOURCE_DIR}/Modules/Common
 ${PROJECT_SOURCE_DIR}/Modules/GroundTruth
 ${PROJECT_SOURCE_DIR}/Modules/Mapping
@@ -69,6 +70,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/Thirdparty/g2o)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Thirdparty/BBS)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Thirdparty/ORBSLAM_2)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Modules/ToolsPCL)
+add_subdirectory(${PROJECT_SOURCE_DIR}/Dataloaders)
 
 target_link_libraries(${PROJECT_NAME}
 ${OpenCV_LIBS}
@@ -93,3 +95,6 @@ target_link_libraries(DefSLAMGTCT ${PROJECT_NAME})
 
 add_executable(DefSLAMGT Apps/stereo_groundtruth.cc)
 target_link_libraries(DefSLAMGT ${PROJECT_NAME})
+
+add_executable(DefSLAMHamyln Apps/stereo_Hamlyn.cc)
+target_link_libraries(DefSLAMHamyln ${PROJECT_NAME} Dataloader)
