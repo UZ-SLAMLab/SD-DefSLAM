@@ -55,6 +55,9 @@ namespace defSLAM
     /// Constructor. See constructor Map Point
     DefMapPoint(const cv::Mat &Pos, Map *pMap, Frame *pFrame,
                 const int &idxF);
+    
+    /// Constructor for KLT tracker
+    DefMapPoint(const cv::Mat &Pos, KeyFrame *pRefKF, Map *pMap,cv::Point2f obs,cv::Vec3f normal);
 
     /// Constructor by default
     virtual ~DefMapPoint() = default;

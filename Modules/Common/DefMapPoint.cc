@@ -41,6 +41,11 @@ namespace defSLAM
       : MapPoint(Pos, pMap, pFrame, idxF),
         facet(static_cast<Facet *>(nullptr)) {}
 
+  /// Constructor for KLT tracker
+    DefMapPoint::DefMapPoint(const cv::Mat &Pos, KeyFrame *pRefKF,
+                                           Map *pMap, cv::Point2f obs, cv::Vec3f normal)
+      : MapPoint(Pos, pRefKF, pMap, obs), facet(static_cast<Facet *>(nullptr)) {}
+
   /// Remove this map point from the template temp.
   void DefMapPoint::RemoveTemplate()
   {

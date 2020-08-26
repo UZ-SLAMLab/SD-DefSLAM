@@ -30,11 +30,16 @@
 #include "Viewer.h"
 #else
 #include "DefFrameDrawer.h"
-#include "DefLocalMapping.h"
 #include "DefMap.h"
 #include "DefMapDrawer.h"
-#include "DefTracking.h"
 #include "DefViewer.h"
+#ifdef USE_KLT
+#include "DefKLTTracking.h"
+#include "DefKLTLocalMapping.h"
+#else
+#include "DefTracking.h"
+#include "DefLocalMapping.h"
+#endif
 #endif
 #include <iomanip>
 #include <pangolin/pangolin.h>
@@ -130,13 +135,21 @@ namespace defSLAM
     mptLocalMapping = new thread(&ORB_SLAM2::LocalMapping::Run, mpLocalMapper);
 
 #else
-    mpTracker = new DefTracking(this, mpVocabulary, mpFrameDrawer,
+#ifdef USE_KLT
+ mpTracker = new DefKLTTracking(this, mpVocabulary, mpFrameDrawer,
                                 mpMapDrawer, mpMap, mpKeyFrameDatabase,
                                 strSettingsFile, mSensor, bUseViewer);
+ mpLocalMapper = new DefKLTLocalMapping(mpMap, strSettingsFile);        
+#else
+ mpTracker = new DefTracking(this, mpVocabulary, mpFrameDrawer,
+                                mpMapDrawer, mpMap, mpKeyFrameDatabase,
+                                strSettingsFile, mSensor, bUseViewer);
+ mpLocalMapper = new DefLocalMapping(mpMap, strSettingsFile);
+#endif
+   
 
     // Initialize the Local Mapping thread and launch
-    mpLocalMapper = new defSLAM::DefLocalMapping(
-        mpMap, strSettingsFile);
+   
 #ifdef PARALLEL
     mptLocalMapping = new thread(&ORB_SLAM2::LocalMapping::Run, mpLocalMapper);
 #endif

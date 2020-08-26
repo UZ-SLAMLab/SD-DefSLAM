@@ -82,7 +82,7 @@ namespace defSLAM
    * Create the new map points. They are extracted from the surface 
    * estimated for the keyframe with the Isometric NRSfM.
    ********************************/
-    void CreateNewMapPoints() override;
+    virtual void CreateNewMapPoints() override;
 
   protected:
     /******
