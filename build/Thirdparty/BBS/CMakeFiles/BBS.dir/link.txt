@@ -1,0 +1,1 @@
+/usr/bin/g++-7 -fPIC  -Wall  -O3 -march=native -fopenmp -Wno-deprecated-declarations -std=c++14 -O3 -DNDEBUG  -shared -Wl,-soname,libBBS.so -o ../../../lib/libBBS.so CMakeFiles/BBS.dir/bbs.cc.o CMakeFiles/BBS.dir/bbs_coloc.cc.o 

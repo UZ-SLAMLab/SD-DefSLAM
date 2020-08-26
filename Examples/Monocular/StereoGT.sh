@@ -1,1 +1,0 @@
-./simplestereo /home/jose/DeformableSLAM/Vocabulary/ORBvoc.txt /home/jose/DeformableSLAM/calibration_files/stereo2.yaml /home/jose/DeformableSLAM/videos/Cuadro1/images /home/jose/DeformableSLAM/videos/Cuadro1/images /home/jose/DeformableSLAM/Cuadro1/timestamps/timestamps.txt

@@ -1,277 +1,148 @@
-# DefSLAM
+# 1. DefSLAM
 **Authors:** [Jose Lamarca](http://webdiis.unizar.es/~jlamarca/), Shaifali Parashar, Adrien Bartoli and [J. M. M. Montiel](http://webdiis.unizar.es/~josemari/) 
 
-DefSLAM is a real-time deformable SLAM library for **Monocular** cameras that computes the camera trajectory and a sparse 3D reconstruction in a deformable environment. 
-Mandala 4:
-![](2DMandala4.gif) 
+DefSLAM is a real-time deformable SLAM library for **Monocular** cameras that computes the camera trajectory and a sparse 3D reconstruction in a deformable environment.
 
-![](3DMandala4.gif)
-# CERES library:
-# CMake
-sudo apt-get install cmake
-sudo apt-get install libgoogle-glog-dev
-# BLAS & LAPACK
-sudo apt-get install libatlas-base-dev
-# Eigen3
-sudo apt-get install libeigen3-dev
-# SuiteSparse and CXSparse (optional)
- - If you want to build Ceres as a *static* library (the default)
-   you can use the SuiteSparse package in the main Ubuntu package
-   repository:
-sudo apt-get install libsuitesparse-dev
-# - However, if you want to build Ceres as a *shared* library, you must
-#   add the following PPA:
-sudo add-apt-repository ppa:bzindovic/suitesparse-bugfix-1319687
-sudo apt-get update
-sudo apt-get install libsuitesparse-dev
-tar zxf ceres-solver-1.14.0.tar.gz
-mkdir ceres-bin
-cd ceres-bin
-cmake ../ceres-solver-1.14.0
-make -j3
-make test
-
-make install
-git clone https://ceres-solver.googlesource.com/ceres-solver
-
-# vtk library
-https://vtk.org/download/
-
-**17 Jan 2019**: OpenCV 4.0.2 and Eigen 3.3 are now supported.
-
-####### ORB-SLAM2
-**Authors:** [Raul Mur-Artal](http://webdiis.unizar.es/~raulmur/), [Juan D. Tardos](http://webdiis.unizar.es/~jdtardos/), [J. M. M. Montiel](http://webdiis.unizar.es/~josemari/) and [Dorian Galvez-Lopez](http://doriangalvez.com/) ([DBoW2](https://github.com/dorian3d/DBoW2))
-
-**13 Jan 2017**: OpenCV 3 and Eigen 3.3 are now supported.
-
-**22 Dec 2016**: Added AR demo (see section 7).
-
-ORB-SLAM2 is a real-time SLAM library for **Monocular**, **Stereo** and **RGB-D** cameras that computes the camera trajectory and a sparse 3D reconstruction (in the stereo and RGB-D case with true scale). It is able to detect loops and relocalize the camera in real time. We provide examples to run the SLAM system in the [KITTI dataset](http://www.cvlibs.net/datasets/kitti/eval_odometry.php) as stereo or monocular, in the [TUM dataset](http://vision.in.tum.de/data/datasets/rgbd-dataset) as RGB-D or monocular, and in the [EuRoC dataset](http://projects.asl.ethz.ch/datasets/doku.php?id=kmavvisualinertialdatasets) as stereo or monocular. We also provide a ROS node to process live monocular, stereo or RGB-D streams. **The library can be compiled without ROS**. ORB-SLAM2 provides a GUI to change between a *SLAM Mode* and *Localization Mode*, see section 9 of this document.
-
-<a href="https://www.youtube.com/embed/ufvPS5wJAx0" target="_blank"><img src="http://img.youtube.com/vi/ufvPS5wJAx0/0.jpg" 
-alt="ORB-SLAM2" width="240" height="180" border="10" /></a>
-<a href="https://www.youtube.com/embed/T-9PYCKhDLM" target="_blank"><img src="http://img.youtube.com/vi/T-9PYCKhDLM/0.jpg" 
-alt="ORB-SLAM2" width="240" height="180" border="10" /></a>
-<a href="https://www.youtube.com/embed/kPwy8yA4CKM" target="_blank"><img src="http://img.youtube.com/vi/kPwy8yA4CKM/0.jpg" 
-alt="ORB-SLAM2" width="240" height="180" border="10" /></a>
+[![](https://img.youtube.com/vi/6mmhD2_t6Gs/0.jpg)](https://www.youtube.com/watch?v=6mmhD2_t6Gs&t=3s)
 
 
 ### Related Publications:
+[Lamarca, Jose, et al. "DefSLAM: Tracking and Mapping of Deforming Scenes from Monocular Sequences." arXiv preprint arXiv:1908.08918 (2019).](https://arxiv.org/abs/1908.08918)
+```
+@article{lamarca2019defslam,
+  title={DefSLAM: Tracking and Mapping of Deforming Scenes from Monocular Sequences},
+  author={Lamarca, Jose and Parashar, Shaifali and Bartoli, Adrien and Montiel, JMM},
+  journal={arXiv preprint arXiv:1908.08918},
+  year={2019}
+}
+```
 
-[Monocular] Raúl Mur-Artal, J. M. M. Montiel and Juan D. Tardós. **ORB-SLAM: A Versatile and Accurate Monocular SLAM System**. *IEEE Transactions on Robotics,* vol. 31, no. 5, pp. 1147-1163, 2015. (**2015 IEEE Transactions on Robotics Best Paper Award**). **[PDF](http://webdiis.unizar.es/~raulmur/MurMontielTardosTRO15.pdf)**.
-
-[Stereo and RGB-D] Raúl Mur-Artal and Juan D. Tardós. **ORB-SLAM2: an Open-Source SLAM System for Monocular, Stereo and RGB-D Cameras**. *ArXiv preprint arXiv:1610.06475* **[PDF](https://128.84.21.199/pdf/1610.06475.pdf)**.
-
-[DBoW2 Place Recognizer] Dorian Gálvez-López and Juan D. Tardós. **Bags of Binary Words for Fast Place Recognition in Image Sequences**. *IEEE Transactions on Robotics,* vol. 28, no. 5, pp.  1188-1197, 2012. **[PDF](http://doriangalvez.com/php/dl.php?dlp=GalvezTRO12.pdf)**
-
-# 1. License
-
-ORB-SLAM2 is released under a [GPLv3 license](https://github.com/raulmur/ORB_SLAM2/blob/master/License-gpl.txt). For a list of all code/library dependencies (and associated licenses), please see [Dependencies.md](https://github.com/raulmur/ORB_SLAM2/blob/master/Dependencies.md).
-
-For a closed-source version of ORB-SLAM2 for commercial purposes, please contact the authors: orbslam (at) unizar (dot) es.
-
-If you use ORB-SLAM2 (Monocular) in an academic work, please cite:
-
-    @article{murTRO2015,
-      title={{ORB-SLAM}: a Versatile and Accurate Monocular {SLAM} System},
-      author={Mur-Artal, Ra\'ul, Montiel, J. M. M. and Tard\'os, Juan D.},
-      journal={IEEE Transactions on Robotics},
-      volume={31},
-      number={5},
-      pages={1147--1163},
-      doi = {10.1109/TRO.2015.2463671},
-      year={2015}
-     }
-
-if you use ORB-SLAM2 (Stereo or RGB-D) in an academic work, please cite:
-
-    @article{murORB2,
-      title={{ORB-SLAM2}: an Open-Source {SLAM} System for Monocular, Stereo and {RGB-D} Cameras},
-      author={Mur-Artal, Ra\'ul and Tard\'os, Juan D.},
-      journal={arXiv preprint arXiv:1610.06475},
-      year={2016}
-     }
-
+[Lamarca J., Montiel J.M.M. (2019) Camera Tracking for SLAM in Deformable Maps. In: Leal-Taixé L., Roth S. (eds) Computer Vision – ECCV 2018 Workshops. ECCV 2018. Lecture Notes in Computer Science, vol 11129. Springer, Cham](https://openaccess.thecvf.com/content_ECCVW_2018/papers/11129/Lamarca_Camera_Tracking_for_SLAM_in_Deformable_Maps_ECCVW_2018_paper.pdf)
+```
+@inproceedings{lamarca2018camera,
+  title={Camera tracking for SLAM in deformable maps},
+  author={Lamarca, Jose and Montiel, JMM},
+  booktitle={Proceedings of the European Conference on Computer Vision (ECCV)},
+  year={2018}
+}
+```
 # 2. Prerequisites
-We have tested the library in **Ubuntu 12.04**, **14.04** and **16.04**, but it should be easy to compile in other platforms. A powerful computer (e.g. i7) will ensure real-time performance and provide more stable and accurate results.
-
-## C++11 or C++0x Compiler
-We use the new thread and chrono functionalities of C++11.
+We have tested the library in **16.04** and **18.04**, but it should be easy to compile in other platforms. A powerful computer (e.g. i7) will ensure real-time performance and provide more stable and accurate results.
 
 ## Pangolin
 We use [Pangolin](https://github.com/stevenlovegrove/Pangolin) for visualization and user interface. Dowload and install instructions can be found at: https://github.com/stevenlovegrove/Pangolin.
 
 ## OpenCV
-We use [OpenCV](http://opencv.org) to manipulate images and features. Dowload and install instructions can be found at: http://opencv.org. **Required at leat 2.4.3. Tested with OpenCV 2.4.11 and OpenCV 3.2**.
+We use [OpenCV](http://opencv.org) to manipulate images and features. Dowload and install instructions can be found at: http://opencv.org. **Required 4.0.0**.
 
 ## Eigen3
 Required by g2o (see below). Download and install instructions can be found at: http://eigen.tuxfamily.org. **Required at least 3.1.0**.
 
-## DBoW2 and g2o (Included in Thirdparty folder)
-We use modified versions of the [DBoW2](https://github.com/dorian3d/DBoW2) library to perform place recognition and [g2o](https://github.com/RainerKuemmerle/g2o) library to perform non-linear optimizations. Both modified libraries (which are BSD) are included in the *Thirdparty* folder.
+# Ceres library:
+We use [Ceres](http://opencv.org) to optimize warp and to run the NRSfM.
 
-## ROS (optional)
-We provide some examples to process the live input of a monocular, stereo or RGB-D camera using [ROS](ros.org). Building these examples is optional. In case you want to use ROS, a version Hydro or newer is needed.
+## PCL
+It is used just for ground truths. It is not critic for the program. We use [PCL](https://pointclouds.org/downloads/) mainly for groundtruths.
 
-# 3. Building ORB-SLAM2 library and examples
+## DBoW2 and g2o and ORBSLAM(Included in Thirdparty folder)
+We use modified versions of the [DBoW2](https://github.com/dorian3d/DBoW2) library to perform place recognition and [g2o](https://github.com/RainerKuemmerle/g2o) library to perform non-linear optimizations. Both modified libraries (which are BSD) are included in the *Thirdparty* folder. Likewise we include a modified version of ORBSLAM. BOW is only used for ORBSLAM_2.
+
+
+# 3. License
+
+DefSLAM is released under a [GPLv3 license](https://github.com/jlamraca/DefSLAM/blob/master/License-gpl.txt). For a list of all code/library dependencies (and associated licenses), please see [Dependencies.md](https://github.com/jlamarca/DefSLAM/blob/master/Dependencies.md).
+
+
+# 4. Building DefSLAM library and examples
 
 Clone the repository:
 ```
-git clone https://github.com/raulmur/ORB_SLAM2.git ORB_SLAM2
+git clone https://github.com/JoseLamarca/DefSLAM.git
 ```
 
-We provide a script `build.sh` to build the *Thirdparty* libraries and *ORB-SLAM2*. Please make sure you have installed all required dependencies (see section 2). Execute:
+We provide a script `build.sh` to build the *DefSLAM* including. Please make sure you have installed all required dependencies (see section 2). Execute:
 ```
-cd ORB_SLAM2
+cd DefSLAM
 chmod +x build.sh
 ./build.sh
 ```
 
-This will create **libORB_SLAM2.so**  at *lib* folder and the executables **mono_tum**, **mono_kitti**, **rgbd_tum**, **stereo_kitti**, **mono_euroc** and **stereo_euroc** in *Examples* folder.
+This will create **libDefSLAM.so**  at *lib* folder and the executables **simplestereo** **simpleCT** and **simple** in *Apps* folder.
 
-# 4. Monocular Examples
+# 5. Datasets
+## Mandala dataset
+Download the sequences with the link: 
+[Mandala Dataset](https://drive.google.com/file/d/1i3i2f3Ph22DfZ6AfXKjPRb8WrGNw_41C/view?usp=sharing)
 
-## TUM Dataset
+It contains the five sequences presented in the paper. The mandala deformation becomes more challenging with the number of dataset.
 
-1. Download a sequence from http://vision.in.tum.de/data/datasets/rgbd-dataset/download and uncompress it.
-
-2. Execute the following command. Change `TUMX.yaml` to TUM1.yaml,TUM2.yaml or TUM3.yaml for freiburg1, freiburg2 and freiburg3 sequences respectively. Change `PATH_TO_SEQUENCE_FOLDER`to the uncompressed sequence folder.
+The dataset is organized as follows:
 ```
-./Examples/Monocular/mono_tum Vocabulary/ORBvoc.txt Examples/Monocular/TUMX.yaml PATH_TO_SEQUENCE_FOLDER
+--Mandala(i)
+   -- images
+   -- yalm file
+   -- times
 ```
+## Hamlyn dataset  
+1. Download the dataset from the webpage [Hamlyn](http://hamlyn.doc.ic.ac.uk/vision/). 
 
-## KITTI Dataset  
+2. To downloaded in the format run in our paper [Hamlyn not official](https://drive.google.com/file/d/1fG6RNQlBqwDKZSRUuiEuoMbVosMo5u8J/view?usp=sharing)
 
-1. Download the dataset (grayscale images) from http://www.cvlibs.net/datasets/kitti/eval_odometry.php 
 
-2. Execute the following command. Change `KITTIX.yaml`by KITTI00-02.yaml, KITTI03.yaml or KITTI04-12.yaml for sequence 0 to 2, 3, and 4 to 12 respectively. Change `PATH_TO_DATASET_FOLDER` to the uncompressed dataset folder. Change `SEQUENCE_NUMBER` to 00, 01, 02,.., 11. 
+
+## Run Example
+Examples of scripts in Apps/rungt.sh
+
+1. Process a sequence. 
 ```
-./Examples/Monocular/mono_kitti Vocabulary/ORBvoc.txt Examples/Monocular/KITTIX.yaml PATH_TO_DATASET_FOLDER/dataset/sequences/SEQUENCE_NUMBER
+./DefSLAM <ORBfile> <yaml.file> <ORBfile> <image folder>
 ```
+If you run it without <image folder>. It takes the camera in 0. 
 
-## EuRoC Dataset
-
-1. Download a sequence (ASL format) from http://projects.asl.ethz.ch/datasets/doku.php?id=kmavvisualinertialdatasets
-
-2. Execute the following first command for V1 and V2 sequences, or the second command for MH sequences. Change PATH_TO_SEQUENCE_FOLDER and SEQUENCE according to the sequence you want to run.
+2. Sequences with depth image for ground truth. (Used for CT phantom dataset)
 ```
-./Examples/Monocular/mono_euroc Vocabulary/ORBvoc.txt Examples/Monocular/EuRoC.yaml PATH_TO_SEQUENCE_FOLDER/mav0/cam0/data Examples/Monocular/EuRoC_TimeStamps/SEQUENCE.txt 
-```
-
-```
-./Examples/Monocular/mono_euroc Vocabulary/ORBvoc.txt Examples/Monocular/EuRoC.yaml PATH_TO_SEQUENCE/cam0/data Examples/Monocular/EuRoC_TimeStamps/SEQUENCE.txt 
-```
-
-# 5. Stereo Examples
-
-## KITTI Dataset
-
-1. Download the dataset (grayscale images) from http://www.cvlibs.net/datasets/kitti/eval_odometry.php 
-
-2. Execute the following command. Change `KITTIX.yaml`to KITTI00-02.yaml, KITTI03.yaml or KITTI04-12.yaml for sequence 0 to 2, 3, and 4 to 12 respectively. Change `PATH_TO_DATASET_FOLDER` to the uncompressed dataset folder. Change `SEQUENCE_NUMBER` to 00, 01, 02,.., 11. 
-```
-./Examples/Stereo/stereo_kitti Vocabulary/ORBvoc.txt Examples/Stereo/KITTIX.yaml PATH_TO_DATASET_FOLDER/dataset/sequences/SEQUENCE_NUMBER
+./DefSLAMCTGT <ORBfile> <yaml.file> <video.avi> <folder with pattern>
 ```
 
-## EuRoC Dataset
-
-1. Download a sequence (ASL format) from http://projects.asl.ethz.ch/datasets/doku.php?id=kmavvisualinertialdatasets
-
-2. Execute the following first command for V1 and V2 sequences, or the second command for MH sequences. Change PATH_TO_SEQUENCE_FOLDER and SEQUENCE according to the sequence you want to run.
+3. Sequences with stereo for ground truth.
 ```
-./Examples/Stereo/stereo_euroc Vocabulary/ORBvoc.txt Examples/Stereo/EuRoC.yaml PATH_TO_SEQUENCE/mav0/cam0/data PATH_TO_SEQUENCE/mav0/cam1/data Examples/Stereo/EuRoC_TimeStamps/SEQUENCE.txt
-```
-```
-./Examples/Stereo/stereo_euroc Vocabulary/ORBvoc.txt Examples/Stereo/EuRoC.yaml PATH_TO_SEQUENCE/cam0/data PATH_TO_SEQUENCE/cam1/data Examples/Stereo/EuRoC_TimeStamps/SEQUENCE.txt
+./DefSLAMGT <ORBfile> <yaml.file> <left_image folder> <right_image folder> <timestamps file>
 ```
 
-# 6. RGB-D Example
+Script to generate this folders with this format avaiable. Ask me through <jlamarca@unizar.es>
 
-## TUM Dataset
+## Code Organization
+```
+-- Root folder
+  -- Apps. Folder with executables.
 
-1. Download a sequence from http://vision.in.tum.de/data/datasets/rgbd-dataset/download and uncompress it.
+  -- Vocabulary. Folder that contains the vocabulary for the BoW.
 
-2. Associate RGB images and depth images using the python script [associate.py](http://vision.in.tum.de/data/datasets/rgbd-dataset/tools). We already provide associations for some of the sequences in *Examples/RGB-D/associations/*. You can generate your own associations file executing:
+  -- ThirdParty
+    -- BBS. Bspline library adapted for C++ with eigen.
+    -- DBoW2. Bag Of word library only used for ORBSLAM_2. Loop closin and relocalization.
+    -- g2o. Optimization library for deformation tracking and pose estimation.
+    -- ORBSLAM_2. Base clases of the rigid SLAM library modified to work in deforming 
+		  environments.
 
-  ```
-  python associate.py PATH_TO_SEQUENCE/rgb.txt PATH_TO_SEQUENCE/depth.txt > associations.txt
-  ```
+  -- Modules. DefSLAM modules, it includes all the modules needed for the library.
+    -- Common. It includes the keyframes, map, map points and Systems.
+    -- Mapping.
+    -- GroundTruth
+    -- Matching
+    -- Settings. Check advance settings.
+    -- Template. Template tools
+    -- ToolsPCL. Tools from PCL library used mainly for the ground truth.
+    -- Tracking. 
+    -- Viewer.
+```
+## Advance settings for and ORBSLAM:
+To repeat the experiments and save the results you can activate the flag Viewer.SaveResults in the yalm file. The system is running by default in parallel. To change it, you must change the file set_MAC.h and comment the line #define PARALLEL.
 
-3. Execute the following command. Change `TUMX.yaml` to TUM1.yaml,TUM2.yaml or TUM3.yaml for freiburg1, freiburg2 and freiburg3 sequences respectively. Change `PATH_TO_SEQUENCE_FOLDER`to the uncompressed sequence folder. Change `ASSOCIATIONS_FILE` to the path to the corresponding associations file.
+To run ORBSLAM, you can uncomment the line 5 in set_MAC.h.
 
-  ```
-  ./Examples/RGB-D/rgbd_tum Vocabulary/ORBvoc.txt Examples/RGB-D/TUMX.yaml PATH_TO_SEQUENCE_FOLDER ASSOCIATIONS_FILE
-  ```
+The file CC_MAC.h contain the parameters for the cross correlation matching used in the grundtruth. It is adapted for a better performance in the Mandala dataset, but it should be adapted for each dataset.
 
-# 7. ROS Examples
+To set the number of nodes of the mesh (Initially 10x10), change line 63 and 64 of Template/TriangularMesh.cc
 
-### Building the nodes for mono, monoAR, stereo and RGB-D
-1. Add the path including *Examples/ROS/ORB_SLAM2* to the ROS_PACKAGE_PATH environment variable. Open .bashrc file and add at the end the following line. Replace PATH by the folder where you cloned ORB_SLAM2:
-
-  ```
-  export ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH}:PATH/ORB_SLAM2/Examples/ROS
-  ```
-  
-2. Execute `build_ros.sh` script:
-
-  ```
-  chmod +x build_ros.sh
-  ./build_ros.sh
-  ```
-  
-### Running Monocular Node
-For a monocular input from topic `/camera/image_raw` run node ORB_SLAM2/Mono. You will need to provide the vocabulary file and a settings file. See the monocular examples above.
-
-  ```
-  rosrun ORB_SLAM2 Mono PATH_TO_VOCABULARY PATH_TO_SETTINGS_FILE
-  ```
-  
-### Running Monocular Augmented Reality Demo
-This is a demo of augmented reality where you can use an interface to insert virtual cubes in planar regions of the scene.
-The node reads images from topic `/camera/image_raw`.
-
-  ```
-  rosrun ORB_SLAM2 MonoAR PATH_TO_VOCABULARY PATH_TO_SETTINGS_FILE
-  ```
-  
-### Running Stereo Node
-For a stereo input from topic `/camera/left/image_raw` and `/camera/right/image_raw` run node ORB_SLAM2/Stereo. You will need to provide the vocabulary file and a settings file. If you **provide rectification matrices** (see Examples/Stereo/EuRoC.yaml example), the node will recitify the images online, **otherwise images must be pre-rectified**.
-
-  ```
-  rosrun ORB_SLAM2 Stereo PATH_TO_VOCABULARY PATH_TO_SETTINGS_FILE ONLINE_RECTIFICATION
-  ```
-  
-**Example**: Download a rosbag (e.g. V1_01_easy.bag) from the EuRoC dataset (http://projects.asl.ethz.ch/datasets/doku.php?id=kmavvisualinertialdatasets). Open 3 tabs on the terminal and run the following command at each tab:
-  ```
-  roscore
-  ```
-  
-  ```
-  rosrun ORB_SLAM2 Stereo Vocabulary/ORBvoc.txt Examples/Stereo/EuRoC.yaml true
-  ```
-  
-  ```
-  rosbag play --pause V1_01_easy.bag /cam0/image_raw:=/camera/left/image_raw /cam1/image_raw:=/camera/right/image_raw
-  ```
-  
-Once ORB-SLAM2 has loaded the vocabulary, press space in the rosbag tab. Enjoy!. Note: a powerful computer is required to run the most exigent sequences of this dataset.
-
-### Running RGB_D Node
-For an RGB-D input from topics `/camera/rgb/image_raw` and `/camera/depth_registered/image_raw`, run node ORB_SLAM2/RGBD. You will need to provide the vocabulary file and a settings file. See the RGB-D example above.
-
-  ```
-  rosrun ORB_SLAM2 RGBD PATH_TO_VOCABULARY PATH_TO_SETTINGS_FILE
-  ```
-  
-# 8. Processing your own sequences
-You will need to create a settings file with the calibration of your camera. See the settings file provided for the TUM and KITTI datasets for monocular, stereo and RGB-D cameras. We use the calibration model of OpenCV. See the examples to learn how to create a program that makes use of the ORB-SLAM2 library and how to pass images to the SLAM system. Stereo input must be synchronized and rectified. RGB-D input must be synchronized and depth registered.
-
-# 9. SLAM and Localization Modes
-You can change between the *SLAM* and *Localization mode* using the GUI of the map viewer.
-
-### SLAM Mode
-This is the default mode. The system runs in parallal three threads: Tracking, Local Mapping and Loop Closing. The system localizes the camera, builds new map and tries to close loops.
-
-### Localization Mode
-This mode can be used when you have a good map of your working area. In this mode the Local Mapping and Loop Closing are deactivated. The system localizes the camera in the map (which is no longer updated), using relocalization if needed. 
-
+To set the number of nodes for the BBSpline Thirdparty/BBS/bbs_MAC.h
