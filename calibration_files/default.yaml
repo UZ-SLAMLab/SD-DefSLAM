@@ -1,0 +1,100 @@
+%YAML:1.0
+
+#--------------------------------------------------------------------------------------------
+# Camera Parameters. Adjust them!
+#--------------------------------------------------------------------------------------------
+# Estos son los parámetros que queremos tener de las imágenes rectificadas
+
+# ------------------- DONT TOUCH ---------------------
+# Camera calibration and distortion parameters (OpenCV) 
+Camera.fx: 435.2046959714599
+Camera.fy: 435.2046959714599
+Camera.cx: 367.4517211914062
+Camera.cy: 252.2008514404297
+
+Camera.k1: 0.0
+Camera.k2: 0.0
+Camera.p1: 0.0
+Camera.p2: 0.0
+Camera.k3: 0.0
+
+Camera.width: 640
+Camera.height: 480
+## --------------------------------------------------
+
+# Camera frames per second (camera specifications)
+Camera.fps: 7.0
+
+# stereo baseline times fx (from python code)
+Camera.bf: 39.2778179991
+
+# Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
+Camera.RGB: 0
+
+# Close/Far threshold. Baseline times.
+ThDepth: 35
+
+# -------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------
+# Regularizer Parameters
+#--------------------------------------------------------------------------------------------
+
+# Laplacian regularizer: It penalizes changes in curvature	
+Regularizer.laplacian: 300
+
+# Inextensibility regularizer: It penalizes the streching
+Regularizer.Inextensibility: 16000
+
+# Temporal regularizer: Smoothes the changes in the pose of the mesh frame to frame
+Regularizer.temporal: 0.02
+
+#Number of neighbours layers used in the local optimization
+Regularizer.LocalZone: 2
+
+#Number of neighbours layers affected by propagation
+Regularizer.PropagationZone: 0
+
+# Reliability: It uses just the more found keypoints  (Reliability = found / "viewed)	
+Regularizer.Reliability: 0
+
+#--------------------------------------------------------------------------------------------
+# ORB Parameters (keep always the same)
+#--------------------------------------------------------------------------------------------
+# ORB Extractor: Number of features per image
+ORBextractor.nFeatures: 1200
+
+# ORB Extractor: Scale factor between levels in the scale pyramid 	
+ORBextractor.scaleFactor: 1.2
+
+# ORB Extractor: Number of levels in the scale pyramid	
+ORBextractor.nLevels: 6
+
+# ORB Extractor: Fast threshold
+# Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
+# Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
+# You can lower these values if your images have low contrast			
+ORBextractor.iniThFAST: 20
+ORBextractor.minThFAST: 7
+
+#--------------------------------------------------------------------------------------------
+# Viewer Parameters
+#--------------------------------------------------------------------------------------------
+Viewer.KeyFrameSize: 0.05
+Viewer.KeyFrameLineWidth: 1
+Viewer.GraphLineWidth: 0.9
+Viewer.PointSize: 2
+Viewer.CameraSize: 0.05
+Viewer.CameraLineWidth: 0.13
+Viewer.ViewpointX: -2.5
+Viewer.ViewpointY: -1
+Viewer.ViewpointZ: -1
+Viewer.ViewpointF: 500
+Viewer.TemplateLineWidth: 0.8
+Viewer.SaveResults: 0
+#--------------------------------------------------------------------------------------------
+# Local Mapping Parameters
+#--------------------------------------------------------------------------------------------
+LocalMapping.pointsToTemplate: 180
+LocalMapping.chiLimit: 0.2
+LocalMapping.Bending: 0.7
+LocalMapping.Schwarp.Regularizer: 0.005

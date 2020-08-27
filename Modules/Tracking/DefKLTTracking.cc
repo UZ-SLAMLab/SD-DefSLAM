@@ -34,7 +34,8 @@ namespace defSLAM
     RegInex = fSettings["Regularizer.Inextensibility"];
     RegTemp = fSettings["Regularizer.temporal"];
     double a = fSettings["Regularizer.LocalZone"];
-
+    double SaveResults = fSettings["Viewer.SaveResults"];
+    saveResults = bool(uint(SaveResults));
     cout << endl
          << "Defomation tracking Parameters: " << endl;
     cout << "- Reg. Inextensibility: " << RegInex << endl;
@@ -65,6 +66,7 @@ namespace defSLAM
     RegTemp = settingLoader.getregTemp();
     LocalZone = settingLoader.getLocalZone();
     ReliabilityThreshold = settingLoader.getreliabilityThreshold();
+    saveResults = settingLoader.getSaveResults();
 
     ///-------------------------------
     mKLTtracker = LucasKanadeTracker(cv::Size(11, 11), 4, 10, 0.01, 1e-4);
@@ -701,7 +703,7 @@ namespace defSLAM
 
     this->Track();
 
-    if ((mState == eTrackingState::OK) && (true))
+    if ((mState == eTrackingState::OK) && (saveResults))
     {
       float scale =
           static_cast<GroundTruthFrame *>(mCurrentFrame)->Estimate3DScale(mpMap);
@@ -759,7 +761,7 @@ namespace defSLAM
 
     this->Track();
 
-    if ((mState == eTrackingState::OK) && (true))
+    if ((mState == eTrackingState::OK) && (saveResults))
     {
       float scale =
           static_cast<GroundTruthFrame *>(mCurrentFrame)->Estimate3DScale(mpMap);

@@ -23,6 +23,11 @@
 
 namespace defSLAM
 {
+    SettingsLoader::SettingsLoader()
+        : SettingsLoader("/home/jose/DefKLTSLAM/calibration_files/default.yaml")
+    {
+    }
+
     SettingsLoader::SettingsLoader(const std::string &strSettingsFile)
     {
         using namespace std;
@@ -290,6 +295,10 @@ namespace defSLAM
     float SettingsLoader::getT() const
     {
         return T_;
+    }
+    void SettingsLoader::setSaveResults(const bool save)
+    {
+        saveResults_ = save;
     }
 
 } // namespace defSLAM

@@ -31,7 +31,7 @@ namespace defSLAM
     {
     public:
         // Constructor by default. You have to load the files manually.
-        SettingsLoader() = default;
+        SettingsLoader();
         // Constructor from file. You load the files from a file.
         SettingsLoader(const std::string &strSettingsFile);
 
@@ -75,6 +75,9 @@ namespace defSLAM
         float getbendingReg() const;
         float getfps() const;
         float getT() const;
+
+    public:
+        void setSaveResults(const bool);
 
     private:
         // Regularizers

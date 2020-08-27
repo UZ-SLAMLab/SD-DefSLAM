@@ -181,6 +181,7 @@ namespace ORB_SLAM2
     int fIniThFAST = settingLoader.getfIniThFAST();
     int fMinThFAST = settingLoader.getfMinThFAST();
     saveResults = settingLoader.getSaveResults();
+    mbf = settingLoader.getbf();
     mpORBextractorLeft = new ORBextractor(nFeatures, fScaleFactor, nLevels,
                                           fIniThFAST, fMinThFAST);
 

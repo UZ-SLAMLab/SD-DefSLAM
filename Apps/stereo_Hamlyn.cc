@@ -53,9 +53,6 @@ int main(int argc, char **argv)
     cerr << "ERROR: Different number of left and right images." << endl;
     return 1;
   }
-  std::string fileSettings(argv[2]);
-  defSLAM::SettingsLoader sl(fileSettings);
-
   // Read rectification parameters
   cv::FileStorage fsSettings(argv[2], cv::FileStorage::READ);
   if (!fsSettings.isOpened())
@@ -101,7 +98,12 @@ int main(int argc, char **argv)
 
   // Create SLAM system. It initializes all system threads and gets ready to
   // process frames.
-  defSLAM::System SLAM(argv[1], argv[2], true);
+
+  std::string fileSettings(argv[2]);
+  defSLAM::SettingsLoader sl(fileSettings);
+  sl.setSaveResults(false);
+
+  defSLAM::System SLAM(argv[1], sl, true);
   // Vector for tracking time statistics
   vector<float>
       vTimesTrack;
