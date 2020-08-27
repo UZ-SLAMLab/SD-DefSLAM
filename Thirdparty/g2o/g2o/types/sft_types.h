@@ -409,4 +409,40 @@ namespace g2o
 
     void linearizeOplus() { _jacobianOplusXi.setIdentity(); }
   };
+
+  class EdgesTempCamera : public BaseBinaryEdge<6, Eigen::Matrix<double, 6, 1>, g2o::VertexSE3Expmap, g2o::VertexSE3Expmap>
+  {
+  public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EdgesTempCamera()
+    {
+    }
+
+    virtual bool read(std::istream &is)
+    {
+      std::cout << "Not implemented" << std::endl;
+      return false;
+    }
+
+    virtual bool write(std::ostream &os) const
+    {
+      std::cout << "Not implemented" << std::endl;
+      return false;
+    }
+
+    void computeError()
+    {
+      const VertexSE3Expmap *v1 = static_cast<const VertexSE3Expmap *>(_vertices[0]);
+      const VertexSE3Expmap *v2 = static_cast<const VertexSE3Expmap *>(_vertices[1]);
+      Eigen::Matrix<double, 4, 4> T_cwi = v1->estimate().to_homogeneous_matrix();
+      Eigen::Matrix<double, 4, 4> T_cwi_1 = v2->estimate().to_homogeneous_matrix();
+      Eigen::Matrix<double, 4, 4> T_cici_1 = T_cwi.inverse() * T_cwi_1;
+
+      Eigen::Matrix3d r = T_cici_1.block(0, 0, 3, 3);
+      Eigen::Vector3d t = T_cici_1.block(0, 3, 3, 1);
+
+      g2o::SE3Quat se(r, t);
+      _error << se.log(); // vector7d <<  translation,quaternion;
+    }
+  };
 } // namespace g2o

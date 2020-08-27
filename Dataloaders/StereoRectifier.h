@@ -34,12 +34,7 @@ namespace dataset
             extrinsicCal_ = ReadMatFromTxt(fileName, 4, 3);
             R = extrinsicCal_(cv::Range(0, 3), cv::Range(0, 3));
             t = extrinsicCal_.row(3).t();
-            //R = extrinsicCal_(cv::Range(0, 3), cv::Range(0, 3)).t();
-            //t = -R * extrinsicCal_.row(3).t();
-            std::cout << R << std::endl;
-            std::cout << std::endl;
-            std::cout << t << std::endl;
-            std::cout << std::endl;
+            baseline = cv::norm(t);
         };
 
         void setLeftIntrinsicsFromFile(string fileName)
@@ -58,6 +53,25 @@ namespace dataset
         {
             checkEpipoles_ = true;
         };
+
+        /*
+        * Obtain new intrinsics calibration matrix
+        */
+        cv::Mat obtainNewCalibrationValues()
+        {
+            cv::Rect roi(0, 0, 3, 3);
+            return P_l(roi).clone();
+        }
+
+        float obtainBaselineF()
+        {
+            return baseline * P_l.at<double>(0, 0);
+        }
+
+        std::pair<int, int> getWidthAndHeight()
+        {
+            return make_pair(width, height);
+        }
         /******
          * It receives the left and right images and rectify them giving them back in leftImRect and rightImRect
          * ******/
@@ -71,6 +85,8 @@ namespace dataset
                                             leftIm.size(), CV_32F, M1l, M2l);
                 cv::initUndistortRectifyMap(rightCal_, rightDistorsion_, R_r, P_r.rowRange(0, 3).colRange(0, 3),
                                             rightIm.size(), CV_32F, M1r, M2r);
+                width = leftIm.cols;
+                height = leftIm.rows;
             }
             cv::remap(leftIm, leftImRect, M1l, M2l, cv::INTER_LINEAR);
             cv::remap(rightIm, rightImRect, M1r, M2r, cv::INTER_LINEAR);
@@ -131,6 +147,7 @@ namespace dataset
 
                 return out;
             }
+            return out;
         }
         /******
          * function that draws lines in an image
@@ -154,5 +171,8 @@ namespace dataset
         cv::Mat R_l, R_r, P_l, P_r, Q; // Rectification parameters
         cv::Mat M1l, M2l, M1r, M2r;    // Map Parameters
         bool checkEpipoles_;
+        float baseline;
+        int width;
+        int height;
     };
 } // namespace dataset

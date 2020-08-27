@@ -24,7 +24,7 @@
 namespace defSLAM
 {
     SettingsLoader::SettingsLoader()
-        : SettingsLoader("/home/jose/DefKLTSLAM/calibration_files/default.yaml")
+        : SettingsLoader("/home/jose/DefKLTSLAM/calibration_files/hamlyn.yaml")
     {
     }
 
@@ -301,4 +301,23 @@ namespace defSLAM
         saveResults_ = save;
     }
 
+    void SettingsLoader::setK(const cv::Mat &k)
+    {
+        k.copyTo(K_);
+        K_.convertTo(K_, CV_32F);
+    }
+
+    void SettingsLoader::setbf(const float bf)
+    {
+        bf_ = bf;
+    }
+
+    void SettingsLoader::setCameraWidth(const int w)
+    {
+        imageWidth_ = w;
+    }
+    void SettingsLoader::setCameraHeight(const int h)
+    {
+        imageHeight_ = h;
+    }
 } // namespace defSLAM

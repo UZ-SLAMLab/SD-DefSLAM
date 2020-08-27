@@ -139,6 +139,21 @@ namespace dataset
                 return std::make_pair(imageLeftRect[i], imageRightRect[i]);
             }
 
+            cv::Mat obtainNewCalibrationValues()
+            {
+                return stereoRectifier_.obtainNewCalibrationValues();
+            }
+
+            float obtainBaselineF()
+            {
+                return stereoRectifier_.obtainBaselineF();
+            }
+
+            std::pair<int, int> getWidthAndHeight()
+            {
+                return stereoRectifier_.getWidthAndHeight();
+            }
+
         private:
             void preprocessImages()
             {

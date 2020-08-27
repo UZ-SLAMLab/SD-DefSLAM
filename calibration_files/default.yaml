@@ -1,10 +1,4 @@
 %YAML:1.0
-
-#--------------------------------------------------------------------------------------------
-# Camera Parameters. Adjust them!
-#--------------------------------------------------------------------------------------------
-# Estos son los parámetros que queremos tener de las imágenes rectificadas
-
 # ------------------- DONT TOUCH ---------------------
 # Camera calibration and distortion parameters (OpenCV) 
 Camera.fx: 435.2046959714599
@@ -67,7 +61,7 @@ ORBextractor.nFeatures: 1200
 ORBextractor.scaleFactor: 1.2
 
 # ORB Extractor: Number of levels in the scale pyramid	
-ORBextractor.nLevels: 6
+ORBextractor.nLevels: 8
 
 # ORB Extractor: Fast threshold
 # Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
