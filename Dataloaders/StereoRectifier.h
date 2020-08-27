@@ -66,16 +66,11 @@ namespace dataset
             // This is done just once
             if (R_l.empty())
             {
-                cv::stereoRectify( leftCal_, leftDistorsion_, rightCal_, rightDistorsion_,  leftIm.size(), R, t, R_l, R_r, P_l, P_r, Q, cv::CALIB_ZERO_DISPARITY,-1,leftIm.size(),0,0);
-                std::cout << R_l << std::endl;
-                std::cout << R_r << std::endl;
-                std::cout << P_l << std::endl;
-                std::cout << P_r << std::endl;
-
+                cv::stereoRectify(leftCal_, leftDistorsion_, rightCal_, rightDistorsion_, leftIm.size(), R, t, R_l, R_r, P_l, P_r, Q, cv::CALIB_ZERO_DISPARITY, -1, leftIm.size(), 0, 0);
                 cv::initUndistortRectifyMap(leftCal_, leftDistorsion_, R_l, P_l.rowRange(0, 3).colRange(0, 3),
-                    leftIm.size(), CV_32F, M1l, M2l);
+                                            leftIm.size(), CV_32F, M1l, M2l);
                 cv::initUndistortRectifyMap(rightCal_, rightDistorsion_, R_r, P_r.rowRange(0, 3).colRange(0, 3),
-                    rightIm.size(), CV_32F, M1r, M2r);
+                                            rightIm.size(), CV_32F, M1r, M2r);
             }
             cv::remap(leftIm, leftImRect, M1l, M2l, cv::INTER_LINEAR);
             cv::remap(rightIm, rightImRect, M1r, M2r, cv::INTER_LINEAR);
@@ -114,7 +109,6 @@ namespace dataset
         * ***/
         Mat getlineMatFromTxt(string filename, int cols, int lineNumber)
         {
-            double m;
             Mat out = Mat::zeros(1, cols, CV_64FC1); //Matrix to store values
 
             ifstream fileStream(filename);
@@ -143,7 +137,7 @@ namespace dataset
          * ****/
         void drawPatternlines(cv::Mat &image) const
         {
-            for (uint i(5); i < image.rows; i = i + 20)
+            for (int i(5); i < image.rows; i = i + 20)
             {
                 cv::line(image, cv::Point(0, i), cv::Point(image.cols - 1, i), cv::Scalar(180, 10, 10));
             }

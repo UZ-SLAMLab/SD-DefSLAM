@@ -64,6 +64,23 @@ namespace defSLAM
     warpDB_ = new SchwarpDatabase(reg_);
   }
 
+  /****************
+     * It is the same, but it reads the information from SettingsLoader.
+     *********************/
+  DefLocalMapping::DefLocalMapping(Map *pMap, const SettingsLoader &settingsLoader)
+      : LocalMapping(pMap, nullptr, 0.0),
+        createTemplate_(false),
+        pointsToTemplate_(100),
+        chiLimit_(0.07)
+  {
+    pointsToTemplate_ = settingsLoader.getpointsToTemplate();
+    chiLimit_ = settingsLoader.getchiLimit();
+    double reg_ = settingsLoader.getschwarpReg();
+    bendingReg_ = settingsLoader.getbendingReg();
+    saveResults_ = settingsLoader.getSaveResults();
+    warpDB_ = new SchwarpDatabase(reg_);
+  }
+
   /***********************************
    * Destructor of DefLocalMapping. Just to remove the SchwarpDatabase.
    *********************/

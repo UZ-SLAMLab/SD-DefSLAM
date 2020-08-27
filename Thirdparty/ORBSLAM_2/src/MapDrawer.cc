@@ -42,6 +42,17 @@ namespace ORB_SLAM2
     mCameraLineWidth = fSettings["Viewer.CameraLineWidth"];
   }
 
+  MapDrawer::MapDrawer(Map *pMap, const defSLAM::SettingsLoader &settingLoader)
+      : mpMap(pMap)
+  {
+    mKeyFrameSize = settingLoader.getkeyFrameSize();
+    mKeyFrameLineWidth = settingLoader.getkeyFrameLineWidth();
+    mGraphLineWidth = settingLoader.getgraphLineWidth();
+    mPointSize = settingLoader.getpointSize();
+    mCameraSize = settingLoader.getcameraSize();
+    mCameraLineWidth = settingLoader.getcameraLineWidth();
+  }
+
   void MapDrawer::reset() {}
 
   void MapDrawer::DrawMapPoints()

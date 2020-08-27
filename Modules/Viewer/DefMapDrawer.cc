@@ -44,6 +44,11 @@ namespace defSLAM
     cv::FileStorage fSettings(strSettingPath, cv::FileStorage::READ);
   }
 
+  DefMapDrawer::DefMapDrawer(Map *pMap, const SettingsLoader &settingLoader)
+      : MapDrawer(pMap, settingLoader), MeshDrawers(nullptr)
+  {
+  }
+
   // Clear template history.
   void DefMapDrawer::reset() { this->MeshDrawershist.clear(); }
 

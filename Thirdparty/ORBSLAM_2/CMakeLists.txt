@@ -10,12 +10,14 @@ find_package(Eigen3 REQUIRED)
 
 include_directories(
 ${PROJECT_SOURCE_DIR}/ThirdParty/ORBSLAM2
+${PROJECT_SOURCE_DIR}/../../Modules/Common
 ${EIGEN3_INCLUDE_DIR}
 ${Pangolin_INCLUDE_DIRS}
 )
 
 FILE(GLOB SRC_ORBSLAM2_FILES
-     "src/*.cc") 
+     "src/*.cc"
+     "../../Modules/Common/SettingsLoader.cc") 
  
 add_library(${PROJECT_NAME} SHARED
 ${SRC_ORBSLAM2_FILES}

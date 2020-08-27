@@ -21,8 +21,14 @@
 namespace defSLAM
 {
   DefKLTLocalMapping::DefKLTLocalMapping(Map *pMap,
-                                                   const string &strSettingPath)
+                                         const string &strSettingPath)
       : DefLocalMapping(pMap, strSettingPath)
+  {
+  }
+
+  DefKLTLocalMapping::DefKLTLocalMapping(Map *pMap,
+                                         const SettingsLoader &settingLoader)
+      : DefLocalMapping(pMap, settingLoader)
   {
   }
 
@@ -64,10 +70,6 @@ namespace defSLAM
       MapPoint *pMP = referenceKF_->GetMapPoint(i);
       cv::Vec3b rgb = this->referenceKF_->RGBimage.at<cv::Vec3b>(
           this->referenceKF_->mvKeys[i].pt);
-      int b, g, r;
-      r = rgb(0);
-      g = rgb(1);
-      b = rgb(2);
 
       if (pMP)
       {
