@@ -18,7 +18,7 @@
 main() { (
     local local_dir=${1:-null}
 
-    local calibration_file="/home/jose/DefKLTSLAM/Vocabulary/ORBvoc.txt"
+    #27local video="$local_dir/capture-20110222T172724Z.avi"
     local video="$local_dir/stereo.avi"
     local leftCalibration="$local_dir/Left_Camera_Calibration_Intrinsic.txt"
     local rightCalibration="$local_dir/Right_Camera_Calibration_Intrinsic.txt"
@@ -26,7 +26,7 @@ main() { (
 
     echo "Processing Video : " $video
     echo $video $leftCalibration $rightCalibration $extrinsicCalibration
-    ./DefSLAMHamyln $calibration_file $video $leftCalibration $rightCalibration $extrinsicCalibration
+    ./build/elasHamlyn $video $leftCalibration $rightCalibration $extrinsicCalibration
     return 0
 ); }
 

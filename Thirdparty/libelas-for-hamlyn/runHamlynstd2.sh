@@ -18,15 +18,18 @@
 main() { (
     local local_dir=${1:-null}
 
-    local calibration_file="/home/jose/DefKLTSLAM/Vocabulary/ORBvoc.txt"
-    local video="$local_dir/stereo.avi"
+    #local videoleft="$local_dir/f7_dynamic_deint_L.avi"
+    #local videoright="$local_dir/f7_dynamic_deint_R.avi"
+    local videoleft="$local_dir/left.avi"
+    local videoright="$local_dir/right.avi"
     local leftCalibration="$local_dir/Left_Camera_Calibration_Intrinsic.txt"
     local rightCalibration="$local_dir/Right_Camera_Calibration_Intrinsic.txt"
     local extrinsicCalibration="$local_dir/camera_extrinsic.txt"
 
-    echo "Processing Video : " $video
-    echo $video $leftCalibration $rightCalibration $extrinsicCalibration
-    ./DefSLAMHamyln $calibration_file $video $leftCalibration $rightCalibration $extrinsicCalibration
+    echo "Processing Videos : " $videoleft
+    local args2="$videoleft $videoright $leftCalibration $rightCalibration  $extrinsicCalibration"
+    echo $args2
+    ./build/elasHamlyn $args2
     return 0
 ); }
 

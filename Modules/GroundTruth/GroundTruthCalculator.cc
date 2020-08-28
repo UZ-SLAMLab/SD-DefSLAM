@@ -30,7 +30,7 @@
 #include "CC_MAC.h"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
-
+#include "DisparityEstimatorLibelas.h"
 using namespace std;
 
 namespace defSLAM
@@ -265,12 +265,60 @@ namespace defSLAM
       matchLoc.y = matchLoc.y + finy + tempy / 2;
 
       float disp(std::abs(matchLoc.x - kp.pt.x));
+
       std::vector<float> ps;
       ps.reserve(3);
       ps.push_back(mbf / disp * (((float)kp.pt.x - cx) / fx));
       ps.push_back(mbf / disp * (((float)kp.pt.y - cy) / fy));
       ps.push_back(mbf / disp);
       return ps;
+    }
+
+    /**********************
+ * The funtion estimateGT estimates the 3D point from
+ * a stereo pair and a keypoint using libelas
+ * 
+ * Author: Jose Lamarca
+ * 
+ * Arg:
+ *  std::vector<float> kp2D
+ *  im1 image of keypoint
+ *  im2 image stereo to query
+ *  name std::string name for the file
+ * 
+ * Return:
+ *  std::vector<float> point in 3D in camera frame;
+ * 
+ * *******************/
+    std::vector<std::vector<float>> estimateGTlibelas(const std::vector<cv::KeyPoint> &kp, const cv::Mat &imLeft, const cv::Mat &imRight, double mbf,
+                                                      double cx, double cy, double fx, double fy)
+    {
+      stereodisparity::DisparityEstimatorLibelas disparityest;
+      cv::Mat disparity = disparityest.process(imLeft, imRight);
+      std::vector<std::vector<float>> xyz;
+      for (auto &kp : kp)
+      {
+        float libdisp = disparity.at<uchar>(kp.pt.x, kp.pt.y);
+        if (libdisp < 200)
+        {
+          std::vector<float> ps;
+          ps.reserve(3);
+          ps.push_back(mbf / libdisp * (((float)kp.pt.x - cx) / fx));
+          ps.push_back(mbf / libdisp * (((float)kp.pt.y - cy) / fy));
+          ps.push_back(mbf / libdisp);
+          xyz.push_back(std::move(ps));
+        }
+        else
+        {
+          std::vector<float> ps;
+          ps.reserve(3);
+          ps.push_back(0);
+          ps.push_back(0);
+          ps.push_back(-1);
+          xyz.push_back(std::move(ps));
+        }
+      }
+      return xyz;
     }
   } // namespace GroundTruthTools
 } // namespace defSLAM

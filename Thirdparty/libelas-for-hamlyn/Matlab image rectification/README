@@ -1,0 +1,13 @@
+Matlab scripts:
+- video2frames: ·Input: video ·Output: frames
+- stereoVideo2frames: ·Input: stereo video ·Output: left and right frames 
+- stereoVideos2monoVideos: ·Input: stereo video ·Output: left and right stereo videos
+- rectifyStereo: ·Input: left and right stereo videos, and calibration parameters ·Output: left and right rectified frames
+- rectifyAllStereoVideos: ·Input: folder containing all the left and right stereo pair videos to rectify ·Output: left and right rectified frames of all stereo pair videos
+- rectifyStereoFunction: script used by rectifyAllStereoVideos.
+
+All the videos are .avi and all the images .png.
+The name of the stereo videos has to be: calibratedXX.avi and the name of the left and right stereo videos calibratedXX_L.avi and calibratedXX_R.avi.
+Due to this name constrains, these scripts can process videos with the numeration between 00 and 99.
+To see the calibration parameters .txt style, see the file.
+
