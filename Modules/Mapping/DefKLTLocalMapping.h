@@ -23,28 +23,32 @@
 
 #include "DefLocalMapping.h"
 #include "WarpDatabase.h"
-
-namespace ORB_SLAM2 {
-class KeyFrame;
+namespace ORB_SLAM2
+{
+  class KeyFrame;
 }
-namespace defSLAM {
-using ORB_SLAM2::Map;
-using ORB_SLAM2::MapDrawer;
-using ORB_SLAM2::KeyFrame;
+namespace defSLAM
+{
+  using ORB_SLAM2::KeyFrame;
+  using ORB_SLAM2::Map;
+  using ORB_SLAM2::MapDrawer;
 
-class DefKLTLocalMapping : public DefLocalMapping {
-public:
-  DefKLTLocalMapping(Map *pMap, const string &strSettingPath);
+  class DefKLTLocalMapping : public DefLocalMapping
+  {
+  public:
+    DefKLTLocalMapping(Map *pMap, const string &strSettingPath);
 
-  ~DefKLTLocalMapping() = default;
+    DefKLTLocalMapping(Map *pMap, const SettingsLoader &settingLoader);
 
-  /*********************************
+    ~DefKLTLocalMapping() = default;
+
+    /*********************************
    * Create the new map points. They are extracted from the surface 
    * estimated for the keyframe with the Isometric NRSfM. KLT variation
    ********************************/
-  virtual void CreateNewMapPoints() override;
-};
+    virtual void CreateNewMapPoints() override;
+  };
 
-} // namespace ORB_SLAM2
+} // namespace defSLAM
 
 #endif // LOCALMAPPING_H

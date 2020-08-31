@@ -57,6 +57,13 @@ namespace defSLAM
                 const int sensor = ORB_SLAM2::System::MONOCULAR,
                 bool viewerOn = false);
 
+    DefTracking(System *pSys, ORBVocabulary *pVoc,
+                FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer,
+                Map *pMap, KeyFrameDatabase *pKFDB,
+                const SettingsLoader &strSettingPath,
+                const int sensor = ORB_SLAM2::System::MONOCULAR,
+                bool viewerOn = false);
+
   public:
     //Main function of tracking where the map is considered deformable.
     virtual bool TrackLocalMap();

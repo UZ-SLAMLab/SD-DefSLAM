@@ -265,23 +265,44 @@ namespace defSLAM
       int nInitialCorrespondences = 0;
 
       // Set Frame vertex
+      setMeshNodes(optimizer, mMap);
+      uint nBad(0);
+      // Set MapPoint vertices
+      const int N = pFrame->N;
+
+      // Set Frame vertex
+      // Create 2 camera vertices in order to constraint its movement
       g2o::VertexSE3Expmap *vSE3 = new g2o::VertexSE3Expmap();
       vSE3->setEstimate(Converter::toSE3Quat(pFrame->mTcw));
       vSE3->setId(0);
       vSE3->setFixed(false);
       optimizer.addVertex(vSE3);
-      setMeshNodes(optimizer, mMap);
-      uint nBad(0);
-      // Set MapPoint vertices
-      const int N = pFrame->N;
-      const int Ncorr = pFrame->mvpMapPointsCorr.size();
+      g2o::VertexSE3Expmap *vSE32 = new g2o::VertexSE3Expmap();
+      vSE32->setEstimate(Converter::toSE3Quat(pFrame->mTcw));
+      vSE32->setId(1);
+      vSE32->setFixed(true);
+      optimizer.addVertex(vSE32);
+
+      //Camera edge
+      g2o::EdgesTempCamera *camp = new g2o::EdgesTempCamera();
+      camp->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex *>(optimizer.vertex(0)));
+      camp->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex *>(optimizer.vertex(1)));
+      Eigen::Matrix<double, 6, 6> weight = 1 * Eigen::Matrix<double, 6, 6>::Identity();
+      weight(3, 3) = 5;
+      weight(4, 4) = 5;
+      weight(5, 5) = 5;
+      weight = weight;
+      camp->setInformation(weight);
+      Eigen::Matrix<double, 6, 1> obs;
+      obs << 0, 0, 0, 0, 0, 0;
+      camp->setMeasurement(obs);
+      optimizer.addEdge(camp);
 
       std::set<Node *> ViewedNodes;
       vector<g2o::EdgeNodesCamera *> vpEdgesMono, vpEdgesMonocorr;
       vector<size_t> vnIndexEdgeMono, vnIndexEdgeMonocorr;
       vpEdgesMono.reserve(N);
       vnIndexEdgeMono.reserve(N);
-      vnIndexEdgeMonocorr.reserve(Ncorr);
       /////////// OBSERVATIONS ////////////////////////
       const float deltaMono = sqrt(5.991);
       unique_lock<mutex> lock(MapPoint::mGlobalMutex);
@@ -930,7 +951,7 @@ namespace defSLAM
       // The two first index are for the temporal constrains
       std::set<Node *> Nodes =
           static_cast<DefMap *>(mMap)->GetTemplate()->getNodes();
-      uint j(1);
+      uint j(2);
       if (prop)
         j = 0;
 

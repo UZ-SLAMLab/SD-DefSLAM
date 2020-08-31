@@ -52,6 +52,9 @@ namespace defSLAM
     // Constructor.
     DefMapDrawer(Map *, const string &);
 
+    // Constructor.
+    DefMapDrawer(Map *, const SettingsLoader &);
+
     // Clear template history.
     void reset();
 

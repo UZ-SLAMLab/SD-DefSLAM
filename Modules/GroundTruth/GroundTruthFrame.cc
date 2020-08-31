@@ -117,7 +117,7 @@ namespace defSLAM
   /**********************
    * Contructor for the KLT tracker
    * *****************/
-    GroundTruthFrame::GroundTruthFrame(const cv::Mat &imGray,
+  GroundTruthFrame::GroundTruthFrame(const cv::Mat &imGray,
                                      const double &timeStamp,
                                      ORBextractor *extractor, ORBVocabulary *voc,
                                      cv::Mat &K, cv::Mat &distCoef,
@@ -213,7 +213,6 @@ namespace defSLAM
         return 1;
       double filtering_time = ((double)cv::getTickCount());
       std::sort(zs.begin(), zs.end());
-
       SmootherMLS smls(1, zs[zs.size() / 2] / 7);
       std::vector<int> notOutliers = smls.outlierRemovalRadius(posStereoInit_);
       posMono_.reserve(posStereoInit_.size());

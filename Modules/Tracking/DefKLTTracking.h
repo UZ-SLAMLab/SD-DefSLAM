@@ -30,7 +30,7 @@
 #include <opencv2/core/eigen.hpp>
 
 #include "LucasKanadeTracker.h"
-
+#include "SettingsLoader.h"
 namespace ORB_SLAM2
 {
   class Tracking;
@@ -53,11 +53,18 @@ namespace defSLAM
 
   public:
     DefKLTTracking(System *pSys, ORBVocabulary *pVoc,
-                        FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer,
-                        Map *pMap, KeyFrameDatabase *pKFDB,
-                        const string &strSettingPath,
-                        const int sensor = ORB_SLAM2::System::MONOCULAR,
-                        bool viewerOn = false);
+                   FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer,
+                   Map *pMap, KeyFrameDatabase *pKFDB,
+                   const string &strSettingPath,
+                   const int sensor = ORB_SLAM2::System::MONOCULAR,
+                   bool viewerOn = false);
+
+    DefKLTTracking(System *pSys, ORBVocabulary *pVoc,
+                   FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer,
+                   Map *pMap, KeyFrameDatabase *pKFDB,
+                   const SettingsLoader &strSettingPath,
+                   const int sensor = ORB_SLAM2::System::MONOCULAR,
+                   bool viewerOn = false);
 
   public:
     virtual bool TrackLocalMap();

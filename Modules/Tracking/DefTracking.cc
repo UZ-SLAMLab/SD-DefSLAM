@@ -72,6 +72,22 @@ namespace defSLAM
     ReliabilityThreshold = fSettings["Regularizer.Reliability"];
   }
 
+  DefTracking::DefTracking(System *pSys, ORBVocabulary *pVoc,
+                           FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer,
+                           Map *pMap, KeyFrameDatabase *pKFDB,
+                           const SettingsLoader &settingLoader,
+                           const int sensor,
+                           bool viewerOn)
+      : Tracking(pSys, pVoc, pFrameDrawer, pMapDrawer, pMap, pKFDB,
+                 settingLoader, sensor, viewerOn)
+  {
+    RegLap = settingLoader.getregLap();
+    RegInex = settingLoader.getregStreching();
+    RegTemp = settingLoader.getregTemp();
+    LocalZone = settingLoader.getLocalZone();
+    saveResults = settingLoader.getSaveResults();
+    ReliabilityThreshold = settingLoader.getreliabilityThreshold();
+  }
   // Main function of tracking.
   void DefTracking::Track()
   {

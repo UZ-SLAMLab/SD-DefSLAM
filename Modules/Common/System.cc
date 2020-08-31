@@ -21,6 +21,7 @@
 #include "System.h"
 #include "Converter.h"
 #include "set_MAC.h"
+
 #ifdef ORBSLAM
 #include "FrameDrawer.h"
 #include "LocalMapping.h"
@@ -136,20 +137,19 @@ namespace defSLAM
 
 #else
 #ifdef USE_KLT
- mpTracker = new DefKLTTracking(this, mpVocabulary, mpFrameDrawer,
-                                mpMapDrawer, mpMap, mpKeyFrameDatabase,
-                                strSettingsFile, mSensor, bUseViewer);
- mpLocalMapper = new DefKLTLocalMapping(mpMap, strSettingsFile);        
+    mpTracker = new DefKLTTracking(this, mpVocabulary, mpFrameDrawer,
+                                   mpMapDrawer, mpMap, mpKeyFrameDatabase,
+                                   strSettingsFile, mSensor, bUseViewer);
+    mpLocalMapper = new DefKLTLocalMapping(mpMap, strSettingsFile);
 #else
- mpTracker = new DefTracking(this, mpVocabulary, mpFrameDrawer,
+    mpTracker = new DefTracking(this, mpVocabulary, mpFrameDrawer,
                                 mpMapDrawer, mpMap, mpKeyFrameDatabase,
                                 strSettingsFile, mSensor, bUseViewer);
- mpLocalMapper = new DefLocalMapping(mpMap, strSettingsFile);
+    mpLocalMapper = new DefLocalMapping(mpMap, strSettingsFile);
 #endif
-   
 
     // Initialize the Local Mapping thread and launch
-   
+
 #ifdef PARALLEL
     mptLocalMapping = new thread(&ORB_SLAM2::LocalMapping::Run, mpLocalMapper);
 #endif
@@ -178,6 +178,145 @@ namespace defSLAM
 #else
       mpViewer = new Viewer(this, mpFrameDrawer, mpMapDrawer, mpTracker,
                             strSettingsFile);
+#endif
+      mptViewer = new std::thread(&Viewer::Run, mpViewer);
+      mpTracker->SetViewer(mpViewer);
+    }
+
+    // Set pointers between threads
+    mpTracker->SetLocalMapper(mpLocalMapper);
+    mpLocalMapper->SetTracker(mpTracker);
+
+#ifdef ORBSLAM
+    mpTracker->SetLoopClosing(mpLoopCloser);
+    mpLocalMapper->SetLoopCloser(mpLoopCloser);
+#else
+    mpTracker->SetLoopClosing(nullptr);
+    mpLocalMapper->SetLoopCloser(nullptr);
+#endif
+  }
+
+  System::System(const string &strVocFile, const SettingsLoader &settingsLoader, const bool bUseViewer)
+      : mSensor(MONOCULAR), mpLoopCloser(NULL), mpViewer(static_cast<Viewer *>(nullptr)),
+        mbReset(false), mbActivateLocalizationMode(false), mbDeactivateLocalizationMode(false)
+  {
+    // Output welcome message
+#ifndef ORBSLAM
+    cout << endl
+         << "DefSLAM 2019-2020 José Lamarca, University of Zaragoza." << endl
+         << "This program comes with ABSOLUTELY NO WARRANTY;" << endl
+         << "This is free software, and you are welcome to redistribute it"
+         << endl
+         << endl;
+#else
+    cout << endl
+         << "Modification for test of ORB-SLAM2 Copyright (C) 2014-2016 " << endl
+         << "Raul Mur - Artal, University of Zaragoza." << endl
+         << "This program comes with ABSOLUTELY NO WARRANTY;" << endl
+         << "This is free software, and you are welcome to redistribute it" << endl
+         << "under certain conditions. See LICENSE.txt." << endl
+         << endl;
+
+#endif
+    cout << "Input sensor was set to: ";
+
+    if (mSensor != MONOCULAR)
+    {
+      cout << "Error" << endl;
+      exit(-1);
+    }
+
+    // Load ORB Vocabulary
+    cout << endl
+         << "Loading ORB Vocabulary. This could take a while..." << endl;
+
+    mpVocabulary = new ORBVocabulary();
+    bool bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
+    if (!bVocLoad)
+    {
+      cerr << "Wrong path to vocabulary. " << endl;
+      cerr << "Falied to open at: " << strVocFile << endl;
+      exit(-1);
+    }
+    cout << "Vocabulary loaded!" << endl
+         << endl;
+
+    // Create KeyFrame Database
+    mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
+
+// Create the Map
+#ifndef ORBSLAM
+    mpMap = new DefMap();
+#else
+    mpMap = new Map();
+#endif
+
+    if (bUseViewer)
+    {
+// Create Drawers. These are used by the Viewer
+#ifndef ORBSLAM
+      mpFrameDrawer = new DefFrameDrawer(mpMap);
+      mpMapDrawer = new DefMapDrawer(mpMap, settingsLoader);
+#else
+      mpFrameDrawer = new FrameDrawer(mpMap);
+      mpMapDrawer = new MapDrawer(mpMap, settingsLoader);
+#endif
+    }
+// Initialize the Tracking thread
+//(it will live in the main thread of execution, the one that called this
+// constructor)
+#ifdef ORBSLAM
+    mpTracker =
+        new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer, mpMap,
+                     mpKeyFrameDatabase, settingsLoader, mSensor, bUseViewer);
+
+    // Initialize the Local Mapping thread and launch
+    mpLocalMapper = new LocalMapping(mpMap, mpMapDrawer, mSensor == MONOCULAR);
+    mptLocalMapping = new thread(&ORB_SLAM2::LocalMapping::Run, mpLocalMapper);
+
+#else
+#ifdef USE_KLT
+    mpTracker = new DefKLTTracking(this, mpVocabulary, mpFrameDrawer,
+                                   mpMapDrawer, mpMap, mpKeyFrameDatabase,
+                                   settingsLoader, mSensor, bUseViewer);
+    mpLocalMapper = new DefKLTLocalMapping(mpMap, settingsLoader);
+#else
+    mpTracker = new DefTracking(this, mpVocabulary, mpFrameDrawer,
+                                mpMapDrawer, mpMap, mpKeyFrameDatabase,
+                                settingsLoader, mSensor, bUseViewer);
+    mpLocalMapper = new DefLocalMapping(mpMap, settingsLoader);
+#endif
+
+    // Initialize the Local Mapping thread and launch
+
+#ifdef PARALLEL
+    mptLocalMapping = new thread(&ORB_SLAM2::LocalMapping::Run, mpLocalMapper);
+#endif
+#endif
+
+// Initialize the Loop Closing thread and launch
+#ifndef ORBSLAM
+    mpLoopCloser =
+        nullptr; // new LoopClosing(mpMap, mpKeyFrameDatabase, mpVocabulary,
+    //      mSensor != MONOCULAR);
+    mptLoopClosing =
+        nullptr; // new thread(&ORB_SLAM2::LoopClosing::Run, mpLoopCloser);
+#else
+
+    mpLoopCloser = new LoopClosing(mpMap, mpKeyFrameDatabase, mpVocabulary,
+                                   mSensor != MONOCULAR);
+    mptLoopClosing = new thread(&ORB_SLAM2::LoopClosing::Run, mpLoopCloser);
+#endif
+
+    // Initialize the Viewer thread and launch
+    if (bUseViewer)
+    {
+#ifndef ORBSLAM
+      mpViewer = new DefViewer(this, mpFrameDrawer, mpMapDrawer, mpTracker,
+                               settingsLoader);
+#else
+      mpViewer = new Viewer(this, mpFrameDrawer, mpMapDrawer, mpTracker,
+                            settingsLoader);
 #endif
       mptViewer = new std::thread(&Viewer::Run, mpViewer);
       mpTracker->SetViewer(mpViewer);

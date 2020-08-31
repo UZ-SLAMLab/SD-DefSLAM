@@ -24,6 +24,7 @@
 #include "KeyFrame.h"
 #include "LocalMapping.h"
 #include "WarpDatabase.h"
+#include "SettingsLoader.h"
 
 namespace ORB_SLAM2
 {
@@ -46,8 +47,13 @@ namespace defSLAM
    *            a template has been correctly aligned.
    *  reg: Weight for the Schwarzian regularizer in Schwarp estimation.
    *  bendingReg_ : Weight for the beding regularizer in Shape-from-normals.
+   * IT Reads the information from a yalm file.
    *********************/
     DefLocalMapping(Map *pMap, const string &strSettingPath);
+    /****************
+     * It is the same, but it reads the information from SettingsLoader.
+     *********************/
+    DefLocalMapping(Map *pMap, const SettingsLoader &strSettingPath);
 
     /***********************************
    * Destructor of DefLocalMapping. Just to remove the SchwarpDatabase.

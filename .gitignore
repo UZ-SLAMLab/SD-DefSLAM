@@ -26,3 +26,12 @@ Apps/DefSLAM
 Apps/DefSLAMGT
 Apps/DefSLAMGTCT
 *.so
+Apps/DefSLAM
+Apps/DefSLAMGT
+Apps/DefSLAMGTCT
+lib/libBBS.so
+lib/libDBoW2.so
+lib/libDeformableSLAM.so
+lib/libORBSLAM.so
+lib/libToolsPCL.so
+Thirdparty/g2o/lib/libg2o.so

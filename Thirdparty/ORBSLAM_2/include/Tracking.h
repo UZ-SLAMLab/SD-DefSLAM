@@ -39,6 +39,7 @@
 #include "System.h"
 #include "Viewer.h"
 #include <mutex>
+#include "SettingsLoader.h"
 
 namespace defSLAM
 {
@@ -63,6 +64,10 @@ namespace ORB_SLAM2
              MapDrawer *pMapDrawer, Map *pMap, KeyFrameDatabase *pKFDB,
              const string &strSettingPath, const int sensor, bool viewerOn);
 
+    Tracking(System *pSys, ORBVocabulary *pVoc, FrameDrawer *pFrameDrawer,
+             MapDrawer *pMapDrawer, Map *pMap, KeyFrameDatabase *pKFDB,
+             const defSLAM::SettingsLoader &settingLoader, const int sensor,
+             bool viewerOn);
     // Preprocess the input and call Track(). Extract features and performs stereo
     // matching.
     cv::Mat GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat &imRectRight,
@@ -259,7 +264,7 @@ namespace ORB_SLAM2
     ofstream matches, scalefile, MapPointFile;
 
     bool viewerOn;
-    
+
     bool saveResults;
 
     std::mutex Regmutex;

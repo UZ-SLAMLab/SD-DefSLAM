@@ -21,11 +21,11 @@ namespace defSLAM
   class DefMapDrawer;
   class Node;
   DefKLTTracking::DefKLTTracking(System *pSys, ORBVocabulary *pVoc,
-                                           FrameDrawer *pFrameDrawer,
-                                           MapDrawer *pMapDrawer, Map *pMap,
-                                           KeyFrameDatabase *pKFDB,
-                                           const string &strSettingPath,
-                                           const int sensor, bool viewerOn)
+                                 FrameDrawer *pFrameDrawer,
+                                 MapDrawer *pMapDrawer, Map *pMap,
+                                 KeyFrameDatabase *pKFDB,
+                                 const string &strSettingPath,
+                                 const int sensor, bool viewerOn)
       : Tracking(pSys, pVoc, pFrameDrawer, pMapDrawer, pMap, pKFDB,
                  strSettingPath, sensor, viewerOn)
   {
@@ -34,7 +34,8 @@ namespace defSLAM
     RegInex = fSettings["Regularizer.Inextensibility"];
     RegTemp = fSettings["Regularizer.temporal"];
     double a = fSettings["Regularizer.LocalZone"];
-
+    double SaveResults = fSettings["Viewer.SaveResults"];
+    saveResults = bool(uint(SaveResults));
     cout << endl
          << "Defomation tracking Parameters: " << endl;
     cout << "- Reg. Inextensibility: " << RegInex << endl;
@@ -45,6 +46,27 @@ namespace defSLAM
     LocalZone = uint(a);
 
     ReliabilityThreshold = fSettings["Regularizer.Reliability"];
+
+    ///-------------------------------
+    mKLTtracker = LucasKanadeTracker(cv::Size(11, 11), 4, 10, 0.01, 1e-4);
+    ///-------------------------------
+  }
+
+  DefKLTTracking::DefKLTTracking(System *pSys, ORBVocabulary *pVoc,
+                                 FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer,
+                                 Map *pMap, KeyFrameDatabase *pKFDB,
+                                 const SettingsLoader &settingLoader,
+                                 const int sensor,
+                                 bool viewerOn)
+      : Tracking(pSys, pVoc, pFrameDrawer, pMapDrawer, pMap, pKFDB,
+                 settingLoader, sensor, viewerOn)
+  {
+    RegLap = settingLoader.getregLap();
+    RegInex = settingLoader.getregStreching();
+    RegTemp = settingLoader.getregTemp();
+    LocalZone = settingLoader.getLocalZone();
+    ReliabilityThreshold = settingLoader.getreliabilityThreshold();
+    saveResults = settingLoader.getSaveResults();
 
     ///-------------------------------
     mKLTtracker = LucasKanadeTracker(cv::Size(11, 11), 4, 10, 0.01, 1e-4);
@@ -626,9 +648,9 @@ namespace defSLAM
   }
 
   cv::Mat DefKLTTracking::GrabImageMonocularGT(const cv::Mat &imRectLeft,
-                                                    const cv::Mat &imRectRight,
-                                                    const double &timestamp,
-                                                    cv::Mat _mask)
+                                               const cv::Mat &imRectRight,
+                                               const double &timestamp,
+                                               cv::Mat _mask)
   {
     mImGray = imRectLeft.clone();
     cv::Mat imGrayRight = imRectRight;
@@ -670,25 +692,24 @@ namespace defSLAM
       cv::cvtColor(imRectLeft, mImRGB, cv::COLOR_GRAY2RGB);
     }
     std::cout << mImGray.size() << std::endl;
-    
+
     int action = (mState == eTrackingState::NO_IMAGES_YET || mState == eTrackingState::NOT_INITIALIZED) ? 0 : 2;
-    
+
     cout << "STATUS: " << mState << endl;
 
     mCurrentFrame = new GroundTruthFrame(
         mImGray, timestamp, mpORBextractorLeft, mpORBVocabulary, mK, mDistCoef,
-        mbf, mThDepth, imRectLeft, imGrayRight, action,_mask);
+        mbf, mThDepth, imRectLeft, imGrayRight, action, _mask);
 
     this->Track();
 
-    if ((mState == eTrackingState::OK) && (true))
+    if ((mState == eTrackingState::OK) && (saveResults))
     {
       float scale =
           static_cast<GroundTruthFrame *>(mCurrentFrame)->Estimate3DScale(mpMap);
       scalefile << mCurrentFrame->mTimeStamp << " " << scale << std::endl;
       double error = static_cast<GroundTruthFrame *>(mCurrentFrame)
                          ->Estimate3DError(mpMap, scale);
-
 
       if (viewerOn)
       {
@@ -701,9 +722,9 @@ namespace defSLAM
   }
 
   cv::Mat DefKLTTracking::GrabImageMonocularCTGT(const cv::Mat &imRectLeft,
-                                                      const cv::Mat &imDepth,
-                                                      const double &timestamp,
-                                                      cv::Mat _mask)
+                                                 const cv::Mat &imDepth,
+                                                 const double &timestamp,
+                                                 cv::Mat _mask)
   {
     mImGray = imRectLeft.clone();
     imRectLeft.copyTo(mImRGB);
@@ -740,7 +761,7 @@ namespace defSLAM
 
     this->Track();
 
-    if ((mState == eTrackingState::OK) && (true))
+    if ((mState == eTrackingState::OK) && (saveResults))
     {
       float scale =
           static_cast<GroundTruthFrame *>(mCurrentFrame)->Estimate3DScale(mpMap);

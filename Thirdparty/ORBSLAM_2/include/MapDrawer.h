@@ -28,7 +28,7 @@
 #include "Map.h"
 #include "MapPoint.h"
 #include <pangolin/pangolin.h>
-
+#include "SettingsLoader.h"
 #include <mutex>
 
 namespace ORB_SLAM2
@@ -39,6 +39,8 @@ namespace ORB_SLAM2
   {
   public:
     MapDrawer(Map *pMap, const string &strSettingPath);
+
+    MapDrawer(Map *pMap, const defSLAM::SettingsLoader &settingLoader);
 
     Map *mpMap; // ptr to the map.
 

@@ -45,6 +45,16 @@ namespace defSLAM
     RegTemp = fSettings["Regularizer.temporal"];
   }
 
+  DefViewer::DefViewer(System *pSystem, FrameDrawer *pFrameDrawer,
+                       MapDrawer *pMapDrawer, Tracking *pTracking,
+                       const SettingsLoader &settingLoader)
+      : ORB_SLAM2::Viewer(pSystem, pFrameDrawer, pMapDrawer, pTracking,
+                          settingLoader)
+  {
+    RegLap = settingLoader.getregLap();
+    RegInex = settingLoader.getregStreching();
+    RegTemp = settingLoader.getregTemp();
+  }
   // Main thread function. Draw points, keyframes, the current camera pose and the last processed
   // frame. Drawing is refreshed according to the camera fps. We use Pangolin.
   void DefViewer::Run()

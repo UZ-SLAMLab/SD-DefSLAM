@@ -143,8 +143,7 @@ namespace ORB_SLAM2
     cout << "- Scale Factor: " << fScaleFactor << endl;
     cout << "- Initial Fast Threshold: " << fIniThFAST << endl;
     cout << "- Minimum Fast Threshold: " << fMinThFAST << endl;
-    matches.open("Matches.txt");
-    scalefile.open("ScaleVariation.txt");
+
     if (sensor == System::STEREO || sensor == System::RGBD)
     {
       mThDepth = mbf * (float)fSettings["ThDepth"] / fx;
@@ -160,9 +159,40 @@ namespace ORB_SLAM2
       else
         mDepthMapFactor = 1.0f / mDepthMapFactor;
     }
-    MapPointFile.open("MapPointUsage.txt");
   }
 
+  Tracking::Tracking(System *pSys, ORBVocabulary *pVoc, FrameDrawer *pFrameDrawer,
+                     MapDrawer *pMapDrawer, Map *pMap, KeyFrameDatabase *pKFDB,
+                     const defSLAM::SettingsLoader &settingLoader, const int sensor,
+                     bool viewerOn)
+      : mState(NO_IMAGES_YET), mSensor(sensor), mbOnlyTracking(false),
+        mbVO(false), mpLoopClosing(NULL), mpORBVocabulary(pVoc), mpKeyFrameDB(pKFDB),
+        mpInitializer(static_cast<Initializer *>(NULL)), mpSystem(pSys),
+        mpViewer(NULL), mpFrameDrawer(pFrameDrawer), mpMapDrawer(pMapDrawer),
+        mpMap(pMap), mnLastRelocFrameId(0),
+        viewerOn(viewerOn)
+  {
+    settingLoader.getK().copyTo(mK);
+    settingLoader.getdistCoef().copyTo(mDistCoef);
+    mbRGB = settingLoader.getRGB();
+    int nFeatures = settingLoader.getnFeatures();
+    float fScaleFactor = settingLoader.getfScaleFactor();
+    int nLevels = settingLoader.getnLevels();
+    int fIniThFAST = settingLoader.getfIniThFAST();
+    int fMinThFAST = settingLoader.getfMinThFAST();
+    saveResults = settingLoader.getSaveResults();
+    mbf = settingLoader.getbf();
+    mpORBextractorLeft = new ORBextractor(nFeatures, fScaleFactor, nLevels,
+                                          fIniThFAST, fMinThFAST);
+
+    // if(sensor==System::STEREO)
+    mpORBextractorRight = new ORBextractor(nFeatures, fScaleFactor, nLevels,
+                                           fIniThFAST, fMinThFAST);
+
+    if (sensor == System::MONOCULAR)
+      mpIniORBextractor = new ORBextractor(2 * nFeatures, fScaleFactor, nLevels,
+                                           fIniThFAST, fMinThFAST);
+  }
   void Tracking::SetLocalMapper(LocalMapping *pLocalMapper)
   {
     mpLocalMapper = pLocalMapper;
@@ -614,7 +644,6 @@ namespace ORB_SLAM2
             mCurrentFrame->mvpMapPoints[i] = static_cast<MapPoint *>(NULL);
           }
         }
-        //    MapPointFile << std::endl;
       }
 
       // Reset if the camera get lost soon after initialization

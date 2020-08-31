@@ -26,7 +26,7 @@
 // Constructor from pcl to estimate the normals. It directly estimate the normals.
 // The radious search the neighbours in the point cloud to estimate the normals.
 // Points introduced as [X0,Y0,Z0,X1,Y1,Z1,...,Xi,Yi,Zi] in the same vector
-PCLNormalEstimator::PCLNormalEstimator(std::vector<float> &Points, double radious)
+PCLNormalEstimator::PCLNormalEstimator(std::vector<float> &Points, double radius)
 {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::PointCloud<pcl::Normal>::Ptr cloud_normals(new pcl::PointCloud<pcl::Normal>);
@@ -41,7 +41,7 @@ PCLNormalEstimator::PCLNormalEstimator(std::vector<float> &Points, double radiou
 
     pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
     ne.setSearchMethod(tree);
-    ne.setRadiusSearch(radious);
+    ne.setRadiusSearch(radius);
     ne.setViewPoint(0, 0, 0);
 
     ne.compute(*cloud_normals);
