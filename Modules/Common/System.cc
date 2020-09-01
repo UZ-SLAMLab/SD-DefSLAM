@@ -88,7 +88,7 @@ namespace defSLAM
     }
 
 #ifdef CNN
-    this->mCnn.loadModel(fsSettings["Cnn.model"]);
+    cnn_.loadModel(fsSettings["Cnn.model"]);
 #endif
 
     // Load ORB Vocabulary
@@ -431,9 +431,9 @@ namespace defSLAM
            << endl;
       exit(-1);
     }
-    std::cout << "hi" << endl;
+
 #ifdef CNN
-    cv::Mat Mask = this->mCnn.forward(im);
+    cv::Mat Mask = cnn_.forward(im);
 #else
     cv::Mat Mask;
     if (_mask.empty())
