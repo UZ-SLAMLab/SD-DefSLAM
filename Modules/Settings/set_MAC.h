@@ -24,4 +24,7 @@
 //Uncomment to run ORBSLAM adaptation. TODO: Do it from Cmake
 //#define ORBSLAM
 
+//Uncomment to use a neural network for tool segmentation
+#define CNN
+
 #define USE_KLT

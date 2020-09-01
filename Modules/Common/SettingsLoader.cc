@@ -142,6 +142,8 @@ namespace defSLAM
         pointSize_ = fSettings["Viewer.PointSize"];
         cameraSize_ = fSettings["Viewer.CameraSize"];
         cameraLineWidth_ = fSettings["Viewer.CameraLineWidth"];
+
+        cnnModelPath_ = fSettings["Cnn.model"].string();
     }
 
     int SettingsLoader::getFPS() const
@@ -295,6 +297,9 @@ namespace defSLAM
     float SettingsLoader::getT() const
     {
         return T_;
+    }
+    std::string SettingsLoader::getCnnPath() const {
+        return cnnModelPath_;
     }
     void SettingsLoader::setSaveResults(const bool save)
     {

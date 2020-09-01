@@ -12,7 +12,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall  -O3 -march=native -fopenmp -Wno-d
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++14" COMPILER_SUPPORTS_CXX14)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
- 
+
 if(COMPILER_SUPPORTS_CXX14)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
    add_definitions(-DCOMPILEDWITHC14)
@@ -20,50 +20,58 @@ if(COMPILER_SUPPORTS_CXX14)
 elseif(COMPILER_SUPPORTS_CXX0X)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
    add_definitions(-DCOMPILEDWITHC0X)
-   message(STATUS "Using flag -std=c++0x.") 
-else() 
+   message(STATUS "Using flag -std=c++0x.")
+else()
    message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++14 support. Please use a different C++ compiler.")
-endif() 
- 
+endif()
+
+
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
- 
+
+set(CMAKE_PREFIX_PATH "/home/user/Downloads/pytorch/torch/share/cmake")
+find_package(Torch REQUIRED)
+
 find_package(OpenCV 4.0.0 REQUIRED)
 find_package(Pangolin REQUIRED)
 FIND_PACKAGE(Ceres REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 include_directories(
-${PROJECT_SOURCE_DIR}
-${PROJECT_SOURCE_DIR}/Thirdparty/ORBSLAM_2/include/
-${PROJECT_SOURCE_DIR}/Thirdparty/BBS
-${PROJECT_SOURCE_DIR}/Dataloaders
-${PROJECT_SOURCE_DIR}/Modules/Common
-${PROJECT_SOURCE_DIR}/Modules/GroundTruth
-${PROJECT_SOURCE_DIR}/Modules/Mapping
-${PROJECT_SOURCE_DIR}/Modules/Matching
-${PROJECT_SOURCE_DIR}/Modules/Settings
-${PROJECT_SOURCE_DIR}/Modules/Template
-${PROJECT_SOURCE_DIR}/Modules/Tracking
-${PROJECT_SOURCE_DIR}/Modules/Viewer
-${EIGEN3_INCLUDE_DIR}
-${Pangolin_INCLUDE_DIRS}
-${CERES_INCLUDE_DIRS}
+        ${PROJECT_SOURCE_DIR}
+        /home/user/Downloads/pytorch/torch/include/torch/csrc/api/include
+        /home/user/Downloads/pytorch/torch/include
+        ${PROJECT_SOURCE_DIR}/Thirdparty/ORBSLAM_2/include/
+        ${PROJECT_SOURCE_DIR}/Thirdparty/BBS
+        ${PROJECT_SOURCE_DIR}/Dataloaders
+        ${PROJECT_SOURCE_DIR}/Modules/Common
+        ${PROJECT_SOURCE_DIR}/Modules/GroundTruth
+        ${PROJECT_SOURCE_DIR}/Modules/Mapping
+        ${PROJECT_SOURCE_DIR}/Modules/Matching
+        ${PROJECT_SOURCE_DIR}/Modules/Segmentation
+        ${PROJECT_SOURCE_DIR}/Modules/Settings
+        ${PROJECT_SOURCE_DIR}/Modules/Template
+        ${PROJECT_SOURCE_DIR}/Modules/Tracking
+        ${PROJECT_SOURCE_DIR}/Modules/Viewer
+        ${EIGEN3_INCLUDE_DIR}
+        ${Pangolin_INCLUDE_DIRS}
+        ${CERES_INCLUDE_DIRS}
 )
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
 FILE(GLOB SRC_DEFSLAM_FILES
-     "Modules/Common/*.cc"
-     "Modules/GroundTruth/*.cc"
-     "Modules/Mapping/*.cc"
-     "Modules/Matching/*.cc"
-     "Modules/Template/*.cc"
-     "Modules/Tracking/*.cc"
-     "Modules/Viewer/*.cc")
+        "Modules/Common/*.cc"
+        "Modules/GroundTruth/*.cc"
+        "Modules/Mapping/*.cc"
+        "Modules/Matching/*.cc"
+        "Modules/Segmentation/*.cc"
+        "Modules/Template/*.cc"
+        "Modules/Tracking/*.cc"
+        "Modules/Viewer/*.cc")
 
 add_library(${PROJECT_NAME} SHARED
-${SRC_DEFSLAM_FILES}
-)
+        ${SRC_DEFSLAM_FILES}
+        )
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Thirdparty/g2o)
@@ -73,24 +81,25 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/Modules/ToolsPCL)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Dataloaders)
 
 target_link_libraries(${PROJECT_NAME}
-${OpenCV_LIBS}
-${EIGEN3_LIBS} 
-${Pangolin_LIBRARIES}
-${CERES_LIBRARIES}
-DBoW2
-g2o
-BBS
-ORBSLAM
-ToolsPCL
-)
- 
+        ${OpenCV_LIBS}
+        ${EIGEN3_LIBS}
+        ${Pangolin_LIBRARIES}
+        ${CERES_LIBRARIES}
+        DBoW2
+        g2o
+        BBS
+        ORBSLAM
+        ToolsPCL
+        ${TORCH_LIBRARIES}
+        )
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Apps)
 
 ## Just receive image from a camera or a video and process them.
-add_executable(DefSLAM Apps/simple_camera.cc) 
+add_executable(DefSLAM Apps/simple_camera.cc)
 target_link_libraries(DefSLAM ${PROJECT_NAME})
 
-add_executable(DefSLAMGTCT Apps/simple_CT.cc) 
+add_executable(DefSLAMGTCT Apps/simple_CT.cc)
 target_link_libraries(DefSLAMGTCT ${PROJECT_NAME})
 
 add_executable(DefSLAMGT Apps/stereo_groundtruth.cc)

@@ -87,6 +87,10 @@ namespace defSLAM
       exit(-1);
     }
 
+#ifdef CNN
+    this->mCnn.loadModel(fsSettings["Cnn.model"]);
+#endif
+
     // Load ORB Vocabulary
     cout << endl
          << "Loading ORB Vocabulary. This could take a while..." << endl;
@@ -427,6 +431,10 @@ namespace defSLAM
            << endl;
       exit(-1);
     }
+    std::cout << "hi" << endl;
+#ifdef CNN
+    cv::Mat Mask = this->mCnn.forward(im);
+#else
     cv::Mat Mask;
     if (_mask.empty())
     {
@@ -436,6 +444,8 @@ namespace defSLAM
     {
       Mask = _mask.clone();
     }
+#endif
+
     // Check mode change
     {
       unique_lock<mutex> lock(mMutexMode);
