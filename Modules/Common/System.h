@@ -210,7 +210,7 @@ namespace defSLAM
     std::mutex mMutexdata;
 
     //CNN segmentation
-    CnnSegmentation mCnn;
+    CnnSegmentation cnn_;
   };
 
 } // namespace defSLAM
