@@ -96,6 +96,11 @@ namespace ORB_SLAM2
     }
   }
 
+  void KeyFrame::AddToDB()
+  {
+      mpKeyFrameDB->add(this);
+  }
+
   void KeyFrame::SetPose(const cv::Mat &Tcw_)
   {
     unique_lock<mutex> lock(mMutexPose);

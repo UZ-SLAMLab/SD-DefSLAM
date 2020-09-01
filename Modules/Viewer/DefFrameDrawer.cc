@@ -183,7 +183,9 @@ namespace defSLAM
     pTracker->mImRGB.copyTo(mIm);
     auto points = mpMap->GetReferenceMapPoints();
     mvCurrentLocalMap.clear();
-    for (auto pMP : points)
+
+    cout << "DefFramer drawer begins" << endl;
+    /*for (auto pMP : points)
     {
       if (pMP)
       {
@@ -197,7 +199,7 @@ namespace defSLAM
             mvCurrentLocalMap.push_back(std::move(kp));
           }
       }
-    }
+    }*/
 
     mvCurrentKeys = pTracker->mCurrentFrame->mvKeys;
     this->mvCurrentKeysCorr = pTracker->mCurrentFrame->mvKeysUnCorr;
@@ -215,11 +217,33 @@ namespace defSLAM
     }
     else if (pTracker->mLastProcessedState == Tracking::OK)
     {
+      cout << "LAst state OK" << endl;
+
+      if (pTracker->mState == Tracking::OK)
+      {
+        for (auto pMP : points)
+        {
+          if (pMP)
+          {
+            if (pMP->isBad())
+              continue;
+            if (static_cast<DefMapPoint *>(pMP)->getFacet())
+              if (pTracker->mCurrentFrame->isInFrustum(pMP, 0.5))
+              {
+                cv::KeyPoint kp =
+                    pTracker->mCurrentFrame->ProjectPoints(pMP->GetWorldPos());
+                mvCurrentLocalMap.push_back(std::move(kp));
+              }
+          }
+        }
+      }
+
       for (int i = 0; i < N; i++)
       {
+        // Failure is here
         MapPoint *pMP = pTracker->mCurrentFrame->mvpMapPoints[i];
         if (pMP)
-        {
+        {                        
           if (!pTracker->mCurrentFrame->mvbOutlier[i])
           {
             if (static_cast<DefMapPoint *>(pMP)->getFacet())
