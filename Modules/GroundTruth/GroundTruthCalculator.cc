@@ -299,13 +299,18 @@ namespace defSLAM
       for (auto &kp : kp)
       {
         float libdisp = disparity.at<uchar>(kp.pt.x, kp.pt.y);
-        if (libdisp < 200)
+        if ((libdisp < 100) and (libdisp > 5))
         {
+          //std::cout << libdisp << std::endl;
           std::vector<float> ps;
           ps.reserve(3);
           ps.push_back(mbf / libdisp * (((float)kp.pt.x - cx) / fx));
           ps.push_back(mbf / libdisp * (((float)kp.pt.y - cy) / fy));
           ps.push_back(mbf / libdisp);
+          //std::cout << ps[0] << " " << ps[1] << " " << ps[2] << std::endl;
+          //std::cout << mbf << std::endl;
+          //std::cout << kp.pt.x << std::endl;
+
           xyz.push_back(std::move(ps));
         }
         else

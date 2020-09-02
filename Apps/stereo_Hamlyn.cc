@@ -93,9 +93,16 @@ int main(int argc, char **argv)
 
     cv::Mat grayLeft, grayRight;
 
-    grayLeft = stereoPair.first.clone();
-    grayRight = stereoPair.second.clone();
-
+    if (false)
+    {
+      grayLeft = stereoPair.first.clone();
+      grayRight = stereoPair.second.clone();
+    }
+    else
+    {
+      grayRight = stereoPair.first.clone();
+      grayLeft = stereoPair.second.clone();
+    }
     cv::Mat _mask(grayLeft.rows, grayLeft.cols, CV_8UC1, cv::Scalar(255));
     clock_t start = clock();
     SLAM.TrackMonocularGT(grayLeft, grayRight, i, _mask);
