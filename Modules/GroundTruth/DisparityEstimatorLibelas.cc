@@ -55,8 +55,8 @@ namespace stereodisparity
 
         for (int32_t i = 0; i < width * height; i++)
         {
-            D1->data[i] = D1_data[i];
-            D2->data[i] = D2_data[i];
+            D1->data[i] = uint8_t(D1_data[i]);
+            D2->data[i] = uint8_t(D2_data[i]);
         }
 
         cv::Mat img_color;
