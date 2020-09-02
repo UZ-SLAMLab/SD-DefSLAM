@@ -66,6 +66,7 @@ int main(int argc, char **argv)
     return 0;
   }
 
+  bool invert(false);
   std::cout << "Number of images: " << hamlynloader->size() << std::endl;
 
   defSLAM::SettingsLoader settingsLoader;
@@ -77,13 +78,7 @@ int main(int argc, char **argv)
   settingsLoader.setbf(bf);
   settingsLoader.setCameraWidth(widthAndHeight.first);
   settingsLoader.setCameraHeight(widthAndHeight.second);
-  std::cout << K << std::endl;
-
-  std::cout << settingsLoader.getK() << std::endl;
   settingsLoader.setK(K);
-
-  std::cout << settingsLoader.getdistCoef() << std::endl;
-  std::cout << settingsLoader.getbf() << std::endl;
 
   defSLAM::System SLAM(argv[1], settingsLoader, true);
 
@@ -93,7 +88,7 @@ int main(int argc, char **argv)
 
     cv::Mat grayLeft, grayRight;
 
-    if (false)
+    if (!invert)
     {
       grayLeft = stereoPair.first.clone();
       grayRight = stereoPair.second.clone();
