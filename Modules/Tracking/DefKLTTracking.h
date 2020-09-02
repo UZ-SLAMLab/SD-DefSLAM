@@ -66,7 +66,7 @@ namespace defSLAM
 
     // Rigid relocalization: retrieve pose with PnP and get template
     // from the keyframe used for relocalization
-    virtual bool Relocalization();
+    virtual bool relocalization();
 
     virtual cv::Mat GrabImageMonocularGT(const cv::Mat &im,
                                          const cv::Mat &imRight,

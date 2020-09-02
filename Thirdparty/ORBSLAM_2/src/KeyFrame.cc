@@ -96,7 +96,7 @@ namespace ORB_SLAM2
     }
   }
 
-  void KeyFrame::AddToDB()
+  void KeyFrame::addToDB()
   {
       mpKeyFrameDB->add(this);
   }

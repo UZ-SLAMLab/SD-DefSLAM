@@ -76,17 +76,8 @@ namespace defSLAM
       if (!mbOnlyTracking)
       {
 
-        // Force LOST state for relocalization
-        cout << "Frame number: " << mCurrentFrame->mnId << endl;
-        if (mCurrentFrame->mnId == 300)
-        {
-          mState = LOST;
-          cout << "State set to LOST: test relocalization" << endl;
-        }
-
         // If we have an initial estimation of the camera pose and matching. Track
         // the local map.
-        //if (bOK)
         if (mState == OK)
         {
           mKLTtracker.AddFromKeyFrame(mpLastKeyFrame, mvKLTKeys, mvKLTMPs);
@@ -130,7 +121,7 @@ namespace defSLAM
         {
           // We recover the pose with DBoW and PnP
           // Take the old template associated with pKFreloc to continue processing
-          bOK = Relocalization();
+          bOK = relocalization();
           if (!bOK)
             cout << "Relocalization failed." << endl;
         }
@@ -184,7 +175,7 @@ namespace defSLAM
 #ifdef PARALLEL
         if (Tracking::NeedNewKeyFrame())
         {
-          this->CreateNewKeyFrame();
+          this->KLT_CreateNewKeyFrame();
         }
 #else
         if ((mCurrentFrame->mnId % 10) < 1)
@@ -215,12 +206,8 @@ namespace defSLAM
         if (viewerOn)
         {
           mpFrameDrawer->Update(this);
-          
-          cout << "Frame Drawer updated." << endl;
-
           mpMapDrawer->UpdatePoints(mCurrentFrame);
         }
-        cout << "Drawers updated." << endl;
 
         if (mpMap->KeyFramesInMap() <=5)
         {
@@ -607,11 +594,11 @@ namespace defSLAM
   }
 
   // Relocate the camera and get old template if system is lost
-  bool DefKLTTracking::Relocalization()
+  bool DefKLTTracking::relocalization()
   {
     // Extract ORB for computing BoW (we just extract ORB in KFs)
     // Compute Bag of Words Vector
-    mCurrentFrame->ExtractORBToRelocate();
+    mCurrentFrame->extractORBToRelocate();
   
     cout << "Extracting BoW..." << endl;
     mCurrentFrame->ComputeBoW();
@@ -651,11 +638,10 @@ namespace defSLAM
     for (int i = 0; i < nKFs; i++)
     {
       KeyFrame *pKF = vpCandidateKFs[i];
-      if (pKF->isBad() || !(static_cast<DefKeyFrame *>(pKF)->templateAssigned()))
+      if (pKF->isBad())
       {
-        // Discard KFs with no template associated
         vbDiscarded[i] = true;
-        cout << "Discarded (no Template): " << pKF->mnId << endl;
+        cout << "Discarded (bad KF): " << pKF->mnId << endl;
       }
       else
       {
@@ -788,43 +774,6 @@ namespace defSLAM
               }
             }
           }
-          /*if (nGood < 50)
-          {
-            int nadditional = matcher2.SearchByProjection(
-                *mCurrentFrame, vpCandidateKFs[i], sFound, 10, 100);
-
-            if (nadditional + nGood >= 50)
-            {
-              cout << "More optimizations. " << endl;
-              nGood = ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
-              cout << "We found " << nGood << " inliers in the second optimization." << endl;
-
-              // If many inliers but still not enough, search by projection again
-              // in a narrower window
-              // the camera has been already optimized with many points
-              if (nGood > 30 && nGood < 50)
-              {
-                sFound.clear();
-                for (int ip = 0; ip < mCurrentFrame->N; ip++)
-                  if (mCurrentFrame->mvpMapPoints[ip])
-                    sFound.insert(mCurrentFrame->mvpMapPoints[ip]);
-                nadditional = matcher2.SearchByProjection(
-                    *mCurrentFrame, vpCandidateKFs[i], sFound, 3, 64);
-
-                cout << "We found " << nGood + nadditional << " inliers." << endl;
-                // Final optimization
-                if (nGood + nadditional >= 50)
-                {
-                  nGood = ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
-                  cout << "Final: " << nGood << endl;
-
-                  for (int io = 0; io < mCurrentFrame->N; io++)
-                    if (mCurrentFrame->mvbOutlier[io])
-                      mCurrentFrame->mvpMapPoints[io] = NULL;
-                }
-              }
-            }
-          }*/
 
           // If the pose is supported by enough inliers stop ransacs and continue
           if (nGood >= 10) //50

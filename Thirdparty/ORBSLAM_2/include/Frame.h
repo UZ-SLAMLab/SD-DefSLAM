@@ -229,7 +229,7 @@ namespace ORB_SLAM2
         void AppendTrackedPoints(std::vector<cv::KeyPoint> &vPoints, const std::vector<bool> &vGood,
                                  const vector<MapPoint *> &vpMapPoints);
 
-        void ExtractORBToRelocate();
+        void extractORBToRelocate();
     };
 
 } // namespace ORB_SLAM2

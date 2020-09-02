@@ -185,21 +185,6 @@ namespace defSLAM
     mvCurrentLocalMap.clear();
 
     cout << "DefFramer drawer begins" << endl;
-    /*for (auto pMP : points)
-    {
-      if (pMP)
-      {
-        if (pMP->isBad())
-          continue;
-        if (static_cast<DefMapPoint *>(pMP)->getFacet())
-          if (pTracker->mCurrentFrame->isInFrustum(pMP, 0.5))
-          {
-            cv::KeyPoint kp =
-                pTracker->mCurrentFrame->ProjectPoints(pMP->GetWorldPos());
-            mvCurrentLocalMap.push_back(std::move(kp));
-          }
-      }
-    }*/
 
     mvCurrentKeys = pTracker->mCurrentFrame->mvKeys;
     this->mvCurrentKeysCorr = pTracker->mCurrentFrame->mvKeysUnCorr;

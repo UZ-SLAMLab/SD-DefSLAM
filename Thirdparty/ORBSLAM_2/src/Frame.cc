@@ -1009,7 +1009,7 @@ namespace ORB_SLAM2
     AssignFeaturesToGrid();
   }
 
-  void Frame::ExtractORBToRelocate()
+  void Frame::extractORBToRelocate()
   {
     ExtractORB(0, ImGray);
 
