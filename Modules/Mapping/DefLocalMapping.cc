@@ -125,7 +125,7 @@ namespace defSLAM
       this->NRSfM();
 
       // Add keyframe to DB (relocalization purpose)
-      mpCurrentKeyFrame->AddToDB();
+      mpCurrentKeyFrame->addToDB();
 
       mbAbortBA = false;
     }
