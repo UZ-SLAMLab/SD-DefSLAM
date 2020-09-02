@@ -36,6 +36,9 @@
 #include "Tracking.h"
 #include "Viewer.h"
 #include "SettingsLoader.h"
+
+#include "CnnSegmentation.h"
+
 namespace ORB_SLAM2
 {
   class FrameDrawer;
@@ -58,6 +61,8 @@ namespace defSLAM
   using ORB_SLAM2::ORBVocabulary;
   using ORB_SLAM2::Tracking;
   using ORB_SLAM2::Viewer;
+
+  class CnnSegmentation;
 
   class System
   {
@@ -203,6 +208,9 @@ namespace defSLAM
 
     std::mutex mMutexState;
     std::mutex mMutexdata;
+
+    //CNN segmentation
+    CnnSegmentation cnn_;
   };
 
 } // namespace defSLAM
