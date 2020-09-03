@@ -141,6 +141,10 @@ namespace defSLAM
       // Use NRSfM to create or refine surfaces.
       this->NRSfM();
 
+      // Add keyframe to DB only if it has a template (relocalization purpose)
+      if (static_cast<DefKeyFrame *>(mpCurrentKeyFrame)->templateAssigned())
+        mpCurrentKeyFrame->addToDB();
+
       mbAbortBA = false;
     }
   }

@@ -97,28 +97,30 @@ namespace defSLAM
       // tracking is lost)
       if (!mbOnlyTracking)
       {
-        mKLTtracker.AddFromKeyFrame(mpLastKeyFrame, mvKLTKeys, mvKLTMPs);
-        mvKLTStatus.resize(mvKLTKeys.size(), true);
 
-        std::set<MapPoint *> setklt;
-        vector<MapPoint *> vectorklt;
-        for (MapPoint *pMP : mvKLTMPs)
-        {
-          if (pMP)
-          {
-            setklt.insert(pMP);
-            vectorklt.push_back(pMP);
-          }
-        }
-
-        cout << "[LucasKanade-AddFromKeyFrame]: " << vectorklt.size() << " --- " << setklt.size() << endl;
-
-        bOK = this->LocalisationAndMapping();
-        mCurrentFrame->mpReferenceKF = mpReferenceKF;
         // If we have an initial estimation of the camera pose and matching. Track
         // the local map.
-        if (bOK)
+        if (mState == OK)
         {
+          mKLTtracker.AddFromKeyFrame(mpLastKeyFrame, mvKLTKeys, mvKLTMPs);
+          mvKLTStatus.resize(mvKLTKeys.size(), true);
+
+          std::set<MapPoint *> setklt;
+          vector<MapPoint *> vectorklt;
+          for (MapPoint *pMP : mvKLTMPs)
+          {
+            if (pMP)
+            {
+              setklt.insert(pMP);
+              vectorklt.push_back(pMP);
+            }
+          }
+
+          cout << "[LucasKanade-AddFromKeyFrame]: " << vectorklt.size() << " --- " << setklt.size() << endl;
+
+          bOK = this->LocalisationAndMapping();
+          mCurrentFrame->mpReferenceKF = mpReferenceKF;
+
           if ((static_cast<DefLocalMapping *>(mpLocalMapper)
                    ->updateTemplate()))
           {
@@ -134,7 +136,16 @@ namespace defSLAM
                   ->updateTemplateAtRest();
             }
           }
-          bOK = KLT_TrackLocalMap();
+          if (bOK)
+            bOK = KLT_TrackLocalMap();
+        }
+        else
+        {
+          // We recover the pose with DBoW and PnP
+          // Take the old template associated with pKFreloc to continue processing
+          bOK = relocalization();
+          if (!bOK)
+            cout << "Relocalization failed." << endl;
         }
       }
       else
@@ -186,7 +197,7 @@ namespace defSLAM
 #ifdef PARALLEL
         if (Tracking::NeedNewKeyFrame())
         {
-          this->CreateNewKeyFrame();
+          this->KLT_CreateNewKeyFrame();
         }
 #else
         if ((mCurrentFrame->mnId % 10) < 1)
@@ -212,6 +223,7 @@ namespace defSLAM
       else
       {
         mState = LOST;
+        cout << "State LOST." << endl;
         this->status << mCurrentFrame->mTimeStamp << " " << 1 << std::endl;
         if (viewerOn)
         {
@@ -219,13 +231,12 @@ namespace defSLAM
           mpMapDrawer->UpdatePoints(mCurrentFrame);
         }
 
-        // Reset if the camera gets lost soon after initialization
-        /*if((mpMap->KeyFramesInMap()<=3)||(!static_cast<DefMap*>(mpMap)->GetTemplate()))
-      {*/
-        cout << "Track lost soon after initialisation, reseting..." << endl;
-        mpSystem->Reset();
-        return;
-        // }
+        if (mpMap->KeyFramesInMap() <=5)
+        {
+            cout << "Track lost soon after initialisation, reseting..." << endl;
+            mpSystem->Reset();
+            return;
+        }
       }
 
       if (!mCurrentFrame->mpReferenceKF)
@@ -245,6 +256,8 @@ namespace defSLAM
     else
     {
       // This can happen if tracking is lost
+      cout << "Trcking LOST." << endl;
+
       mlRelativeFramePoses.push_back(mlRelativeFramePoses.back());
       mlpReferences.push_back(mlpReferences.back());
       mlFrameTimes.push_back(mlFrameTimes.back());
@@ -600,6 +613,257 @@ namespace defSLAM
     }
 
     return nmatchesMap >= 10;
+  }
+
+  // Relocate the camera and get old template if system is lost
+  bool DefKLTTracking::relocalization()
+  {
+    // Extract ORB for computing BoW (we just extract ORB in KFs)
+    // Compute Bag of Words Vector
+    mCurrentFrame->extractORBToRelocate();
+  
+    cout << "Extracting BoW..." << endl;
+    mCurrentFrame->ComputeBoW();
+
+    // Relocalization is performed when tracking is lost
+    // Track Lost: Query KeyFrame Database for keyframe candidates for
+    // relocalisation
+    vector<KeyFrame *> vpCandidateKFs =
+        mpKeyFrameDB->DetectRelocalizationCandidates(mCurrentFrame);
+
+    if (vpCandidateKFs.empty())
+      return false;
+    const int nKFs = vpCandidateKFs.size();
+
+    cout << "There are some candidates: ";
+    for (int i = 0; i < nKFs; i++ )
+    {
+      cout << vpCandidateKFs[i]->mnId << " ";
+    }
+    cout << endl;
+
+    // We perform first an ORB matching with each candidate
+    // If enough matches are found we setup a PnP solver
+    ORBmatcher matcher(0.75, true);
+
+    vector<ORB_SLAM2::PnPsolver *> vpPnPsolvers;
+    vpPnPsolvers.resize(nKFs);
+
+    vector<vector<MapPoint *>> vvpMapPointMatches;
+    vvpMapPointMatches.resize(nKFs);
+
+    vector<bool> vbDiscarded;
+    vbDiscarded.resize(nKFs);
+
+    int nCandidates = 0;
+
+    for (int i = 0; i < nKFs; i++)
+    {
+      KeyFrame *pKF = vpCandidateKFs[i];
+      if (pKF->isBad())
+      {
+        vbDiscarded[i] = true;
+        cout << "Discarded (bad KF): " << pKF->mnId << endl;
+      }
+      else
+      {
+        int nmatches =
+            matcher.SearchByBoW(pKF, *mCurrentFrame, vvpMapPointMatches[i]);
+        if (nmatches < 15)
+        {
+          vbDiscarded[i] = true;
+          cout << "Discarded (bad BoW matching): " << pKF->mnId << endl;
+          continue;
+        }
+        else
+        {
+          ORB_SLAM2::PnPsolver *pSolver =
+              new ORB_SLAM2::PnPsolver(*mCurrentFrame, vvpMapPointMatches[i]);
+          // Increase threshold to allow points with deformation
+          pSolver->SetRansacParameters(0.99, 10, 300, 4, 0.5, 20); //5.991 last position
+          vpPnPsolvers[i] = pSolver;
+          cout << "Accepted: " << pKF->mnId << endl;
+          nCandidates++;
+        }
+      }
+    }
+
+    // Alternatively perform some iterations of P4P RANSAC
+    // Until we found a camera pose supported by enough inliers
+    bool bMatch = false;
+    ORBmatcher matcher2(0.9, true);
+
+    KeyFrame *pKFreloc;
+
+    while (nCandidates > 0 && !bMatch)
+    {
+      for (int i = 0; i < nKFs; i++)
+      {
+        if (vbDiscarded[i])
+          continue;
+
+        // Perform 5 Ransac Iterations
+        vector<bool> vbInliers;
+        int nInliers;
+        bool bNoMore;
+
+        ORB_SLAM2::PnPsolver *pSolver = vpPnPsolvers[i];
+        cv::Mat Tcw = pSolver->iterate(5, bNoMore, vbInliers, nInliers);
+
+        // If Ransac reachs max. iterations discard keyframe
+        if (bNoMore)
+        {
+          vbDiscarded[i] = true;
+          nCandidates--;
+        }
+
+        // If a Camera Pose is computed, optimize
+        if (!Tcw.empty())
+        {
+          Tcw.copyTo(mCurrentFrame->mTcw);
+
+          set<MapPoint *> sFound;
+
+          const int np = vbInliers.size();
+
+          for (int j = 0; j < np; j++)
+          {
+            if (vbInliers[j])
+            {
+              mCurrentFrame->mvpMapPoints[j] = vvpMapPointMatches[i][j];
+              sFound.insert(vvpMapPointMatches[i][j]);
+            }
+            else
+              mCurrentFrame->mvpMapPoints[j] = NULL;
+          }
+
+          cout << "Optimizing pose..." << endl;
+          int nGood = ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
+          cout << "Pose optimized with " << nGood << " inliers." << endl;
+
+          if (nGood < 10)
+            continue;
+
+          for (int io = 0; io < mCurrentFrame->N; io++)
+            if (mCurrentFrame->mvbOutlier[io])
+              mCurrentFrame->mvpMapPoints[io] = static_cast<MapPoint *>(nullptr);
+
+          // If few inliers, search by projection in a coarse window and optimize again
+          if (nGood < 20)
+          {
+            int nadditional = matcher2.SearchByProjection(
+                *mCurrentFrame, vpCandidateKFs[i], sFound, 10, 100);
+
+            if (nadditional + nGood >= 40)
+            {
+              if (static_cast<DefMap *>(mpMap)->GetTemplate())
+              {
+                Optimizer::DefPoseOptimization(
+                    mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
+                    LocalZone);
+              }
+              else
+                nGood = ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
+
+              // If many inliers but still not enough, search by projection again in a narrower window
+              // the camera has been already optimized with many points
+              if (nGood > 40 && nGood < 50)
+              {
+                sFound.clear();
+                for (int ip = 0; ip < mCurrentFrame->N; ip++)
+                  if (mCurrentFrame->mvpMapPoints[ip])
+                    sFound.insert(mCurrentFrame->mvpMapPoints[ip]);
+                nadditional = matcher2.SearchByProjection(
+                    *mCurrentFrame, vpCandidateKFs[i], sFound, 5, 64);
+                //std::cout << nadditional << std::endl;
+
+                // Final optimization
+                if (nGood + nadditional >= 50)
+                {
+                  if (static_cast<DefMap *>(mpMap)->GetTemplate())
+                  {
+                    Optimizer::DefPoseOptimization(
+                        mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
+                        LocalZone);
+                  }
+                  else
+                    ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
+
+                  for (int io = 0; io < mCurrentFrame->N; io++)
+                    if (mCurrentFrame->mvbOutlier[io])
+                      mCurrentFrame->mvpMapPoints[io] = NULL;
+                }
+              }
+            }
+          }
+
+          // If the pose is supported by enough inliers stop ransacs and continue
+          if (nGood >= 10) //50
+          {
+            bMatch = true;
+            cout << "Relocalization succeded." << endl;
+            pKFreloc = vpCandidateKFs[i];
+            break;
+          }
+        }
+      }
+    }
+
+    if (!bMatch)
+    {
+      return false;
+    }
+    else
+    {
+      mnLastRelocFrameId = mCurrentFrame->mnId;
+
+      // We need to retrieve old template from the accepted KF
+      // CHECK update template method
+      mpReferenceKF = pKFreloc;
+      mCurrentFrame->mpReferenceKF = mpReferenceKF;
+
+      cout << "Assigning new template from KeyFrame " << pKFreloc->mnId << endl;
+
+      cv::Mat imreloc = pKFreloc->imGray.clone();
+      cv::imshow("Reloc Keyframe", imreloc);
+
+      cout << "Frame lost: " << mCurrentFrame->mnId << endl;
+      cout << "Frame reloc: " << pKFreloc->mnId << endl;
+      //cv::waitKey(0);
+
+      std::unique_lock<std::mutex> M(static_cast<DefMap *>(mpMap)->MutexUpdating);
+      static_cast<DefMap *>(mpMap)->clearTemplate();
+
+      //static_cast<DefKeyFrame *>(pKFreloc)->assignTemplate();
+      static_cast<DefMap *>(mpMap)->createTemplate(pKFreloc);
+
+      // Update KLT stuff
+      mpLastKeyFrame = pKFreloc;
+      mvKLTKeys = pKFreloc->mvKeys;
+      mvKLTMPs = pKFreloc->GetMapPointMatches();
+      mvKLTStatus.resize(mvKLTKeys.size(), true);
+      
+      mKLTtracker.SetReferenceImage(pKFreloc->imGray, mvKLTKeys);
+      
+      int nmatches = mKLTtracker.PRE_Track(pKFreloc->imGray, mvKLTKeys, mvKLTStatus, true, 0.85);
+      
+      for (size_t i = 0; i < mvKLTMPs.size(); i++)
+      {
+        if (!mvKLTStatus[i])
+          continue;
+        if (mvKLTKeys[i].pt.x < 20 || mvKLTKeys[i].pt.x > mCurrentFrame->ImGray.cols - 20 ||
+            mvKLTKeys[i].pt.y < 20 || mvKLTKeys[i].pt.y > mCurrentFrame->ImGray.rows - 20)
+        {
+          mvKLTStatus[i] = false;
+        }
+        if (mCurrentFrame->_mask.at<uchar>(mvKLTKeys[i].pt.y, mvKLTKeys[i].pt.x) < 125)
+          mvKLTStatus[i] = false;
+      }
+
+      mCurrentFrame->SetTrackedPoints(mvKLTKeys, mvKLTStatus, mvKLTMPs);
+
+      return true;
+    }
   }
 
   void DefKLTTracking::UpdateLastFrame()

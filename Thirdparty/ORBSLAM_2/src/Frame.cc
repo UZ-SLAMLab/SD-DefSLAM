@@ -362,6 +362,7 @@ namespace ORB_SLAM2
     if (flag == 0)
     {
       (*mpORBextractorLeft)(im.clone(), _mask, mvKeys, mDescriptors);
+      cout << "Descriptor size: " <<mDescriptors.size() << endl;
     }
     else
     {
@@ -568,6 +569,7 @@ namespace ORB_SLAM2
     {
       vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptors);
       mpORBvocabulary->transform(vCurrentDesc, mBowVec, mFeatVec, 4);
+      cout << "Descriptor BoW size: " << vCurrentDesc.size() << endl;
     }
   }
 
@@ -1001,6 +1003,26 @@ namespace ORB_SLAM2
     N = mvKeys.size();
 
     UndistortKeyPoints();
+
+    mb = mbf / fx;
+
+    AssignFeaturesToGrid();
+  }
+
+  void Frame::extractORBToRelocate()
+  {
+    ExtractORB(0, ImGray);
+
+    N = mvKeys.size();
+
+    mvpMapPoints = vector<MapPoint *>(N, static_cast<MapPoint *>(nullptr));
+    mvbOutlier = vector<bool>(N, false);
+
+    UndistortKeyPoints();
+
+    // Set no stereo information
+    mvuRight.resize(N, -1); // = vector<float>(N,-1);
+    mvDepth.resize(N, -1);  // = vector<float>(N,-1);
 
     mb = mbf / fx;
 
