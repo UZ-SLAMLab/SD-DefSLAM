@@ -92,3 +92,5 @@ LocalMapping.pointsToTemplate: 180
 LocalMapping.chiLimit: 0.2
 LocalMapping.Bending: 0.7
 LocalMapping.Schwarp.Regularizer: 0.005
+
+Cnn.model: "/media/jose/NuevoVol/models/unet16_binary_20_0.pt"

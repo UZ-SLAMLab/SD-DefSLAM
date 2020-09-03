@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(DeformableSLAM)
 
 SET(CMAKE_BUILD_TYPE RELEASE)
@@ -28,18 +28,18 @@ endif()
 
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
-set(CMAKE_PREFIX_PATH "/home/user/Downloads/pytorch/torch/share/cmake")
-find_package(Torch REQUIRED)
+set(CMAKE_PREFIX_PATH "/home/jose/pytorch/torch/share/cmake")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
+find_package(Torch REQUIRED)
 find_package(OpenCV 4.0.0 REQUIRED)
 find_package(Pangolin REQUIRED)
 FIND_PACKAGE(Ceres REQUIRED)
 find_package(Eigen3 REQUIRED)
 
+message("${TORCH_INCLUDE_DIRS}")
 include_directories(
         ${PROJECT_SOURCE_DIR}
-        /home/user/Downloads/pytorch/torch/include/torch/csrc/api/include
-        /home/user/Downloads/pytorch/torch/include
         ${PROJECT_SOURCE_DIR}/Thirdparty/ORBSLAM_2/include/
         ${PROJECT_SOURCE_DIR}/Thirdparty/BBS
         ${PROJECT_SOURCE_DIR}/Dataloaders
@@ -53,8 +53,9 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/Modules/Tracking
         ${PROJECT_SOURCE_DIR}/Modules/Viewer
         ${EIGEN3_INCLUDE_DIR}
-        ${Pangolin_INCLUDE_DIRS}
+        ${Pangolin_INCLUDE_DIRS} 
         ${CERES_INCLUDE_DIRS}
+        ${TORCH_INCLUDE_DIRS}
 )
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
@@ -90,20 +91,23 @@ target_link_libraries(${PROJECT_NAME}
         BBS
         ORBSLAM
         ToolsPCL
-        ${TORCH_LIBRARIES}
         )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Apps)
 
 ## Just receive image from a camera or a video and process them.
 add_executable(DefSLAM Apps/simple_camera.cc)
-target_link_libraries(DefSLAM ${PROJECT_NAME})
+target_link_libraries(DefSLAM ${PROJECT_NAME} ${TORCH_LIBRARIES})
+set_property(TARGET DefSLAM PROPERTY CXX_STANDARD 14)
 
 add_executable(DefSLAMGTCT Apps/simple_CT.cc)
-target_link_libraries(DefSLAMGTCT ${PROJECT_NAME})
+target_link_libraries(DefSLAMGTCT ${PROJECT_NAME} ${TORCH_LIBRARIES}) 
+set_property(TARGET DefSLAMGTCT PROPERTY CXX_STANDARD 14)
 
 add_executable(DefSLAMGT Apps/stereo_groundtruth.cc)
-target_link_libraries(DefSLAMGT ${PROJECT_NAME})
+target_link_libraries(DefSLAMGT ${PROJECT_NAME} ${TORCH_LIBRARIES})
+set_property(TARGET DefSLAMGT PROPERTY CXX_STANDARD 14)
 
 add_executable(DefSLAMHamyln Apps/stereo_Hamlyn.cc)
-target_link_libraries(DefSLAMHamyln ${PROJECT_NAME} Dataloader)
+target_link_libraries(DefSLAMHamyln ${PROJECT_NAME} Dataloader ${TORCH_LIBRARIES})
+set_property(TARGET DefSLAMHamyln PROPERTY CXX_STANDARD 14)
