@@ -55,13 +55,13 @@ Regularizer.Reliability: 0
 # ORB Parameters (keep always the same)
 #--------------------------------------------------------------------------------------------
 # ORB Extractor: Number of features per image
-ORBextractor.nFeatures: 1200
+ORBextractor.nFeatures: 600
 
 # ORB Extractor: Scale factor between levels in the scale pyramid 	
 ORBextractor.scaleFactor: 1.2
 
 # ORB Extractor: Number of levels in the scale pyramid	
-ORBextractor.nLevels: 8
+ORBextractor.nLevels: 1
 
 # ORB Extractor: Fast threshold
 # Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
@@ -88,9 +88,13 @@ Viewer.SaveResults: 0
 #--------------------------------------------------------------------------------------------
 # Local Mapping Parameters
 #--------------------------------------------------------------------------------------------
-LocalMapping.pointsToTemplate: 180
-LocalMapping.chiLimit: 0.2
+LocalMapping.pointsToTemplate: 100
+LocalMapping.chiLimit: 0.01
 LocalMapping.Bending: 0.7
+<<<<<<< HEAD
 LocalMapping.Schwarp.Regularizer: 0.005
 
 Cnn.model: "/media/jose/NuevoVol/models/unet16_binary_20_0.pt"
+=======
+LocalMapping.Schwarp.Regularizer: 0.05
+>>>>>>> cebc210467716a6ff28fd0f431b7a32d099886a9

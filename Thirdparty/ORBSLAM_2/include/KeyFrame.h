@@ -61,6 +61,7 @@ namespace ORB_SLAM2
 
     // Bag of Words Representation
     void ComputeBoW();
+    void addToDB();
 
     // Covisibility graph functions
     void AddConnection(KeyFrame *pKF, const int &weight);

@@ -71,6 +71,10 @@ namespace defSLAM
 
     virtual bool TrackWithMotionModel();
 
+    // Rigid relocalization: retrieve pose with PnP and get template
+    // from the keyframe used for relocalization
+    virtual bool relocalization();
+
     virtual cv::Mat GrabImageMonocularGT(const cv::Mat &im,
                                          const cv::Mat &imRight,
                                          const double &timestamp,

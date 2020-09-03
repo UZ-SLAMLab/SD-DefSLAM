@@ -18,7 +18,11 @@
 main() { (
     local local_dir=${1:-null}
 
+<<<<<<< HEAD
     local vocabulary_file="/home/jose/DefKLTSLAM/Vocabulary/ORBvoc.txt"
+=======
+    local calibration_file="/home/jose/DefKLTSLAM/Vocabulary/ORBvoc.txt"
+>>>>>>> cebc210467716a6ff28fd0f431b7a32d099886a9
     local video="$local_dir/stereo.avi"
     local leftCalibration="$local_dir/Left_Camera_Calibration_Intrinsic.txt"
     local rightCalibration="$local_dir/Right_Camera_Calibration_Intrinsic.txt"

@@ -43,6 +43,7 @@ void KeyFrameDatabase::add(KeyFrame *pKF)
 
     for(DBoW2::BowVector::const_iterator vit= pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit!=vend; vit++)
         mvInvertedFile[vit->first].push_back(pKF);
+
 }
 
 void KeyFrameDatabase::erase(KeyFrame* pKF)
@@ -211,6 +212,7 @@ vector<KeyFrame*> KeyFrameDatabase::DetectRelocalizationCandidates(Frame *F)
             for(list<KeyFrame*>::iterator lit=lKFs.begin(), lend= lKFs.end(); lit!=lend; lit++)
             {
                 KeyFrame* pKFi=*lit;
+
                 if(pKFi->mnRelocQuery!=F->mnId)
                 {
                     pKFi->mnRelocWords=0;
@@ -223,6 +225,19 @@ vector<KeyFrame*> KeyFrameDatabase::DetectRelocalizationCandidates(Frame *F)
     }
     if(lKFsSharingWords.empty())
         return vector<KeyFrame*>();
+
+    // DefSLAM relocalization: retrieve all candidates witohut filtering, then we will keep those KFs
+    // associated with a template
+    vector<KeyFrame*> allRelocCandidates;
+    cout << "Number of reloc words / id Keyframe: " << endl;
+    for(list<KeyFrame*>::iterator lit=lKFsSharingWords.begin(), lend= lKFsSharingWords.end(); lit!=lend; lit++)
+    {
+        KeyFrame* pKFi=*lit;
+        cout << pKFi->mnRelocWords << " / " << pKFi->mnId << endl;
+        allRelocCandidates.push_back(pKFi);
+    }
+
+    return allRelocCandidates;
 
     // Only compare against those keyframes that share enough words
     int maxCommonWords=0;

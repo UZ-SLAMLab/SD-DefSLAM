@@ -66,10 +66,11 @@ int main(int argc, char **argv)
     return 0;
   }
 
+  bool invert(false);
   std::cout << "Number of images: " << hamlynloader->size() << std::endl;
 
   defSLAM::SettingsLoader settingsLoader;
-  settingsLoader.setSaveResults(false);
+  settingsLoader.setSaveResults(true);
   cv::Mat distcoeff = settingsLoader.getdistCoef();
   cv::Mat K = hamlynloader->obtainNewCalibrationValues();
   float bf = hamlynloader->obtainBaselineF();
@@ -77,13 +78,7 @@ int main(int argc, char **argv)
   settingsLoader.setbf(bf);
   settingsLoader.setCameraWidth(widthAndHeight.first);
   settingsLoader.setCameraHeight(widthAndHeight.second);
-  std::cout << K << std::endl;
-
-  std::cout << settingsLoader.getK() << std::endl;
   settingsLoader.setK(K);
-
-  std::cout << settingsLoader.getdistCoef() << std::endl;
-  std::cout << settingsLoader.getbf() << std::endl;
 
   defSLAM::System SLAM(argv[1], settingsLoader, true);
 
@@ -93,9 +88,16 @@ int main(int argc, char **argv)
 
     cv::Mat grayLeft, grayRight;
 
-    grayLeft = stereoPair.first.clone();
-    grayRight = stereoPair.second.clone();
-
+    if (!invert)
+    {
+      grayLeft = stereoPair.first.clone();
+      grayRight = stereoPair.second.clone();
+    }
+    else
+    {
+      grayRight = stereoPair.first.clone();
+      grayLeft = stereoPair.second.clone();
+    }
     cv::Mat _mask(grayLeft.rows, grayLeft.cols, CV_8UC1, cv::Scalar(255));
     clock_t start = clock();
     SLAM.TrackMonocularGT(grayLeft, grayRight, i, _mask);

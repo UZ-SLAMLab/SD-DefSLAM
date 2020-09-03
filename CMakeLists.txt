@@ -56,10 +56,11 @@ include_directories(
         ${Pangolin_INCLUDE_DIRS} 
         ${CERES_INCLUDE_DIRS}
         ${TORCH_INCLUDE_DIRS}
+        ${OpenCV_INCLUDE_DIRS}
 )
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
-
+ 
 FILE(GLOB SRC_DEFSLAM_FILES
         "Modules/Common/*.cc"
         "Modules/GroundTruth/*.cc"
@@ -80,19 +81,22 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/Thirdparty/BBS)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Thirdparty/ORBSLAM_2)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Modules/ToolsPCL)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Dataloaders)
+add_subdirectory(${PROJECT_SOURCE_DIR}/Thirdparty/libelas-for-hamlyn)
 
 target_link_libraries(${PROJECT_NAME}
-        ${OpenCV_LIBS}
-        ${EIGEN3_LIBS}
-        ${Pangolin_LIBRARIES}
-        ${CERES_LIBRARIES}
-        DBoW2
-        g2o
-        BBS
-        ORBSLAM
-        ToolsPCL
-        )
-
+${OpenCV_LIBS}
+${EIGEN3_LIBS} 
+${Pangolin_LIBRARIES}
+${CERES_LIBRARIES}
+${TORCH_LIBRARIES}
+DBoW2
+g2o
+BBS
+ORBSLAM
+ToolsPCL
+libelas
+)
+ 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Apps)
 
 ## Just receive image from a camera or a video and process them.
