@@ -59,6 +59,8 @@ namespace defSLAM
     posMono_.clear();
     posStereo_.clear();
     std::vector<int> ptreal;
+    std::vector<int> idx2real;
+
     std::vector<float> points_est;
     std::vector<float> points_gt;
     std::vector<float> normals_est;
@@ -67,7 +69,10 @@ namespace defSLAM
     std::vector<double *> covariances;
     std::vector<float> zs;
     std::vector<float> zs_est;
-
+    std::vector<cv::KeyPoint> kps;
+    std::vector<std::vector<float>> posMonoInit;
+    std::vector<std::vector<float>> posStereoInit;
+    bool libelas(true);
     for (uint i = 0; i < nval; i++)
     {
       MapPoint *pMP = this->GetMapPoint(i);
@@ -85,15 +90,27 @@ namespace defSLAM
       pos(3) = 1;
 
       cv::KeyPoint kp = this->mvKeysUn[i];
-
-      std::vector<float> ps = GroundTruthTools::estimateGT(kp, iLeft, imRight, mbf, cx, cy, fx, fy);
-
-      if (ps[2] < 0)
-        continue;
-
-      zs.push_back(ps[2]);
-      zs_est.push_back(PosMat.at<float>(2));
+      if (libelas)
       {
+        kps.push_back(kp);
+        std::vector<float> pm;
+        pm.push_back(PosMat.at<float>(0));
+        pm.push_back(PosMat.at<float>(1));
+        pm.push_back(PosMat.at<float>(2));
+        posMonoInit.push_back(pm);
+        covariances.push_back(pMP->covNorm);
+        idx2real.push_back(i);
+      }
+      else
+      {
+        std::vector<float> ps = GroundTruthTools::estimateGT(kp, iLeft, imRight, mbf, cx, cy, fx, fy);
+
+        if (ps[2] < 0)
+          continue;
+
+        zs.push_back(ps[2]);
+        zs_est.push_back(PosMat.at<float>(2));
+
         cv::Vec3f normal;
         // For normal estimation
         if (this->surface->getNormalSurfacePoint(i, normal))
@@ -117,9 +134,41 @@ namespace defSLAM
         }
       }
     }
+    if (libelas)
+    {
+      posStereoInit = GroundTruthTools::estimateGTlibelas(kps, iLeft, imRight, mbf, cx, cy, fx, fy);
+      for (uint i(0); i < posStereoInit.size(); i++)
+      {
+        if (posStereoInit[i][2] > 0)
+        {
+          posMono_.push_back(posMonoInit[i]);
+          posStereo_.push_back(posStereoInit[i]);
+        }
+      }
+      for (uint i(0); i < posStereo_.size(); i++)
+      {
+        auto idx = idx2real[i];
+        cv::Vec3f normal;
+        if (this->surface->getNormalSurfacePoint(idx, normal))
+        {
+          for (uint j(0); j < 3; j++)
+            normals_est.push_back(normal(j));
+          for (uint j(0); j < 3; j++)
+          {
+            points_est.push_back(posMono_[i][j]);
+            points_gt.push_back(posStereo_[i][j]);
+          }
+
+          zs.push_back(posStereo_[i][2]);
+          zs_est.push_back(posMono_[i][2]);
+
+          ptreal.push_back(idx);
+        }
+      }
+    }
     if (points_gt.size() / 3 < 20)
     {
-      std::cout << "Points" << std::endl;
+      std::cout << "No gt Points" << std::endl;
       return 1;
     }
     std::sort(zs.begin(), zs.end());
@@ -127,6 +176,7 @@ namespace defSLAM
 
     PCLNormalEstimator pne(points_gt, zs[zs.size() / 2] / 7);
     std::vector<float> normals_gt = pne.getNormals();
+
     PCLNormalEstimator pne2(points_est, zs_est[zs_est.size() / 2] / 7);
     std::vector<float> normals_sfn = pne2.getNormals();
 
@@ -200,5 +250,5 @@ namespace defSLAM
     GroundTruthTools::saveResults(ErrorAngleSfN, name2);
 
     return 1;
-  }
+  } // namespace defSLAM
 } // namespace defSLAM

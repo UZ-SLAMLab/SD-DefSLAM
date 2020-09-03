@@ -38,7 +38,7 @@
 
 #include "opencv2/calib3d.hpp"
 #include "opencv2/core/core.hpp"
-
+#include "DisparityEstimatorLibelas.h"
 namespace defSLAM
 {
 
@@ -151,86 +151,129 @@ namespace defSLAM
     cv::Mat left_disp;
     std::vector<std::vector<float>> posMonoInit_;
     std::vector<std::vector<float>> posStereoInit_;
-    posMono_.reserve(vpMPs.size());
-    posStereo_.reserve(vpMPs.size());
+    posMonoInit_.reserve(vpMPs.size());
+    posStereoInit_.reserve(vpMPs.size());
     std::vector<float> zs;
-    for (vector<MapPoint *>::const_iterator sit = vpMPs.begin(),
-                                            send = vpMPs.end();
-         sit != send; sit++)
+    if (true)
     {
+      std::vector<cv::KeyPoint> kps;
+      for (vector<MapPoint *>::const_iterator sit = vpMPs.begin(),
+                                              send = vpMPs.end();
+           sit != send; sit++)
+      {
 #ifndef ORBSLAM
-      if (!static_cast<DefMapPoint *>(*sit)->getFacet())
-      {
-        continue;
-      }
+        if (!static_cast<DefMapPoint *>(*sit)->getFacet())
+        {
+          continue;
+        }
 #endif
-      if ((*sit)->isBad())
-        continue;
-      // OpenCV_Template Matching tutorial :
-      // https://docs.opencv.org/master/de/da9/tutorial_template_matching.html
-      cv::Mat pos = (*sit)->GetWorldPos();
-      cv::KeyPoint kp = this->ProjectPoints(pos);
-      if (kp.pt.x < 0)
-        continue;
-      if (isDepth)
-      {
-        float dpth = imDepth.at<float>(kp.pt.y, kp.pt.x);
+        if ((*sit)->isBad())
+          continue;
+        // OpenCV_Template Matching tutorial :
+        // https://docs.opencv.org/master/de/da9/tutorial_template_matching.html
+        cv::Mat pos = (*sit)->GetWorldPos();
+        cv::KeyPoint kp = this->ProjectPoints(pos);
+        kps.push_back(std::move(kp));
         const cv::Mat Pc = mRcw * pos + mtcw;
         std::vector<float> pm;
         pm.push_back(Pc.at<float>(0));
         pm.push_back(Pc.at<float>(1));
         pm.push_back(Pc.at<float>(2));
-        std::vector<float> ps;
-        ps.push_back(dpth * (((float)kp.pt.x - cx) / fx));
-        ps.push_back(dpth * (((float)kp.pt.y - cy) / fy));
-        ps.push_back(dpth);
-        std::unique_lock<std::mutex> lck(mutexPoints);
-        posMono_.push_back(pm);
-        posStereo_.push_back(ps);
-        continue;
+        posMonoInit_.push_back(pm);
       }
-
-      std::vector<float> ps = GroundTruthTools::estimateGT(kp, ImGray, imRight, mbf, cx, cy, fx, fy);
-
-      if (ps[2] < 0)
-        continue;
-
-      const cv::Mat Pc = mRcw * pos + mtcw;
-      std::vector<float> pm;
-      pm.reserve(3);
-      pm.push_back(Pc.at<float>(0));
-      pm.push_back(Pc.at<float>(1));
-      pm.push_back(Pc.at<float>(2));
-      zs.push_back(ps[2]);
-      std::unique_lock<std::mutex> lck(mutexPoints);
-      posMonoInit_.push_back(pm);
-      posStereoInit_.push_back(ps);
-    }
-    std::cout << "POINTS EVALUATED : " << posMono_.size() << std::endl;
-    if (!isDepth)
-    {
-      if (posMonoInit_.size() < 20)
-        return 1;
-      double filtering_time = ((double)cv::getTickCount());
-      std::sort(zs.begin(), zs.end());
-      SmootherMLS smls(1, zs[zs.size() / 2] / 7);
-      std::vector<int> notOutliers = smls.outlierRemovalRadius(posStereoInit_);
-      posMono_.reserve(posStereoInit_.size());
-      posStereo_.reserve(posStereoInit_.size());
-      if (notOutliers.size() < 20)
-        return 1;
-      for (uint i(0); i < notOutliers.size(); i++)
+      posStereoInit_ = GroundTruthTools::estimateGTlibelas(kps, ImGray, imRight, mbf, cx, cy, fx, fy);
+      for (uint i(0); i < posStereoInit_.size(); i++)
       {
-        posMono_.push_back(posMonoInit_[notOutliers[i]]);
-        posStereo_.push_back(posStereoInit_[notOutliers[i]]);
+        if (posStereoInit_[i][2] > 0)
+        {
+          posMono_.push_back(posMonoInit_[i]);
+          posStereo_.push_back(posStereoInit_[i]);
+        }
       }
       if (posMono_.size() < 20)
         return 1;
-      filtering_time =
-          ((double)cv::getTickCount() - filtering_time) / cv::getTickFrequency();
-      std::cout << "Time 2 " << filtering_time << "ms " << std::endl;
-      std::cout << "POINTS EVALUATED : " << posMono_.size() << "/" << notOutliers.size() << "/"
-                << vpMPs.size() << std::endl;
+    }
+    else
+    {
+      for (vector<MapPoint *>::const_iterator sit = vpMPs.begin(),
+                                              send = vpMPs.end();
+           sit != send; sit++)
+      {
+#ifndef ORBSLAM
+        if (!static_cast<DefMapPoint *>(*sit)->getFacet())
+        {
+          continue;
+        }
+#endif
+        if ((*sit)->isBad())
+          continue;
+        // OpenCV_Template Matching tutorial :
+        // https://docs.opencv.org/master/de/da9/tutorial_template_matching.html
+        cv::Mat pos = (*sit)->GetWorldPos();
+        cv::KeyPoint kp = this->ProjectPoints(pos);
+        if (kp.pt.x < 0)
+          continue;
+        if (isDepth)
+        {
+          float dpth = imDepth.at<float>(kp.pt.y, kp.pt.x);
+          const cv::Mat Pc = mRcw * pos + mtcw;
+          std::vector<float> pm;
+          pm.push_back(Pc.at<float>(0));
+          pm.push_back(Pc.at<float>(1));
+          pm.push_back(Pc.at<float>(2));
+          std::vector<float> ps;
+          ps.push_back(dpth * (((float)kp.pt.x - cx) / fx));
+          ps.push_back(dpth * (((float)kp.pt.y - cy) / fy));
+          ps.push_back(dpth);
+          std::unique_lock<std::mutex> lck(mutexPoints);
+          posMono_.push_back(pm);
+          posStereo_.push_back(ps);
+          continue;
+        }
+
+        std::vector<float> ps = GroundTruthTools::estimateGT(kp, ImGray, imRight, mbf, cx, cy, fx, fy);
+
+        if (ps[2] < 0)
+          continue;
+
+        const cv::Mat Pc = mRcw * pos + mtcw;
+        std::vector<float> pm;
+        pm.reserve(3);
+        pm.push_back(Pc.at<float>(0));
+        pm.push_back(Pc.at<float>(1));
+        pm.push_back(Pc.at<float>(2));
+        zs.push_back(ps[2]);
+        std::unique_lock<std::mutex> lck(mutexPoints);
+        posMonoInit_.push_back(pm);
+        posStereoInit_.push_back(ps);
+      }
+
+      std::cout << "POINTS EVALUATED : " << posMono_.size() << std::endl;
+      if (!isDepth)
+      {
+        if (posMonoInit_.size() < 20)
+          return 1;
+        double filtering_time = ((double)cv::getTickCount());
+        std::sort(zs.begin(), zs.end());
+        SmootherMLS smls(1, zs[zs.size() / 2] / 7);
+        std::vector<int> notOutliers = smls.outlierRemovalRadius(posStereoInit_);
+        posMono_.reserve(posStereoInit_.size());
+        posStereo_.reserve(posStereoInit_.size());
+        if (notOutliers.size() < 20)
+          return 1;
+        for (uint i(0); i < notOutliers.size(); i++)
+        {
+          posMono_.push_back(posMonoInit_[notOutliers[i]]);
+          posStereo_.push_back(posStereoInit_[notOutliers[i]]);
+        }
+        if (posMono_.size() < 20)
+          return 1;
+        filtering_time =
+            ((double)cv::getTickCount() - filtering_time) / cv::getTickFrequency();
+        std::cout << "Time 2 " << filtering_time << "ms " << std::endl;
+        std::cout << "POINTS EVALUATED : " << posMono_.size() << "/" << notOutliers.size() << "/"
+                  << vpMPs.size() << std::endl;
+      }
     }
     if (posMono_.size() < 50)
     {

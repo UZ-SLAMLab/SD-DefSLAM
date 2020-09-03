@@ -80,6 +80,26 @@ namespace defSLAM
  * *******************/
           std::vector<float> estimateGT(const cv::KeyPoint &kp2D, const cv::Mat &im1, const cv::Mat &im2, double mbf,
                                         double cx, double cy, double fx, double fy);
+          // namespace GroundTruthTools
+          // namespace GroundTruthTools
+          /**********************
+ * The funtion estimateGT estimates the 3D point from
+ * a stereo pair and a keypoint using libelas
+ * 
+ * Author: Jose Lamarca
+ * 
+ * Arg:
+ *  std::vector<float> kp2D
+ *  im1 image of keypoint
+ *  im2 image stereo to query
+ *  name std::string name for the file
+ * 
+ * Return:
+ *  std::vector<float> point in 3D in camera frame;
+ * 
+ * *******************/
+          std::vector<std::vector<float>> estimateGTlibelas(const std::vector<cv::KeyPoint> &kp, const cv::Mat &imLeft, const cv::Mat &imRight, double mbf,
+                                                            double cx, double cy, double fx, double fy);
      }; // namespace GroundTruthTools
 
 } // namespace defSLAM

@@ -53,7 +53,7 @@ namespace defSLAM
       }
     }
     cv::Mat kernel;
-    int kernel_size = cols / 20;
+    int kernel_size = cols / 10;
     int ddepth = -1;
     cv::Point anchor(-1, -1);
     double delta;
@@ -108,9 +108,10 @@ namespace defSLAM
       else
       {
         const auto &kpt = referenceKF_->mvKeysUn[i].pt;
-        if (mask.at<char>(kpt.y, kpt.x))
+        if (mask.at<char>(kpt.y, kpt.x) > 0.5)
         {
           continue;
+          std::cout << "nope" << std::endl;
         }
         cv::Vec3f x3c;
         static_cast<DefKeyFrame *>(referenceKF_)
@@ -141,7 +142,7 @@ namespace defSLAM
         pMP->UpdateNormalAndDepth();
         mpMap->addMapPoint(pMP);
         mlpRecentAddedMapPoints.push_back(pMP);
-        auto tsize(cols / 20);
+        auto tsize(cols / 10);
         auto ycrop = kpt.y - tsize / 2;
         auto xcrop = kpt.x - tsize / 2;
         if (ycrop < 0)
