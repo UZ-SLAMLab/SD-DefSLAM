@@ -91,10 +91,7 @@ Viewer.SaveResults: 0
 LocalMapping.pointsToTemplate: 100
 LocalMapping.chiLimit: 0.01
 LocalMapping.Bending: 0.7
-<<<<<<< HEAD
 LocalMapping.Schwarp.Regularizer: 0.005
 
 Cnn.model: "/media/jose/NuevoVol/models/unet16_binary_20_0.pt"
-=======
-LocalMapping.Schwarp.Regularizer: 0.05
->>>>>>> cebc210467716a6ff28fd0f431b7a32d099886a9
+
