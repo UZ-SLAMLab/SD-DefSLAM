@@ -24,7 +24,7 @@
 namespace defSLAM
 {
     SettingsLoader::SettingsLoader()
-        : SettingsLoader(DEFAULTCALIBRATION)
+        : SettingsLoader(DEFAULTCALIBRATION) // MACRO DEFINED IN CMakeLists.txt
     {
     }
 
