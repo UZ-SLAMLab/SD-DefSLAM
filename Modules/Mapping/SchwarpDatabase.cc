@@ -105,9 +105,15 @@ namespace defSLAM
         continue;
       // Create Schwarp
       double x[_NumberOfControlPointsU * _NumberOfControlPointsV * 2];
-      DefORBmatcher Matcher;
-      std::cout << "Finding by Schwarp" << std::endl;
-      Matcher.findbyWarp(refkf, mpCurrentKeyFrame, vMatchedIndices, x, lambda_);
+      //DefORBmatcher Matcher;
+      //std::cout << "Finding by Schwarp" << std::endl;
+      //Matcher.findbyWarp(refkf, mpCurrentKeyFrame, vMatchedIndices, x, lambda_);
+      for (uint i(0); i < _NumberOfControlPointsU * _NumberOfControlPointsU * 2;
+           i++)
+      {
+        x[i] = 0.0;
+      }
+
       if (vMatchedIndices.size() < 20)
         continue;
       std::cout << "Calculating final Schwarp" << std::endl;
@@ -194,7 +200,9 @@ namespace defSLAM
         us++;
       }
     }
-
+    // This must be called before optimizing.
+    Warps::Warp::initialize(KP1, KP2, lambda, KF->umin, KF->umax, KF->vmin, KF->vmax,
+                            KF->NCu, KF->NCv, KF->valdim, x);
     ceres::CostFunction *Rep =
         new Warps::Warp(KP1, KP2, invSigmas, umin, umax, vmin, vmax, KF->NCu,
                         KF->NCv, KF->valdim, double(KF->fy), double(KF->fx));
@@ -284,12 +292,12 @@ namespace defSLAM
       error_i.y *= KF->fy;
       counter2++;
 
-      if (cv::norm(error_i) > 10)
+      /*if (cv::norm(error_i) > 10)
       {
         mapPoint2->EraseObservation(KF2);
         KF2->EraseMapPointMatch(idx2);
         continue;
-      }
+      }*/
       /// All map points are used for the warp estimation, but only those
       /// whose reference keyframe is the estimated one are saved.
       auto pKfref = mapPoint->GetReferenceKeyFrame();

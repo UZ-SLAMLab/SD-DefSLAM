@@ -392,7 +392,7 @@ namespace defSLAM
       }
     }
     cv::Mat kernel;
-    int kernel_size = cols / 20;
+    int kernel_size = cols / 10;
     int ddepth = -1;
     cv::Point anchor(-1, -1);
     double delta;
@@ -409,10 +409,24 @@ namespace defSLAM
       if (!pMP)
       {
         const auto &kpt = mpCurrentKeyFrame->mvKeysUn[i].pt;
-        if (mask.at<char>(kpt.y, kpt.x))
+        if (uint8_t(mask.at<char>(kpt.y, kpt.x)) > 125)
         {
           continue;
         }
+        auto tsize(cols / 10);
+        auto ycrop = kpt.y - tsize / 2;
+        auto xcrop = kpt.x - tsize / 2;
+        if (ycrop < 0)
+          ycrop = 0;
+        if ((ycrop + tsize / 2) > mask.rows)
+          ycrop = mask.rows - 1;
+        if (xcrop < 0)
+          xcrop = 0;
+        if ((xcrop + tsize / 2) > mask.cols)
+          xcrop = mask.cols - 1;
+        auto crop = cv::Rect(xcrop, ycrop, tsize, tsize);
+        cv::Mat Roi = mask(crop);
+        Roi = cv::Scalar(255);
         newPoints++;
       }
     }
