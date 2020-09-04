@@ -25,51 +25,50 @@
 #include "MapPoint.h"
 #include "Map.h"
 
-#include<opencv2/core/core.hpp>
-#include<opencv2/features2d/features2d.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/features2d/features2d.hpp>
 
-#include<mutex>
-
+#include <mutex>
 
 namespace ORB_SLAM2
 {
 
-class Tracking;
-class Viewer;
+    class Tracking;
+    class Viewer;
 
-class FrameDrawer
-{
-public:
-    FrameDrawer(Map* pMap);
+    class FrameDrawer
+    {
+    public:
+        FrameDrawer(Map *pMap);
 
-    // Update info from the last processed frame.
-    void virtual Update(Tracking *pTracker);
+        // Update info from the last processed frame.
+        void virtual Update(Tracking *pTracker);
 
-    // Draw last processed frame.
-    cv::Mat virtual DrawFrame();
+        // Draw last processed frame.
+        cv::Mat virtual DrawFrame();
 
-    void SetError(double s = 0.0);
-protected:
+        void SetError(double s = 0.0);
 
-    void DrawTextInfo(cv::Mat &im, int nState, cv::Mat &imText);
+    protected:
+        void DrawTextInfo(cv::Mat &im, int nState, cv::Mat &imText);
 
-    // Info of the frame to be drawn
-    cv::Mat mIm;
-    int N,N2;
-    vector<cv::KeyPoint> mvCurrentKeys,mvCurrentKeysCorr;
-    vector<cv::KeyPoint> mvCurrentLocalMap;
-    vector<bool> mvbMap,mvbMapcorr, mvbVO;
-    bool mbOnlyTracking;
-    int mnTracked, mnTrackedVO;
-    vector<cv::KeyPoint> mvIniKeys;
-    vector<int> mvIniMatches;
-    int mState;
-    double error;
-    Map* mpMap;
+        // Info of the frame to be drawn
+        cv::Mat mIm;
+        int N, N2;
+        vector<cv::KeyPoint> mvCurrentKeys, mvCurrentKeysCorr;
+        vector<cv::KeyPoint> mvCurrentLocalMap;
+        vector<bool> mvbMap, mvbMapcorr, mvbVO;
+        bool mbOnlyTracking;
+        int mnTracked, mnTrackedVO;
+        vector<cv::KeyPoint> mvIniKeys;
+        vector<int> mvIniMatches;
+        int mState;
+        double error;
+        Map *mpMap;
+        cv::Mat mask_;
+        std::mutex mMutex, MutexText;
+    };
 
-    std::mutex mMutex,MutexText;
-};
-
-} //namespace ORB_SLAM
+} // namespace ORB_SLAM2
 
 #endif // FRAMEDRAWER_H
