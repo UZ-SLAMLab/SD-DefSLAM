@@ -89,9 +89,9 @@ Viewer.SaveResults: 0
 # Local Mapping Parameters
 #--------------------------------------------------------------------------------------------
 LocalMapping.pointsToTemplate: 100
-LocalMapping.chiLimit: 0.01
+LocalMapping.chiLimit: 0.2
 LocalMapping.Bending: 0.7
 LocalMapping.Schwarp.Regularizer: 0.005
 
-Cnn.model: "/media/jose/NuevoVol/models/unet16_binary_20_0.pt"
+Cnn.model: /home/jose/unet11_binary_20_0.pt
 

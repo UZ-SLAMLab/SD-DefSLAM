@@ -63,3 +63,4 @@ Viewer.ViewpointZ: -1.8
 Viewer.ViewpointF: 500
 Viewer.SaveResults: 1
 #--------------------------------
+Cnn.model: /home/jose/unet11_binary_20_0.pt

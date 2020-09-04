@@ -298,7 +298,8 @@ namespace defSLAM
     {
         return T_;
     }
-    std::string SettingsLoader::getCnnPath() const {
+    std::string SettingsLoader::getCnnPath() const
+    {
         return cnnModelPath_;
     }
     void SettingsLoader::setSaveResults(const bool save)
