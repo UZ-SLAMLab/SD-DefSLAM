@@ -24,7 +24,7 @@
 namespace defSLAM
 {
     SettingsLoader::SettingsLoader()
-        : SettingsLoader("/home/jose/DefKLTSLAM/calibration_files/hamlyn.yaml")
+        : SettingsLoader(DEFAULTCALIBRATION)
     {
     }
 
