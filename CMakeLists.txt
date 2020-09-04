@@ -42,6 +42,7 @@ include_directories(
         ${PROJECT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/Thirdparty/ORBSLAM_2/include/
         ${PROJECT_SOURCE_DIR}/Thirdparty/BBS
+        ${PROJECT_SOURCE_DIR}/Thirdparty/libelas-for-hamlyn/src
         ${PROJECT_SOURCE_DIR}/Dataloaders
         ${PROJECT_SOURCE_DIR}/Modules/Common
         ${PROJECT_SOURCE_DIR}/Modules/GroundTruth
