@@ -183,6 +183,7 @@ namespace defSLAM
     pTracker->mImRGB.copyTo(mIm);
     auto points = mpMap->GetReferenceMapPoints();
     mvCurrentLocalMap.clear();
+    mask_ = pTracker->mCurrentFrame->_mask.clone();
 
     cout << "DefFramer drawer begins" << endl;
 
@@ -228,7 +229,7 @@ namespace defSLAM
         // Failure is here
         MapPoint *pMP = pTracker->mCurrentFrame->mvpMapPoints[i];
         if (pMP)
-        {                        
+        {
           if (!pTracker->mCurrentFrame->mvbOutlier[i])
           {
             if (static_cast<DefMapPoint *>(pMP)->getFacet())

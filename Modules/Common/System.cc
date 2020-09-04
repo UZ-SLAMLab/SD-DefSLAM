@@ -293,6 +293,10 @@ namespace defSLAM
 
     // Initialize the Local Mapping thread and launch
 
+#ifdef CNN
+    cnn_.loadModel(settingsLoader.getCnnPath());
+#endif
+
 #ifdef PARALLEL
     mptLocalMapping = new thread(&ORB_SLAM2::LocalMapping::Run, mpLocalMapper);
 #endif

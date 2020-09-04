@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(ToolsPCL)
 
 find_package(PCL 1.5 REQUIRED COMPONENTS io common features surface)

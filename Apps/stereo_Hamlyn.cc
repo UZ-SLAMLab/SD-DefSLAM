@@ -66,11 +66,10 @@ int main(int argc, char **argv)
     return 0;
   }
 
-  bool invert(false);
+  bool invert(true);
   std::cout << "Number of images: " << hamlynloader->size() << std::endl;
 
   defSLAM::SettingsLoader settingsLoader;
-  settingsLoader.setSaveResults(true);
   cv::Mat distcoeff = settingsLoader.getdistCoef();
   cv::Mat K = hamlynloader->obtainNewCalibrationValues();
   float bf = hamlynloader->obtainBaselineF();

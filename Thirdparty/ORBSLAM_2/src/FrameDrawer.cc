@@ -64,6 +64,15 @@ namespace ORB_SLAM2
       }
       else if (mState == Tracking::OK)
       {
+        if (!mask_.empty())
+        {
+          cv::Mat red;
+          cv::Mat inverseMask;
+          cv::threshold(mask_, inverseMask, 125, 125, cv::THRESH_BINARY_INV);
+          cvtColor(inverseMask, red, cv::COLOR_GRAY2BGR);
+          red = (red - cv::Scalar(0, 255, 255)) / 2;
+          im = im - red;
+        }
         vCurrentKeys = mvCurrentKeys;
         vbVO = mvbVO;
         vbMap = mvbMap;
@@ -211,6 +220,7 @@ namespace ORB_SLAM2
     pTracker->mImRGB.copyTo(mIm);
     mvCurrentKeys = pTracker->mCurrentFrame->mvKeys;
     this->mvCurrentKeysCorr = pTracker->mCurrentFrame->mvKeysUnCorr;
+    mask_ = pTracker->mCurrentFrame->_mask.clone();
 
     N = mvCurrentKeys.size();
     this->N2 = mvCurrentKeysCorr.size();

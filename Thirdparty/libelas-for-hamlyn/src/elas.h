@@ -106,7 +106,7 @@ public:
         incon_threshold = 5;
         incon_min_support = 5;
         add_corners = 0;
-        grid_size = 20;
+        grid_size = 40;
         beta = 0.02;
         gamma = 3;
         sigma = 1;
@@ -135,7 +135,7 @@ public:
         incon_threshold = 5;
         incon_min_support = 5;
         add_corners = 1;
-        grid_size = 20;
+        grid_size = 40;
         beta = 0.02;
         gamma = 5;
         sigma = 1;

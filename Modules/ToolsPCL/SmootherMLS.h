@@ -32,7 +32,6 @@ class SmootherMLS
      *    polynomialOrder_: polynomial fitting order
      *    searchRadius_: radius of point to fit the polinomial.
      * methods:
-     *    smoothPointCloud:  function to smooth pointclouds
      *    input : std::vector<std::vector<float>> point cloud to smooth
      *    output : std::vector<std::vector<float>> smoothed point cloud 
      * 
@@ -45,9 +44,6 @@ public:
 
     // Initialize the smoother.
     SmootherMLS(int polynomialOrder_ = 2, double searchRadius_ = 0.03);
-
-    // Smooth a point cloud with MLS
-    std::vector<int> smoothPointCloud(const pointcloud &);
 
     // Outlier Removal with radius criteria.
     std::vector<int> outlierRemovalRadius(const SmootherMLS::pointcloud &);

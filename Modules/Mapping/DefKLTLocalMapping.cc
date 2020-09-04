@@ -35,21 +35,21 @@ namespace defSLAM
   void DefKLTLocalMapping::CreateNewMapPoints()
   {
     cv::Mat Twc = referenceKF_->GetPoseInverse();
-    size_t nval = this->referenceKF_->mvKeysUn.size();
+    size_t nval = referenceKF_->mvKeysUn.size();
     int cols = referenceKF_->imGray.cols;
     cv::Mat mask(referenceKF_->imGray.rows, referenceKF_->imGray.cols,
                  CV_8UC1, cv::Scalar(0));
     int const max_BINARY_value = 255;
 
-    for (int i = 0; i < nval; i++)
+    for (size_t i = 0; i < nval; i++)
     {
       MapPoint *pMP = referenceKF_->GetMapPoint(i);
       if (pMP)
       {
         if (pMP->isBad())
           continue;
-        mask.at<char>(this->referenceKF_->mvKeysUn[i].pt.y,
-                      this->referenceKF_->mvKeysUn[i].pt.x) = 255;
+        mask.at<char>(referenceKF_->mvKeysUn[i].pt.y,
+                      referenceKF_->mvKeysUn[i].pt.x) = 255;
       }
     }
     cv::Mat kernel;
@@ -65,6 +65,7 @@ namespace defSLAM
     //     1: Binary Inverted
     cv::threshold(mask, mask, threshold_value, max_BINARY_value, 0);
     uint newPoints(0);
+
     for (size_t i = 0; i < nval; i++)
     {
       MapPoint *pMP = referenceKF_->GetMapPoint(i);
@@ -108,10 +109,9 @@ namespace defSLAM
       else
       {
         const auto &kpt = referenceKF_->mvKeysUn[i].pt;
-        if (mask.at<char>(kpt.y, kpt.x) > 0.5)
+        if (uint8_t(mask.at<char>(kpt.y, kpt.x)) > 125)
         {
           continue;
-          std::cout << "nope" << std::endl;
         }
         cv::Vec3f x3c;
         static_cast<DefKeyFrame *>(referenceKF_)

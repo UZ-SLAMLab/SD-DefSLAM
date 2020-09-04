@@ -24,7 +24,7 @@
 namespace defSLAM
 {
     SettingsLoader::SettingsLoader()
-        : SettingsLoader("/home/jose/DefKLTSLAM/calibration_files/hamlyn.yaml")
+        : SettingsLoader(DEFAULTCALIBRATION) // MACRO DEFINED IN CMakeLists.txt
     {
     }
 
@@ -298,7 +298,8 @@ namespace defSLAM
     {
         return T_;
     }
-    std::string SettingsLoader::getCnnPath() const {
+    std::string SettingsLoader::getCnnPath() const
+    {
         return cnnModelPath_;
     }
     void SettingsLoader::setSaveResults(const bool save)
