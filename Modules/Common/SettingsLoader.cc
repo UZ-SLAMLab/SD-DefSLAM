@@ -143,7 +143,7 @@ namespace defSLAM
         cameraSize_ = fSettings["Viewer.CameraSize"];
         cameraLineWidth_ = fSettings["Viewer.CameraLineWidth"];
 
-        cnnModelPath_ = fSettings["Cnn.model"].string();
+        filterPath_ = fSettings["Filter.file"].string();
     }
 
     int SettingsLoader::getFPS() const
@@ -298,9 +298,9 @@ namespace defSLAM
     {
         return T_;
     }
-    std::string SettingsLoader::getCnnPath() const
+    std::string SettingsLoader::getFilterPath() const
     {
-        return cnnModelPath_;
+        return filterPath_;
     }
     void SettingsLoader::setSaveResults(const bool save)
     {
@@ -325,5 +325,8 @@ namespace defSLAM
     void SettingsLoader::setCameraHeight(const int h)
     {
         imageHeight_ = h;
+    }
+    void SettingsLoader::setFilterPath(const std::string &s) {
+        filterPath_ = s;
     }
 } // namespace defSLAM
