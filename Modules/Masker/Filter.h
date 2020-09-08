@@ -32,7 +32,6 @@ namespace defSLAM {
          */
     public:
         Filter(){};
-        ~Filter(){};
 
         /*
          * Virtual method for generating the mask

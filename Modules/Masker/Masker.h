@@ -34,7 +34,6 @@ namespace defSLAM {
          */
     public:
         Masker(){};
-        ~Masker();
 
         /*
          * Load filters from a .txt file with the following format:
@@ -45,7 +44,7 @@ namespace defSLAM {
         /*
          * Adds a filter to the masker
          */
-        void addFilter(Filter* f);
+        void addFilter(std::unique_ptr<Filter>& f);
 
         /*
          * Removes the filter at pos idx
@@ -60,7 +59,7 @@ namespace defSLAM {
         std::string printFilters();
 
     private:
-        std::vector<Filter*> filters_;
+        std::vector<std::unique_ptr<Filter>> filters_;
     };
 }
 

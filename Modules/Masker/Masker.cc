@@ -21,7 +21,6 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
 
 #include <istream>
 
@@ -31,10 +30,6 @@
 #include "CnnSegmentation.h"
 
 namespace defSLAM {
-    Masker::~Masker() {
-        for(auto f : filters_)
-            delete f;
-    }
 
     void Masker::loadFromTxt(std::string path) {
         std::cout << std::endl << "Loading filters: " << path << std::endl;
@@ -50,21 +45,23 @@ namespace defSLAM {
                 ss >> name;
 
                 if(name == "CNN"){
-                    CnnSegmentation* f = new CnnSegmentation();
+                    CnnSegmentation* cnn = new CnnSegmentation();
                     ss >> name;
-                    f->loadModel(name);
+                    cnn->loadModel(name);
+                    std::unique_ptr<Filter> f(cnn);
+
                     addFilter(f);
                 }
                 else if(name == "BorderFilter"){
                     std::string rb,re,cb,ce;
                     ss >> rb >> re >> cb >> ce;
-                    BorderMask* f = new BorderMask(stoi(rb),stoi(re),stoi(cb),stoi(ce));
+                    std::unique_ptr<Filter> f(new BorderMask(stoi(rb),stoi(re),stoi(cb),stoi(ce)));
                     addFilter(f);
                 }
                 else if(name == "BrightFilter"){
-                    std::string th;
-                    ss >> th;
-                    BrightMask* f = new BrightMask(stoi(th));
+                    std::string thLo, thHi;
+                    ss >> thLo >> thHi;
+                    std::unique_ptr<Filter> f(new BrightMask(stoi(thLo), stoi(thHi)));
                     addFilter(f);
                 }
             }
@@ -73,8 +70,8 @@ namespace defSLAM {
         }
     }
 
-    void Masker::addFilter(Filter *f) {
-        filters_.push_back(f);
+    void Masker::addFilter(std::unique_ptr<Filter>& f) {
+        filters_.push_back(std::move(f));
     }
 
     void Masker::deleteFilter(size_t idx) {
@@ -86,7 +83,7 @@ namespace defSLAM {
         cv::Mat mask(im.rows, im.cols, CV_8U, cv::Scalar(255));
 
         //Apply each filter
-        for(auto f : filters_){
+        for(auto& f : filters_){
             cv::bitwise_and(mask,f->generateMask(im),mask);
         }
 
@@ -99,7 +96,7 @@ namespace defSLAM {
     std::string Masker::printFilters() {
         std::string msg("List of filters (" + std::to_string(filters_.size()) + "):\n");
 
-        for(auto f : filters_){
+        for(auto& f : filters_){
             msg += "\t-" + f->getDescription() + "\n";
         }
 
