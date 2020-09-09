@@ -31,16 +31,16 @@ namespace defSLAM {
     class BrightMask : public Filter{
         /*
          * This class defines a mask over the brightest pixel on an image. Pixels masked out must
-         * have a value grater than thHi_ and lower than thLo_
+         * have a value grater than th_
          */
     public:
-        BrightMask(int thLo, int thHi) : thLo_(thLo), thHi_(thHi) {}
+        BrightMask(int th) : th_(th) {}
 
         cv::Mat generateMask(const cv::Mat& im);
 
         std::string getDescription();
     private:
-        int thHi_, thLo_;
+        int th_;
     };
 }
 

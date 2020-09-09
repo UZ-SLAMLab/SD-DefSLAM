@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10.2 FATAL_ERROR)
 project(DeformableSLAM)
 
-SET(CMAKE_BUILD_TYPE RELEASE)
+#SET(CMAKE_BUILD_TYPE RELEASE)
 
 MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
 
@@ -28,7 +28,7 @@ endif()
 
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
-set(CMAKE_PREFIX_PATH "/home/jose/pytorch/torch/share/cmake")
+set(CMAKE_PREFIX_PATH "/home/user/Downloads/pytorch/torch/share/cmake")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 add_compile_definitions(DEFAULTCALIBRATION="${PROJECT_SOURCE_DIR}/calibration_files/default.yaml")
 
@@ -49,7 +49,7 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/Modules/GroundTruth
         ${PROJECT_SOURCE_DIR}/Modules/Mapping
         ${PROJECT_SOURCE_DIR}/Modules/Matching
-        ${PROJECT_SOURCE_DIR}/Modules/Segmentation
+        ${PROJECT_SOURCE_DIR}/Modules/Masker
         ${PROJECT_SOURCE_DIR}/Modules/Settings
         ${PROJECT_SOURCE_DIR}/Modules/Template
         ${PROJECT_SOURCE_DIR}/Modules/Tracking
@@ -68,7 +68,7 @@ FILE(GLOB SRC_DEFSLAM_FILES
         "Modules/GroundTruth/*.cc"
         "Modules/Mapping/*.cc"
         "Modules/Matching/*.cc"
-        "Modules/Segmentation/*.cc"
+        "Modules/Masker/*.cc"
         "Modules/Template/*.cc"
         "Modules/Tracking/*.cc"
         "Modules/Viewer/*.cc")
