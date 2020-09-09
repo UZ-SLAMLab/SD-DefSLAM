@@ -42,8 +42,9 @@ namespace defSLAM {
         cv::threshold(imGray,maskH,th_,255,cv::THRESH_BINARY);
 
         cv::bitwise_or(maskB,maskH,mask);
+        cv::erode(mask, mask, getStructuringElement(cv::MORPH_RECT, cv::Size(21, 21)));
 
-        return mask;
+        return maskB;
     }
 
     std::string BorderMask::getDescription() {
