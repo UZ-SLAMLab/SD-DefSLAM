@@ -19,14 +19,29 @@
 * along with DefSLAM. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <opencv2/opencv.hpp>
+
 #include "BorderMask.h"
 #include <iostream>
 
 namespace defSLAM {
     cv::Mat BorderMask::generateMask(const cv::Mat &im) {
-        cv::Mat mask(im.rows, im.cols, CV_8U, cv::Scalar(0));
-        cv::Rect roi(cb_,rb_,mask.cols-ce_-cb_,mask.rows-re_-rb_);
-        mask(roi) = cv::Scalar(255);
+        cv::Mat maskB(im.rows, im.cols, CV_8U, cv::Scalar(0)), maskH;
+        cv::Mat imGray = im, mask;
+
+        if(imGray.channels()==3){
+            cvtColor(imGray,imGray,cv::COLOR_BGR2GRAY);
+        }
+        else if(imGray.channels()==4){
+            cvtColor(imGray,imGray,cv::COLOR_BGR2GRAY);
+        }
+
+        cv::Rect roi(cb_,rb_,maskB.cols-ce_-cb_,maskB.rows-re_-rb_);
+        maskB(roi) = cv::Scalar(255);
+
+        cv::threshold(imGray,maskH,th_,255,cv::THRESH_BINARY);
+
+        cv::bitwise_or(maskB,maskH,mask);
 
         return mask;
     }

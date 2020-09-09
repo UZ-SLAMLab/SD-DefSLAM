@@ -53,15 +53,15 @@ namespace defSLAM {
                     addFilter(f);
                 }
                 else if(name == "BorderFilter"){
-                    std::string rb,re,cb,ce;
-                    ss >> rb >> re >> cb >> ce;
-                    std::unique_ptr<Filter> f(new BorderMask(stoi(rb),stoi(re),stoi(cb),stoi(ce)));
+                    std::string rb,re,cb,ce,th;
+                    ss >> rb >> re >> cb >> ce >> th;
+                    std::unique_ptr<Filter> f(new BorderMask(stoi(rb),stoi(re),stoi(cb),stoi(ce),stoi(th)));
                     addFilter(f);
                 }
                 else if(name == "BrightFilter"){
-                    std::string thLo, thHi;
-                    ss >> thLo >> thHi;
-                    std::unique_ptr<Filter> f(new BrightMask(stoi(thLo), stoi(thHi)));
+                    std::string thLo;
+                    ss >> thLo;
+                    std::unique_ptr<Filter> f(new BrightMask(stoi(thLo)));
                     addFilter(f);
                 }
             }
@@ -86,9 +86,6 @@ namespace defSLAM {
         for(auto& f : filters_){
             cv::bitwise_and(mask,f->generateMask(im),mask);
         }
-
-        cv::erode(mask, mask, getStructuringElement(cv::MORPH_RECT, cv::Size(21, 21)));
-        cv::GaussianBlur(mask, mask, cv::Size(11, 11), 5, 5, cv::BORDER_REFLECT_101);
 
         return mask;
     }

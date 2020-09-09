@@ -29,7 +29,7 @@
 namespace defSLAM {
 
     cv::Mat BrightMask::generateMask(const cv::Mat &im) {
-        cv::Mat imGray = im;
+        cv::Mat imGray = im, mask;
         if(imGray.channels()==3){
             cvtColor(imGray,imGray,cv::COLOR_BGR2GRAY);
         }
@@ -37,16 +37,16 @@ namespace defSLAM {
             cvtColor(imGray,imGray,cv::COLOR_BGR2GRAY);
         }
 
-        cv::Mat maskHi, maskLo, mask;
-        cv::threshold(imGray,maskHi,thHi_,255,cv::THRESH_BINARY_INV);
-        cv::threshold(imGray,maskLo,thLo_,255,cv::THRESH_BINARY);
+        cv::threshold(imGray,mask,th_,255,cv::THRESH_BINARY_INV);
 
-        cv::bitwise_and(maskHi,maskLo,mask);
+        cv::erode(mask, mask, getStructuringElement(cv::MORPH_RECT, cv::Size(21, 21)));
+        cv::GaussianBlur(mask, mask, cv::Size(11, 11), 5, 5, cv::BORDER_REFLECT_101);
+
         return mask;
     }
 
     std::string BrightMask::getDescription() {
-        return std::string("Bright mask with thLo_ = " + std::to_string(thLo_) + ", thHi_ = " + std::to_string(thHi_));
+        return std::string("Bright mask with th_ = " + std::to_string(th_));
     }
 }
 

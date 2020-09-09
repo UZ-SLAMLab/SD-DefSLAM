@@ -1219,16 +1219,8 @@ namespace defSLAM
     {
       if (!mvKLTStatus[i])
         continue;
-      if (mvKLTKeys[i].pt.x < 20 || mvKLTKeys[i].pt.x > mCurrentFrame->ImGray.cols - 20 ||
-          mvKLTKeys[i].pt.y < 20 || mvKLTKeys[i].pt.y > mCurrentFrame->ImGray.rows - 20)
-      {
-        mvKLTStatus[i] = false;
-      }
       if (mCurrentFrame->_mask.at<uchar>(mvKLTKeys[i].pt.y, mvKLTKeys[i].pt.x) < 125)
         mvKLTStatus[i] = false;
-      /*if(mvKLTMPs[i] && !static_cast<DefMapPoint *>(mvKLTMPs[i])->getFacet()){
-            mvKLTStatus[i] = false;
-        }*/
     }
 
     cout << "[KLT_TrackWithMotionModel]: points tracked by KLT: " << nmatches << " of " << toTrack << endl;

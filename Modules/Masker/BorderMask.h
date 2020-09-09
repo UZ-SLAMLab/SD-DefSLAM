@@ -35,14 +35,15 @@ namespace defSLAM {
          */
 
     public:
-        BorderMask(int rb, int re, int cb, int ce) :
-                   rb_(rb),re_(re),cb_(cb),ce_(ce) {}
+        BorderMask(int rb, int re, int cb, int ce, int th) :
+                   rb_(rb),re_(re),cb_(cb),ce_(ce), th_(th) {}
 
         cv::Mat generateMask(const cv::Mat &im);
 
         std::string getDescription();
 
     private:
+        int th_;
         int rb_,re_,cb_,ce_;
     };
 }
