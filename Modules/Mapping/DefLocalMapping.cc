@@ -392,7 +392,7 @@ namespace defSLAM
       }
     }
     cv::Mat kernel;
-    int kernel_size = cols / 10;
+    int kernel_size = cols / 20;
     int ddepth = -1;
     cv::Point anchor(-1, -1);
     double delta;
@@ -413,7 +413,7 @@ namespace defSLAM
         {
           continue;
         }
-        auto tsize(cols / 10);
+        auto tsize(cols / 20);
         auto ycrop = kpt.y - tsize / 2;
         auto xcrop = kpt.x - tsize / 2;
         if (ycrop < 0)
