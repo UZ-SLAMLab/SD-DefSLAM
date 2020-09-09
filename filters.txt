@@ -1,0 +1,3 @@
+CNN /home/user/Documents/DefKLTSLAM/Modules/Masker/Models/unet11_binary_20_0.pt
+BorderFilter 0 0 20 0
+BrightFilter 0 200

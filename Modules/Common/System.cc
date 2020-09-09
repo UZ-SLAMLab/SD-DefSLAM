@@ -87,9 +87,8 @@ namespace defSLAM
       exit(-1);
     }
 
-#ifdef CNN
-    cnn_.loadModel(fsSettings["Cnn.model"]);
-#endif
+    masker_.loadFromTxt(fsSettings["Filters.file"].string());
+    cout << endl << masker_.printFilters() << endl;
 
     // Load ORB Vocabulary
     cout << endl
@@ -292,10 +291,8 @@ namespace defSLAM
 #endif
 
     // Initialize the Local Mapping thread and launch
-
-#ifdef CNN
-    cnn_.loadModel(settingsLoader.getCnnPath());
-#endif
+    masker_.loadFromTxt(settingsLoader.getFilterPath());
+    cout << endl << masker_.printFilters() << endl;
 
 #ifdef PARALLEL
     mptLocalMapping = new thread(&ORB_SLAM2::LocalMapping::Run, mpLocalMapper);
@@ -436,19 +433,7 @@ namespace defSLAM
       exit(-1);
     }
 
-#ifdef CNN
-    cv::Mat Mask = cnn_.forward(im);
-#else
-    cv::Mat Mask;
-    if (_mask.empty())
-    {
-      Mask = cv::Mat(im.rows, im.cols, CV_8UC1, cv::Scalar(255));
-    }
-    else
-    {
-      Mask = _mask.clone();
-    }
-#endif
+    cv::Mat Mask = masker_.mask(im);
 
     // Check mode change
     {

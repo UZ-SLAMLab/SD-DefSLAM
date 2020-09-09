@@ -112,4 +112,8 @@ namespace defSLAM {
 
         return out.clone();
     }
+
+    std::string CnnSegmentation::getDescription(){
+        return std::string("Tool segmentation with CNN");
+    }
 }

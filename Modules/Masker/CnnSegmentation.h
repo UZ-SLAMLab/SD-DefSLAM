@@ -27,9 +27,11 @@
 
 #include<opencv2/core/core.hpp>
 
-namespace defSLAM {
+#include "Filter.h"
 
-    class CnnSegmentation {
+namespace defSLAM{
+
+    class CnnSegmentation : public Filter{
         /*
          * This class allows to load a convolutional neural network saved as a tor::jit script for binary
          * image segmentation. It provides an easy way to infer from OpenCv types, taking care of image pre
@@ -44,12 +46,18 @@ namespace defSLAM {
          */
         void loadModel(std::string path);
 
+        cv::Mat generateMask(const cv::Mat& im){
+            return forward(im);
+        }
+
+        std::string getDescription();
+
+    private:
         /*
          * Uses de loaded model to infer a mask from an image im
          */
         cv::Mat forward(const cv::Mat &im);
 
-    private:
         /*
          * Checks that the size of the image im is divisible by 2⁵ and resizes it if necessary
          */

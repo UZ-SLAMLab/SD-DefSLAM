@@ -36,8 +36,7 @@
 #include "Tracking.h"
 #include "Viewer.h"
 #include "SettingsLoader.h"
-
-#include "CnnSegmentation.h"
+#include "Masker.h"
 
 namespace ORB_SLAM2
 {
@@ -209,8 +208,8 @@ namespace defSLAM
     std::mutex mMutexState;
     std::mutex mMutexdata;
 
-    //CNN segmentation
-    CnnSegmentation cnn_;
+    //Masker
+    Masker masker_;
   };
 
 } // namespace defSLAM
