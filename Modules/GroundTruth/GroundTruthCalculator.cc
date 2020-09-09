@@ -299,7 +299,7 @@ namespace defSLAM
 
       for (auto &kp : kp)
       {
-        float libdisp = disparity.at<uchar>(int(kp.pt.y), int(kp.pt.x));
+        float libdisp = uint(disparity.at<char>(int(kp.pt.y), int(kp.pt.x)));
         if ((libdisp < 100) and (libdisp > 5))
         {
           std::vector<float> ps;
