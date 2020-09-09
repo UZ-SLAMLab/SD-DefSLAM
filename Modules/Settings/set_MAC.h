@@ -19,12 +19,8 @@
 * along with DefSLAM. If not, see <http://www.gnu.org/licenses/>.
 */
 //Uncomment to run in parallel. TODO: Do it from Cmake
-#define PARALLEL
+//#define PARALLEL
 
 //Uncomment to run ORBSLAM adaptation. TODO: Do it from Cmake
 //#define ORBSLAM
-
-//Uncomment to use a neural network for tool segmentation
-#define CNN
-
 #define USE_KLT

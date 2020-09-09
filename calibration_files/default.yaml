@@ -45,7 +45,7 @@ Regularizer.PropagationZone : 0
 #--------------------------------------------------------------------------------------------
 LocalMapping.pointsToTemplate: 15
 LocalMapping.chiLimit: 0.2
-LocalMapping.Bending: 0.15
+LocalMapping.Bending: 0.7
 LocalMapping.Schwarp.Regularizer: 0.2
 
 #--------------------------------------------------------------------------------------------
@@ -63,4 +63,4 @@ Viewer.ViewpointZ: -1.8
 Viewer.ViewpointF: 500
 Viewer.SaveResults: 1
 #--------------------------------
-Cnn.model: /media/jose/NuevoVol/models/linknet_binary_20_1.pt
+Filter.file: /home/jose/DefKLTSLAM/filters.txt

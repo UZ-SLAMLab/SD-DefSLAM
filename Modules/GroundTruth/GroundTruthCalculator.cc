@@ -298,7 +298,7 @@ namespace defSLAM
       std::vector<std::vector<float>> xyz;
       for (auto &kp : kp)
       {
-        float libdisp = disparity.at<uchar>(kp.pt.y, kp.pt.x);
+        float libdisp = disparity.at<uchar>(int(kp.pt.y), int(kp.pt.x));
         if ((libdisp < 100) and (libdisp > 5))
         {
           std::vector<float> ps;

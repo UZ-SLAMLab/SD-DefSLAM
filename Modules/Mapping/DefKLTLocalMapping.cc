@@ -147,12 +147,12 @@ namespace defSLAM
         auto xcrop = kpt.x - tsize / 2;
         if (ycrop < 0)
           ycrop = 0;
-        if ((ycrop + tsize / 2) > mask.rows)
-          ycrop = mask.rows - 1;
+        if ((ycrop + tsize) > mask.rows)
+          ycrop = mask.rows - tsize - 1;
         if (xcrop < 0)
           xcrop = 0;
-        if ((xcrop + tsize / 2) > mask.cols)
-          xcrop = mask.cols - 1;
+        if ((xcrop + tsize) > mask.cols)
+          xcrop = mask.cols - tsize - 1;
         auto crop = cv::Rect(xcrop, ycrop, tsize, tsize);
         cv::Mat Roi = mask(crop);
         Roi = cv::Scalar(255);
