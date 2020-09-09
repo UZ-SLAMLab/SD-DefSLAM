@@ -233,7 +233,7 @@ namespace defSLAM
         return;
       }
     }
-    if (false)
+    if (saveResults_)
     {
       float scale =
           static_cast<GroundTruthKeyFrame *>(kfForTemplate)->estimateAngleErrorAndScale();

@@ -71,7 +71,7 @@ namespace stereodisparity
         // free memory
         I1 = nullptr;
         I2 = nullptr;
-        delete D1;
+        // delete D1;
         delete D2;
         free(D1_data);
         free(D2_data);

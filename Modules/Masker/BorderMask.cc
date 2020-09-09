@@ -24,31 +24,31 @@
 #include "BorderMask.h"
 #include <iostream>
 
-namespace defSLAM {
-    cv::Mat BorderMask::generateMask(const cv::Mat &im) {
-        cv::Mat maskB(im.rows, im.cols, CV_8U, cv::Scalar(0)), maskH;
+namespace defSLAM
+{
+    cv::Mat BorderMask::generateMask(const cv::Mat &im)
+    {
         cv::Mat imGray = im, mask;
 
-        if(imGray.channels()==3){
-            cvtColor(imGray,imGray,cv::COLOR_BGR2GRAY);
+        if (imGray.channels() == 3)
+        {
+            cvtColor(imGray, imGray, cv::COLOR_BGR2GRAY);
         }
-        else if(imGray.channels()==4){
-            cvtColor(imGray,imGray,cv::COLOR_BGR2GRAY);
+        else if (imGray.channels() == 4)
+        {
+            cvtColor(imGray, imGray, cv::COLOR_BGR2GRAY);
         }
-
-        cv::Rect roi(cb_,rb_,maskB.cols-ce_-cb_,maskB.rows-re_-rb_);
-        maskB(roi) = cv::Scalar(255);
-
-        cv::threshold(imGray,maskH,th_,255,cv::THRESH_BINARY);
-
-        cv::bitwise_or(maskB,maskH,mask);
-        cv::erode(mask, mask, getStructuringElement(cv::MORPH_RECT, cv::Size(21, 21)));
-
-        return maskB;
+        cv::Rect roi(cb_, rb_, imGray.cols - ce_ - cb_, imGray.rows - re_ - rb_);
+        cv::Mat maska = cv::Mat::zeros(imGray.size(), CV_8U);
+        maska(roi) = cv::Scalar(255);
+        maska.setTo(0, imGray == 0);
+        cv::erode(maska, maska, getStructuringElement(cv::MORPH_RECT, cv::Size(21, 21)));
+        return maska;
     }
 
-    std::string BorderMask::getDescription() {
+    std::string BorderMask::getDescription()
+    {
         return std::string("Border mask with parameters [" + std::to_string(rb_) + "," + std::to_string(re_) + "," +
-                            std::to_string(cb_) + "," + std::to_string(ce_) + "]");
+                           std::to_string(cb_) + "," + std::to_string(ce_) + "]");
     }
-}
+} // namespace defSLAM

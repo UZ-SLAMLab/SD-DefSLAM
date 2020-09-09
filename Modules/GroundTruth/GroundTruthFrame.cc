@@ -154,7 +154,8 @@ namespace defSLAM
     posMonoInit_.reserve(vpMPs.size());
     posStereoInit_.reserve(vpMPs.size());
     std::vector<float> zs;
-    if (true)
+    bool libelas(true);
+    if (libelas)
     {
       std::vector<cv::KeyPoint> kps;
       for (vector<MapPoint *>::const_iterator sit = vpMPs.begin(),
