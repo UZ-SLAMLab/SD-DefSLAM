@@ -117,3 +117,7 @@ set_property(TARGET DefSLAMGT PROPERTY CXX_STANDARD 14)
 add_executable(DefSLAMHamyln Apps/stereo_Hamlyn.cc)
 target_link_libraries(DefSLAMHamyln ${PROJECT_NAME} Dataloader ${TORCH_LIBRARIES})
 set_property(TARGET DefSLAMHamyln PROPERTY CXX_STANDARD 14)
+
+add_executable(DefSLAMHamylnINV Apps/stereo_Hamlyn_inv.cc)
+target_link_libraries(DefSLAMHamylnINV ${PROJECT_NAME} Dataloader ${TORCH_LIBRARIES})
+set_property(TARGET DefSLAMHamylnINV PROPERTY CXX_STANDARD 14)
