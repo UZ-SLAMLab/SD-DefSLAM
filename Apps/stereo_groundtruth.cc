@@ -95,9 +95,10 @@ int main(int argc, char **argv)
 
   const size_t nImages = vstrImageLeft.size();
 
+  bool viewer = true;
   // Create SLAM system. It initializes all system threads and gets ready to
   // process frames.
-  defSLAM::System SLAM(argv[1], argv[2], true);
+  defSLAM::System SLAM(argv[1], argv[2], viewer);
 
   // Vector for tracking time statistics
   vector<float> vTimesTrack;

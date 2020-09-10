@@ -56,7 +56,9 @@ public:
   enum setting
   {
     ROBOTICS,
-    MIDDLEBURY
+    MIDDLEBURY,
+    MANDALA,
+    MEDICAL
   };
 
   // parameter settings
@@ -124,7 +126,7 @@ public:
         // default settings for middlebury benchmark
         // (interpolate all missing disparities)
       }
-      else
+      else if (s == MIDDLEBURY)
       {
         disp_min = 0;
         disp_max = 255;
@@ -148,6 +150,60 @@ public:
         filter_median = 1;
         filter_adaptive_mean = 0;
         postprocess_only_left = 0;
+        subsampling = 0;
+      }
+      else if (s == MANDALA)
+      {
+        disp_min = 40;
+        disp_max = 255;
+        support_threshold = 0.85;
+        support_texture = 10;
+        candidate_stepsize = 15;
+        incon_window_size = 10;
+        incon_threshold = 5;
+        incon_min_support = 5;
+        add_corners = 0;
+        grid_size = 30;
+        beta = 0.02;
+        gamma = 5;
+        sigma = 1;
+        sradius = 3;
+        match_texture = 1;
+        lr_threshold = 2;
+        speckle_sim_threshold = 1;
+        speckle_size = 200;
+        ipol_gap_width = 5000;
+        filter_median = 1;
+        filter_adaptive_mean = 1;
+        postprocess_only_left = 0;
+        subsampling = 0;
+        // default settings for middlebury benchmark
+        // (interpolate all missing disparities)
+      }
+      else
+      {
+        disp_min = 0;
+        disp_max = 255;
+        support_threshold = 0.85;
+        support_texture = 10;
+        candidate_stepsize = 5;
+        incon_window_size = 5;
+        incon_threshold = 5;
+        incon_min_support = 5;
+        add_corners = 0;
+        grid_size = 40;
+        beta = 0.02;
+        gamma = 3;
+        sigma = 1;
+        sradius = 2;
+        match_texture = 1;
+        lr_threshold = 2;
+        speckle_sim_threshold = 1;
+        speckle_size = 200;
+        ipol_gap_width = 3;
+        filter_median = 0;
+        filter_adaptive_mean = 1;
+        postprocess_only_left = 1;
         subsampling = 0;
       }
     }

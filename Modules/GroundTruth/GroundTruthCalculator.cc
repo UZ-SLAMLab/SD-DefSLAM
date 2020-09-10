@@ -296,17 +296,21 @@ namespace defSLAM
       stereodisparity::DisparityEstimatorLibelas disparityest;
       cv::Mat disparity = disparityest.process(imLeft, imRight);
       std::vector<std::vector<float>> xyz;
-
+      // cv::imshow("s", disparity);
+      //cv::waitKey(0);
       for (auto &kp : kp)
       {
-        float libdisp = uint(disparity.at<char>(int(kp.pt.y), int(kp.pt.x)));
-        if ((libdisp < 100) and (libdisp > 5))
+        float libdisp = uint8_t(disparity.at<char>(int(kp.pt.y), int(kp.pt.x)));
+        // std::cout << kp.pt << " " << libdisp << " ";
+
+        if ((libdisp < 100) and (libdisp > 5) and (kp.pt.x >= 0))
         {
           std::vector<float> ps;
           ps.reserve(3);
           ps.push_back(mbf / libdisp * (((float)kp.pt.x - cx) / fx));
           ps.push_back(mbf / libdisp * (((float)kp.pt.y - cy) / fy));
           ps.push_back(mbf / libdisp);
+          // std::cout << " " << (((float)kp.pt.x - cx) / fx) << " " << (((float)kp.pt.y - cy) / fy) << " " << mbf / libdisp << std::endl;
           xyz.push_back(std::move(ps));
         }
         else
