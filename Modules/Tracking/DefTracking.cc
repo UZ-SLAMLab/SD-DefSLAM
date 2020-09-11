@@ -212,7 +212,6 @@ namespace defSLAM
           }
         }
       }
-
       else
       {
         mState = LOST;
@@ -223,8 +222,8 @@ namespace defSLAM
           mpMapDrawer->UpdatePoints(mCurrentFrame);
         }
 
-        cout << "Track lost soon after initialisation, reseting..." << endl;
-        mpSystem->Reset();
+        cout << "Track lost, ending program..." << endl;
+        exit(1);
         return;
       }
 
