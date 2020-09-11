@@ -189,6 +189,8 @@ namespace defSLAM
         {
           posMono_.push_back(posMonoInit_[i]);
           posStereo_.push_back(posStereoInit_[i]);
+          // std::cout << "INIT " << posStereoInit_[i][0] << " " << posStereoInit_[i][1] << " " << posStereoInit_[i][2] << std::endl;
+          // std::cout << "NIINIT " << posStereo_.back()[0] << " " << posStereo_.back()[1] << " " << posStereo_.back()[2] << std::endl;
         }
       }
       if (posMono_.size() < 20)

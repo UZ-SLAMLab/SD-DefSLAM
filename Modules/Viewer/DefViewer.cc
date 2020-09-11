@@ -75,9 +75,9 @@ namespace defSLAM
                                             pangolin::Attach::Pix(175));
     pangolin::Var<bool> menuFollowCamera("menu.Follow Camera", true, true);
     pangolin::Var<bool> menuShowPoints("menu.Show Points", true, true);
-    pangolin::Var<bool> menuShowKeyFrames("menu.Show KeyFrames", false, true);
-    pangolin::Var<bool> menuShowGraph("menu.Show Graph", false, true);
-    pangolin::Var<bool> menuShowError("menu.Show Error", false, true);
+    pangolin::Var<bool> menuShowKeyFrames("menu.Show KeyFrames", true, true);
+    pangolin::Var<bool> menuShowGraph("menu.Show Graph", true, true);
+    pangolin::Var<bool> menuShowError("menu.Show Error", true, true);
     pangolin::Var<bool> menuAutoPlay("menu.Autoplay", true, true);
 
     // Added for non-rigid method
@@ -222,7 +222,7 @@ namespace defSLAM
       if (menuReset)
       {
         menuShowGraph = true;
-        menuShowKeyFrames = false;
+        menuShowKeyFrames = true;
         menuShowPoints = true;
         menuLocalizationMode = false;
         if (bLocalizationMode)

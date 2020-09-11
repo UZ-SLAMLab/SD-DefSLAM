@@ -652,7 +652,8 @@ namespace ORB_SLAM2
         if (mpMap->KeyFramesInMap() <= 5)
         {
           cout << "Track lost soon after initialisation, reseting..." << endl;
-          mpSystem->Reset();
+          //mpSystem->Reset();
+          exit(1);
           return;
         }
       }
