@@ -159,6 +159,7 @@ namespace ORB_SLAM2
       else
         mDepthMapFactor = 1.0f / mDepthMapFactor;
     }
+    scalefile.open("ScaleVariation.txt", std::ofstream::out | std::ofstream::app);
   }
 
   Tracking::Tracking(System *pSys, ORBVocabulary *pVoc, FrameDrawer *pFrameDrawer,
@@ -192,6 +193,8 @@ namespace ORB_SLAM2
     if (sensor == System::MONOCULAR)
       mpIniORBextractor = new ORBextractor(2 * nFeatures, fScaleFactor, nLevels,
                                            fIniThFAST, fMinThFAST);
+
+    scalefile.open("ScaleVariation.txt", std::ofstream::out | std::ofstream::app);
   }
   void Tracking::SetLocalMapper(LocalMapping *pLocalMapper)
   {
