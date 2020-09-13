@@ -203,6 +203,7 @@ namespace defSLAM
     // This must be called before optimizing.
     Warps::Warp::initialize(KP1, KP2, lambda, KF->umin, KF->umax, KF->vmin, KF->vmax,
                             KF->NCu, KF->NCv, KF->valdim, x);
+
     ceres::CostFunction *Rep =
         new Warps::Warp(KP1, KP2, invSigmas, umin, umax, vmin, vmax, KF->NCu,
                         KF->NCv, KF->valdim, double(KF->fy), double(KF->fx));
@@ -301,8 +302,8 @@ namespace defSLAM
       /// All map points are used for the warp estimation, but only those
       /// whose reference keyframe is the estimated one are saved.
       auto pKfref = mapPoint->GetReferenceKeyFrame();
-      if (pKfref != KFi)
-        continue;
+      // if (pKfref != KFi)
+      //   continue;
       mapPointsDB_[mapPoint].push_back(std::shared_ptr<DiffProp>(new DiffProp()));
       std::shared_ptr<DiffProp> diffVect = mapPointsDB_[mapPoint].back();
       diffVect->KFToKF = std::pair<KeyFrame *, KeyFrame *>(KFi, KF2i);
