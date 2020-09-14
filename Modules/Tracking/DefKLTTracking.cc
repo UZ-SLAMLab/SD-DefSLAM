@@ -231,11 +231,11 @@ namespace defSLAM
           mpMapDrawer->UpdatePoints(mCurrentFrame);
         }
 
-        if (mpMap->KeyFramesInMap() <=5)
+        if (mpMap->KeyFramesInMap() <= 5)
         {
-            cout << "Track lost soon after initialisation, reseting..." << endl;
-            mpSystem->Reset();
-            return;
+          cout << "Track lost soon after initialisation, reseting..." << endl;
+          mpSystem->Reset();
+          return;
         }
       }
 
@@ -621,7 +621,7 @@ namespace defSLAM
     // Extract ORB for computing BoW (we just extract ORB in KFs)
     // Compute Bag of Words Vector
     mCurrentFrame->extractORBToRelocate();
-  
+
     cout << "Extracting BoW..." << endl;
     mCurrentFrame->ComputeBoW();
 
@@ -636,7 +636,7 @@ namespace defSLAM
     const int nKFs = vpCandidateKFs.size();
 
     cout << "There are some candidates: ";
-    for (int i = 0; i < nKFs; i++ )
+    for (int i = 0; i < nKFs; i++)
     {
       cout << vpCandidateKFs[i]->mnId << " ";
     }
@@ -842,11 +842,11 @@ namespace defSLAM
       mvKLTKeys = pKFreloc->mvKeys;
       mvKLTMPs = pKFreloc->GetMapPointMatches();
       mvKLTStatus.resize(mvKLTKeys.size(), true);
-      
+
       mKLTtracker.SetReferenceImage(pKFreloc->imGray, mvKLTKeys);
-      
+
       int nmatches = mKLTtracker.PRE_Track(pKFreloc->imGray, mvKLTKeys, mvKLTStatus, true, 0.85);
-      
+
       for (size_t i = 0; i < mvKLTMPs.size(); i++)
       {
         if (!mvKLTStatus[i])

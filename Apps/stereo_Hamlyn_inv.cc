@@ -79,8 +79,8 @@ int main(int argc, char **argv)
   settingsLoader.setK(K);
 
   defSLAM::System SLAM(argv[1], settingsLoader, true);
-
-  for (size_t i(0); i < hamlynloader->size(); i++)
+  auto init(100);
+  for (size_t i(init); i < hamlynloader->size(); i++)
   {
     auto stereoPair = hamlynloader->operator[](i);
 
