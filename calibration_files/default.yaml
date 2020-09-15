@@ -23,14 +23,17 @@ ThDepth: 350
 # ORB Parameters
 #--------------------------------------------------------------------------------------------
 # ORB Extractor: Number of features per image
-ORBextractor.nFeatures: 500
-# ORB Extractor: Scale factor between levels in the scale pyramid   
+ORBextractor.nFeatures: 1200
+
+# ORB Extractor: Scale factor between levels in the scale pyramid 	
 ORBextractor.scaleFactor: 1.2
-# ORB Extractor: Number of levels in the scale pyramid
-ORBextractor.nLevels: 1
+
+# ORB Extractor: Number of levels in the scale pyramid	
+ORBextractor.nLevels: 6
+
 # ORB Extractor: Fast threshold
 ORBextractor.iniThFAST: 15
-ORBextractor.minThFAST: 7
+ORBextractor.minThFAST: 10
 #--------------------------------------------------------------------------------------------
 #Regularizers Parameters
 #--------------------------------------------------------------------------------------------
@@ -44,9 +47,9 @@ Regularizer.PropagationZone : 0
 # Local Mapping Parameters
 #--------------------------------------------------------------------------------------------
 LocalMapping.pointsToTemplate: 50
-LocalMapping.chiLimit: 0.2
-LocalMapping.Bending: 0.4
-LocalMapping.Schwarp.Regularizer: 0.02
+LocalMapping.chiLimit: 0.1
+LocalMapping.Bending: 0.50
+LocalMapping.Schwarp.Regularizer: 0.05
 
 #--------------------------------------------------------------------------------------------
 # Viewer Parameters
