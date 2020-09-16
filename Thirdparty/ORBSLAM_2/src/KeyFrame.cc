@@ -749,13 +749,21 @@ namespace ORB_SLAM2
   cv::KeyPoint KeyFrame::ProjectPoints(const cv::Mat &P)
   {
     // 3D in camera coordinates
-    cv::Mat Rcw = Tcw(cv::Rect(0, 0, 3, 3));
-    cv::Mat mtcw = Tcw(cv::Rect(0, 3, 3, 1));
+    /*cv::Mat Rcw = Tcw(cv::Rect(0, 0, 3, 3));
+    cv::Mat mtcw = Tcw(cv::Rect(0, 3, 3, 1));*/
+    cv::Mat Rcw = Tcw.rowRange(0, 3).colRange(0, 3);
+    cv::Mat tcw = Tcw.rowRange(0, 3).col(3);
 
-    const cv::Mat Pc = Rcw * P + mtcw;
+    cout << "Rcw: " << Rcw << endl;
+    cout << "mtcw: " << tcw << endl;
+
+
+    const cv::Mat Pc = Rcw * P + tcw;
     const float &PcX = Pc.at<float>(0);
     const float &PcY = Pc.at<float>(1);
     const float &PcZ = Pc.at<float>(2);
+
+    cout << "Pc: " << Pc << endl;
 
     // Check positive depth
     if (PcZ < 0.0f)
