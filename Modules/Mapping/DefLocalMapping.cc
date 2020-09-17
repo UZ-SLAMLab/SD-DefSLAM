@@ -455,8 +455,6 @@ namespace defSLAM
     int CurrentKFMatches(0);
 
     // 1. Retrieve reference KF with the highest number of matches
-    cout << "Step 1: Reference KF " << endl;
-
     for (size_t i = 0; i < nval; i++)
     {
       MapPoint *pMP = mpCurrentKeyFrame->GetMapPoint(i);
@@ -471,116 +469,56 @@ namespace defSLAM
         CurrentKFMatches++;
       }
     }
-    KeyFrame *refkfMaxPoints = mpCurrentKeyFrame;
-    int CountPoints(0);
-    for (auto &k : countKFMatches)
-    {
-      if (CountPoints < k.second)
-      {
-        refkfMaxPoints = k.first;
-        CountPoints = k.second;
-      }
-    }
-
-    if (refkfMaxPoints == mpCurrentKeyFrame)
-      return refkfMaxPoints;
-    // 2. Covered area by reference KF and current KF
-    cout << "Step 2: Create masks " << endl;
-
-    cv::Mat maskRefKF(mpCurrentKeyFrame->imGray.rows, mpCurrentKeyFrame->imGray.cols,
-                 CV_8UC1, cv::Scalar(0));
-    cv::Mat maskCurrentKF = maskRefKF.clone();
-    int const max_BINARY_value = 255;
-
-    cv::Mat kernel;
-    int kernel_size = mpCurrentKeyFrame->imGray.cols / 30;
-    int ddepth = -1;
-    cv::Point anchor(-1, -1);
-    double delta;
-    delta = 0;
-    kernel = cv::Mat::ones(kernel_size, kernel_size, CV_32F);
-    double threshold_value = 1;
-
-    // Current KF mask
-    cout << "Step 3: Current mask " << endl;
-
-    for (int i = 0; i < nval; i++)
-    {
-      MapPoint *pMP = mpCurrentKeyFrame->GetMapPoint(i);
-      if (pMP)
-      {
-        if (pMP->isBad())
-          continue;
-        maskCurrentKF.at<char>(mpCurrentKeyFrame->mvKeysUn[i].pt.y,
-                      mpCurrentKeyFrame->mvKeysUn[i].pt.x) = 255;
-      }
-    }
     
-    cv::filter2D(maskCurrentKF, maskCurrentKF, ddepth, kernel, anchor, delta, cv::BORDER_DEFAULT);
-    cv::threshold(maskCurrentKF, maskCurrentKF, threshold_value, max_BINARY_value, 0);
+    // copy key-value pairs from the map to the vector
+    // std::pair<KeyFrame *, int>
+    std::vector<std::pair<KeyFrame *, int>> vec;
+    std::copy(countKFMatches.begin(),
+              countKFMatches.end(),
+              std::back_inserter<std::vector<std::pair<KeyFrame *, int>>>(vec));
 
-    // Reference KF mask
-        cout << "Step 4: Reference mask " << endl;
+     /// We search all the possible matches with the reference keyframes.
+    /// there will be more points
+    KeyFrame* bestBoy;
 
-    vector<MapPoint *> refkfTotalMatches = refkfMaxPoints->GetMapPointMatches();
-    size_t nmatches = refkfTotalMatches.size();
-    for (int i = 0; i < nmatches; i++)
+    // Get matched points
+    const vector<MapPoint *> vpMapPointMatches =
+        mpCurrentKeyFrame->GetMapPointMatches();
+
+    int CountMatches(0);
+    for (uint i(0); i < vec.size(); i++)
     {
-      MapPoint *pMP = refkfTotalMatches[i];
-      if (pMP)
+      const std::pair<KeyFrame *, int> kv = vec[i];
+      // Only take into account those with more than 30 matches
+      KeyFrame *refkf = kv.first;
+      // Get matched points between keyframes
+      vector<pair<size_t, size_t>> vMatchedIndices;
+      int currentMatches(0);
+      for (size_t i = 0; i < vpMapPointMatches.size(); i++)
       {
-        if (pMP->isBad())
+        MapPoint *mapPoint = vpMapPointMatches[i];
+        if (!mapPoint)
           continue;
-
-        cv::KeyPoint kp = mpCurrentKeyFrame->ProjectPoints(pMP->GetWorldPos());
-        
-        if ((kp.pt.x > 0) && (kp.pt.y > 0))
-          maskRefKF.at<char>(kp.pt.y, kp.pt.x) = 255;
-
-      }
-    }
-    
-    cv::filter2D(maskRefKF, maskRefKF, ddepth, kernel, anchor, delta, cv::BORDER_DEFAULT);
-    cv::threshold(maskRefKF, maskRefKF, threshold_value, max_BINARY_value, 0);
-
-    cout << "Step 5: Areas " << endl;
-    int areaCurrent(0), areaRef(0);
-    for (int i = 0; i < maskRefKF.rows; i++)
-      for (int j = 0; j < maskRefKF.cols; j++)
-      {
-        if (uint8_t(maskRefKF.at<char>(i, j)) > 125)
-          areaRef++;
-        if (uint8_t(maskCurrentKF.at<char>(i, j)) > 125)
-          areaCurrent++;
-      }
-    
-    cout << "Current Area: " << areaCurrent << endl;
-    cout << "Reference Area: " << areaRef << endl;
-
-    if (areaCurrent >= areaRef)
-      refkfMaxPoints = mpCurrentKeyFrame;
-
-    cout << "SELECTED KEYFRAME " << endl;
-    /*int MatchesInFrustum(0);
-    for (size_t i = 0; i < nmatches; i++)
-    {
-      MapPoint *pMP = refkfTotalMatches[i];
-      if (pMP)
-      {
-        if (pMP->isBad())
+        if (mapPoint->isBad())
           continue;
-        if (refkfMaxPoints->IsInFrustum(pMP, 0.5))
-          MatchesInFrustum++;
+        /// Check that the point is in both keyframes
+        if (mapPoint->IsInKeyFrame(mpCurrentKeyFrame) &&
+            (mapPoint->IsInKeyFrame(refkf)))
+        {
+          const int idx1 = mapPoint->GetIndexInKeyFrame(refkf);
+          const int idx2 = mapPoint->GetIndexInKeyFrame(mpCurrentKeyFrame);
+          currentMatches++;
+        }
       }
+      if (currentMatches > CountMatches)
+      {
+        bestBoy = refkf;
+        CountMatches = currentMatches;
+      }  
     }
 
-    cout << "Current Matches: " << CurrentKFMatches << endl;
-    cout << "RefKF Matches in frustum: " << MatchesInFrustum << endl;
-
-    if (CurrentKFMatches >= MatchesInFrustum)
-      refkfMaxPoints = mpCurrentKeyFrame;*/
-
-    return refkfMaxPoints;
+    return bestBoy;            
+    
   }
 
   // Reset the algorithm if reset bottom is pushed in the Viewer.
