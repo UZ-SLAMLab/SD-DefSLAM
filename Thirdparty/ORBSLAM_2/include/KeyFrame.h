@@ -131,7 +131,7 @@ namespace ORB_SLAM2
     void SavePoints(string);
 
     // Projection of a 3D point in absolute coordinates
-    cv::KeyPoint ProjectPoints(const cv::Mat &);
+    cv::KeyPoint ProjectPoints(const cv::Mat &P);
     // The following variables are accesed from only 1 thread or never change
     // (no
     // mutex needed).

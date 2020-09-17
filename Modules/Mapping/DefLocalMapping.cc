@@ -140,11 +140,7 @@ namespace defSLAM
       this->MapPointCulling();
       // Use NRSfM to create or refine surfaces.
       this->NRSfM();
-
-      // Add keyframe to DB only if it has a template (relocalization purpose)
-      if (static_cast<DefKeyFrame *>(mpCurrentKeyFrame)->templateAssigned())
-        mpCurrentKeyFrame->addToDB();
-
+        
       mbAbortBA = false;
     }
   }
@@ -166,6 +162,10 @@ namespace defSLAM
       this->CreateNewMapPoints();
       static_cast<DefMap *>(mpMap)->createTemplate(referenceKF_);
       static_cast<DefKeyFrame *>(referenceKF_)->assignTemplate();
+      
+      //Add to DB all ancho keyframes (relocalization)
+      referenceKF_->addToDB();
+      
       createTemplate_ = false;
       return true;
     }
@@ -452,7 +452,9 @@ namespace defSLAM
   {
     size_t nval = this->mpCurrentKeyFrame->mvKeysUn.size();
     std::unordered_map<KeyFrame *, int> countKFMatches;
+    int CurrentKFMatches(0);
 
+    // 1. Retrieve reference KF with the highest number of matches
     for (size_t i = 0; i < nval; i++)
     {
       MapPoint *pMP = mpCurrentKeyFrame->GetMapPoint(i);
@@ -464,20 +466,59 @@ namespace defSLAM
         if (countKFMatches.count(refkfi) == 0)
           countKFMatches[refkfi] = 0;
         countKFMatches[refkfi]++;
+        CurrentKFMatches++;
       }
     }
-    KeyFrame *refkfMaxPoints = mpCurrentKeyFrame;
-    int CountPoints(0);
-    for (auto &k : countKFMatches)
+    
+    // copy key-value pairs from the map to the vector
+    // std::pair<KeyFrame *, int>
+    std::vector<std::pair<KeyFrame *, int>> vec;
+    std::copy(countKFMatches.begin(),
+              countKFMatches.end(),
+              std::back_inserter<std::vector<std::pair<KeyFrame *, int>>>(vec));
+
+     /// We search all the possible matches with the reference keyframes.
+    /// there will be more points
+    KeyFrame* bestBoy;
+
+    // Get matched points
+    const vector<MapPoint *> vpMapPointMatches =
+        mpCurrentKeyFrame->GetMapPointMatches();
+
+    int CountMatches(0);
+    for (uint i(0); i < vec.size(); i++)
     {
-      if (CountPoints < k.second)
+      const std::pair<KeyFrame *, int> kv = vec[i];
+      // Only take into account those with more than 30 matches
+      KeyFrame *refkf = kv.first;
+      // Get matched points between keyframes
+      vector<pair<size_t, size_t>> vMatchedIndices;
+      int currentMatches(0);
+      for (size_t i = 0; i < vpMapPointMatches.size(); i++)
       {
-        refkfMaxPoints = k.first;
-        CountPoints = k.second;
+        MapPoint *mapPoint = vpMapPointMatches[i];
+        if (!mapPoint)
+          continue;
+        if (mapPoint->isBad())
+          continue;
+        /// Check that the point is in both keyframes
+        if (mapPoint->IsInKeyFrame(mpCurrentKeyFrame) &&
+            (mapPoint->IsInKeyFrame(refkf)))
+        {
+          const int idx1 = mapPoint->GetIndexInKeyFrame(refkf);
+          const int idx2 = mapPoint->GetIndexInKeyFrame(mpCurrentKeyFrame);
+          currentMatches++;
+        }
       }
+      if (currentMatches > CountMatches)
+      {
+        bestBoy = refkf;
+        CountMatches = currentMatches;
+      }  
     }
 
-    return refkfMaxPoints;
+    return bestBoy;            
+    
   }
 
   // Reset the algorithm if reset bottom is pushed in the Viewer.
