@@ -83,7 +83,7 @@ namespace defSLAM
         void setbf(const float);
         void setCameraWidth(const int);
         void setCameraHeight(const int);
-        void setFilterPath(const std::string& s);
+        void setFilterPath(const std::string &s);
 
     private:
         // Regularizers
@@ -126,7 +126,7 @@ namespace defSLAM
         float pointSize_;
         float cameraSize_;
         float cameraLineWidth_;
-        //CNN model path
+        //Filter model path
         std::string filterPath_;
     };
 } // namespace defSLAM

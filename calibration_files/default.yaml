@@ -23,16 +23,16 @@ ThDepth: 350
 # ORB Parameters
 #--------------------------------------------------------------------------------------------
 # ORB Extractor: Number of features per image
-ORBextractor.nFeatures: 1200
+ORBextractor.nFeatures: 500
 
 # ORB Extractor: Scale factor between levels in the scale pyramid 	
 ORBextractor.scaleFactor: 1.2
 
 # ORB Extractor: Number of levels in the scale pyramid	
-ORBextractor.nLevels: 6
+ORBextractor.nLevels: 1
 
 # ORB Extractor: Fast threshold
-ORBextractor.iniThFAST: 15
+ORBextractor.iniThFAST: 20
 ORBextractor.minThFAST: 10
 #--------------------------------------------------------------------------------------------
 #Regularizers Parameters
@@ -46,10 +46,10 @@ Regularizer.PropagationZone : 0
 #--------------------------------------------------------------------------------------------
 # Local Mapping Parameters
 #--------------------------------------------------------------------------------------------
-LocalMapping.pointsToTemplate: 50
-LocalMapping.chiLimit: 0.1
-LocalMapping.Bending: 0.50
-LocalMapping.Schwarp.Regularizer: 0.05
+LocalMapping.pointsToTemplate: 100
+LocalMapping.chiLimit: 0.05
+LocalMapping.Bending: 0.20
+LocalMapping.Schwarp.Regularizer: 0.5
 
 #--------------------------------------------------------------------------------------------
 # Viewer Parameters
@@ -66,4 +66,4 @@ Viewer.ViewpointZ: -0.4
 Viewer.ViewpointF: 600
 Viewer.SaveResults: 1
 #--------------------------------
-Filter.file: /home/jose/DefKLTSLAM/filters.txt
+Filters.file: /home/jose/DefKLTSLAM/filters.txt

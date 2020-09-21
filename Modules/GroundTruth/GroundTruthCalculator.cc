@@ -303,7 +303,7 @@ namespace defSLAM
         float libdisp = uint8_t(disparity.at<char>(int(kp.pt.y), int(kp.pt.x)));
         // std::cout << kp.pt << " " << libdisp << " ";
 
-        if ((libdisp < 100) and (libdisp > 5) and (kp.pt.x >= 0))
+        if ((libdisp < 200) and (libdisp > 5) and (kp.pt.x >= 0))
         {
           std::vector<float> ps;
           ps.reserve(3);
