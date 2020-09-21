@@ -13,16 +13,13 @@ function runstd {
     echo $video $leftCalibration $rightCalibration $extrinsicCalibration
     local args="$video $leftCalibration $rightCalibration $extrinsicCalibration"
     cp /home/jose/DefKLTSLAM/Apps/DefSLAMHamyln tmp
-    ./tmp $vocabulary_file $video $leftCalibration $rightCalibration $extrinsicCalibration
+    ./tmp $vocabulary_file $video $leftCalibration $rightCalibration $extrinsicCalibration  >> log.txt
     rm tmp
     return 0
 }  
 
 function runstdinv {
     local local_dir=${1:-null}
-    local arg="$directory/*.avi"
-    local avis=$(ls -l "$local_dir/*.avi")
-    echo "This is runstdinv "  $avis
     local video="$local_dir/*.avi"
     local leftCalibration="$local_dir/Left_Camera_Calibration_Intrinsic.txt"
     local rightCalibration="$local_dir/Right_Camera_Calibration_Intrinsic.txt"
@@ -32,7 +29,7 @@ function runstdinv {
     echo $video $leftCalibration $rightCalibration $extrinsicCalibration
     local args="$video $leftCalibration $rightCalibration $extrinsicCalibration"
     cp /home/jose/DefKLTSLAM/Apps/DefSLAMHamylnINV tmp
-    ./tmp $vocabulary_file $video $leftCalibration $rightCalibration $extrinsicCalibration
+    ./tmp $vocabulary_file $video $leftCalibration $rightCalibration $extrinsicCalibration  >> log.txt
     rm tmp
     return 0
 }  
@@ -50,7 +47,7 @@ function runstd2 {
     local args="$vocabulary_file $videoleft $videoright $leftCalibration $rightCalibration  $extrinsicCalibration"
     echo $args
     cp /home/jose/DefKLTSLAM/Apps/DefSLAMHamyln tmp
-    ./tmp $args
+    ./tmp $args >> log.txt
     rm tmp
     echo $1 
 }  
@@ -68,7 +65,7 @@ function runstd2inv {
     local args="$vocabulary_file $videoleft $videoright $leftCalibration $rightCalibration  $extrinsicCalibration"
     echo $args
     cp /home/jose/DefKLTSLAM/Apps/DefSLAMHamylnINV tmp
-    ./tmp $args
+    ./tmp $args >> log.txt
     rm tmp
     echo $1 
 }  
@@ -84,6 +81,7 @@ function run {
     echo "I receive" $1 $2
 if [[ "$2" =~ ^('Dataset1'|'Dataset6'|'Dataset7'|'Dataset8'|'Dataset9')$ ]]; then
     echo "$2 is in the list"
+rm -r $2
 mkdir $2
 cd $2
 for i in 1 2 3 4 5
@@ -95,6 +93,7 @@ cd ..
 done
 cd ..
 else
+rm -r $2
 mkdir $2
 cd $2
 for i in 1 2 3 4 5
@@ -111,6 +110,7 @@ fi
 function run2 {
     echo "I receive" $1 $2
 if [[ "$2" =~ ^('Dataset1'|'Dataset6'|'Dataset7'|'Dataset8'|'Dataset9')$ ]]; then
+rm -r $2
 mkdir $2
 cd $2
 for i in 1 2 3 4 5
@@ -122,6 +122,7 @@ cd ..
 done
 cd ..
 else
+rm -r $2
 mkdir $2
 cd $2
 for i in 1 2 3 4 5
