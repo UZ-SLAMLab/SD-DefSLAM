@@ -86,9 +86,8 @@ namespace defSLAM
       cerr << "Failed to open settings file at: " << strSettingsFile << endl;
       exit(-1);
     }
-
+    std::string lol = fsSettings["Filters.file"].string();
     masker_.loadFromTxt(fsSettings["Filters.file"].string());
-    cout << endl << masker_.printFilters() << endl;
 
     // Load ORB Vocabulary
     cout << endl
@@ -291,8 +290,10 @@ namespace defSLAM
 #endif
 
     // Initialize the Local Mapping thread and launch
+
     masker_.loadFromTxt(settingsLoader.getFilterPath());
-    cout << endl << masker_.printFilters() << endl;
+    cout << endl
+         << masker_.printFilters() << endl;
 
 #ifdef PARALLEL
     mptLocalMapping = new thread(&ORB_SLAM2::LocalMapping::Run, mpLocalMapper);

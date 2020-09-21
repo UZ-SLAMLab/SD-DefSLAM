@@ -143,7 +143,7 @@ namespace defSLAM
         cameraSize_ = fSettings["Viewer.CameraSize"];
         cameraLineWidth_ = fSettings["Viewer.CameraLineWidth"];
 
-        filterPath_ = fSettings["Filter.file"].string();
+        filterPath_ = fSettings["Filters.file"].string();
     }
 
     int SettingsLoader::getFPS() const
@@ -326,7 +326,8 @@ namespace defSLAM
     {
         imageHeight_ = h;
     }
-    void SettingsLoader::setFilterPath(const std::string &s) {
+    void SettingsLoader::setFilterPath(const std::string &s)
+    {
         filterPath_ = s;
     }
 } // namespace defSLAM
