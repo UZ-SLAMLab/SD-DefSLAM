@@ -23,6 +23,11 @@ public:
     /*
      * Precomputes data for the reference image used for tracking next images
      */
+
+    //This one does not update the patches, it uses  the one extracted the first time a point was seen
+    void SetReferenceImage(cv::Mat &refIm, std::vector<ORB_SLAM2::MapPoint *> &refMps, std::vector<cv::KeyPoint> &refPts);
+
+    //This one updates the patches with the current image location
     void SetReferenceImage(cv::Mat &refIm, std::vector<cv::KeyPoint> &refPts);
 
     void AddFromKeyFrame(ORB_SLAM2::KeyFrame *pKF, std::vector<cv::KeyPoint> &vKeys, std::vector<ORB_SLAM2::MapPoint *> &vMPs);
@@ -31,8 +36,8 @@ public:
      * Tracks a new image using precomputed data. SetReferenceImage must be called
      * at least once before calling this method
      */
-    int PRE_Track(cv::Mat &newIm, std::vector<cv::KeyPoint> &nextPts, std::vector<bool> &status, const bool bInitialFlow,
-                  const float minSSIM);
+    int PRE_Track(cv::Mat &newIm, std::vector<cv::KeyPoint> &nextPts, std::vector<bool> &status, std::vector<cv::Mat>& vHessian,
+                const bool bInitialFlow, const float minSSIM);
 
     int PRE_Track_VEC(cv::Mat &newIm, std::vector<cv::KeyPoint> &nextPts, std::vector<bool> &status, const bool bInitialFlow,
                       const float minSSIM, std::vector<float> &vSSIM, std::vector<cv::Mat> &vOutWins);

@@ -122,6 +122,7 @@ namespace defSLAM
     std::vector<cv::KeyPoint> mvKLTKeys;
     std::vector<MapPoint *> mvKLTMPs;
     std::vector<bool> mvKLTStatus;
+    std::vector<cv::Mat> vHessian_;
 
     bool KLT_TrackWithMotionModel();
     void KLT_UpdateSeeds();

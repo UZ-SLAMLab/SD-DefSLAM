@@ -845,7 +845,7 @@ namespace defSLAM
 
       mKLTtracker.SetReferenceImage(pKFreloc->imGray, mvKLTKeys);
 
-      int nmatches = mKLTtracker.PRE_Track(pKFreloc->imGray, mvKLTKeys, mvKLTStatus, true, 0.85);
+      int nmatches = mKLTtracker.PRE_Track(pKFreloc->imGray, mvKLTKeys, mvKLTStatus, vHessian_, true, 0.85);
 
       for (size_t i = 0; i < mvKLTMPs.size(); i++)
       {
@@ -1213,7 +1213,7 @@ namespace defSLAM
 
     //KLT_UpdateSeeds();
 
-    int nmatches = mKLTtracker.PRE_Track(mCurrentFrame->ImGray, mvKLTKeys, mvKLTStatus, true, 0.85);
+    int nmatches = mKLTtracker.PRE_Track(mCurrentFrame->ImGray, mvKLTKeys, mvKLTStatus, vHessian_, true, 0.85);
 
     for (size_t i = 0; i < mvKLTMPs.size(); i++)
     {
@@ -1341,7 +1341,8 @@ namespace defSLAM
     }
 
     //Set new reference image for KLT
-    mKLTtracker.SetReferenceImage(mCurrentFrame->ImGray, mvKLTKeys);
+    //mKLTtracker.SetReferenceImage(mCurrentFrame->ImGray, mvKLTKeys);
+    mKLTtracker.SetReferenceImage(mCurrentFrame->ImGray,mvKLTMPs,mvKLTKeys);
 
     //Create new KeyFrame
     KeyFrame *pKF = new GroundTruthKeyFrame(*mCurrentFrame, mpMap, mpKeyFrameDB);
