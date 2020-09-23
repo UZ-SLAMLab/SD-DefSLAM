@@ -860,7 +860,7 @@ namespace defSLAM
           mvKLTStatus[i] = false;
       }
 
-      mCurrentFrame->SetTrackedPoints(mvKLTKeys, mvKLTStatus, mvKLTMPs);
+      mCurrentFrame->SetTrackedPoints(mvKLTKeys, mvKLTStatus, mvKLTMPs, vHessian_);
 
       return true;
     }
@@ -1225,7 +1225,7 @@ namespace defSLAM
 
     cout << "[KLT_TrackWithMotionModel]: points tracked by KLT: " << nmatches << " of " << toTrack << endl;
 
-    mCurrentFrame->SetTrackedPoints(mvKLTKeys, mvKLTStatus, mvKLTMPs);
+    mCurrentFrame->SetTrackedPoints(mvKLTKeys, mvKLTStatus, mvKLTMPs,vHessian_);
 
     std::set<MapPoint *> setM;
 
@@ -1416,6 +1416,7 @@ namespace defSLAM
     vector<cv::KeyPoint> vAllGoodKeys, vNewKLTKeys;
     vector<MapPoint *> vAllGoodMps, vNewKLTMPs;
     vector<bool> vGood;
+    vector<cv::Mat> vHessian;
     for (size_t i = 0; i < mCurrentFrame->N; i++)
     {
       if (mCurrentFrame->mvpMapPoints[i])
@@ -1425,6 +1426,7 @@ namespace defSLAM
           vAllGoodKeys.push_back(mCurrentFrame->mvKeys[i]);
           vAllGoodMps.push_back(mCurrentFrame->mvpMapPoints[i]);
           vGood.push_back(true);
+          vHessian.push_back(mCurrentFrame->vHessian_[i]);
 
           if (i >= basePoints)
           {
@@ -1439,7 +1441,7 @@ namespace defSLAM
     mKLTtracker.AddPointsFromMapPoints(vNewKLTMPs, vNewKLTKeys, mImGray, mvKLTMPs, mvKLTKeys);
 
     //Update Frame
-    mCurrentFrame->SetTrackedPoints(vAllGoodKeys, vGood, vAllGoodMps);
+    mCurrentFrame->SetTrackedPoints(vAllGoodKeys, vGood, vAllGoodMps, vHessian);
 
     std::set<MapPoint *> setklt;
     vector<MapPoint *> vectorklt;
@@ -1636,9 +1638,10 @@ namespace defSLAM
 
     if (nToMatch > 0)
     {
+        vector<cv::Mat> vHessian;
       LucasKanadeTracker kltLocalTracker = LucasKanadeTracker(cv::Size(11, 11), 1, 5, 0.1, 1e-4);
       //Use KLT to estimate Projected Local MapPoints
-      int goodKLT = kltLocalTracker.TrackWithInfoWithHH(mCurrentFrame->ImGray, vNextPts, vPrevPts, bStatus, vPatches, vGrad, vMean, vMean2, vH, 0.75);
+      int goodKLT = kltLocalTracker.TrackWithInfoWithHH(mCurrentFrame->ImGray, vNextPts, vPrevPts, bStatus, vPatches, vGrad, vMean, vMean2, vH, 0.75, vHessian);
 
       for (size_t i = 0; i < vNextPts.size(); i++)
       {
@@ -1654,7 +1657,7 @@ namespace defSLAM
       }
 
       //Update current Frame with tracked local MapPoints
-      mCurrentFrame->AppendTrackedPoints(vNextPts, bStatus, vMPs);
+      mCurrentFrame->AppendTrackedPoints(vNextPts, bStatus, vMPs, vHessian);
     }
 
     return toReturn;

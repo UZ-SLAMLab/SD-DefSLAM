@@ -1058,11 +1058,18 @@ int LucasKanadeTracker::TrackWithInfoWithHH(cv::Mat &newIm, std::vector<cv::KeyP
                                             const std::vector<std::vector<cv::Mat>> vGrad,
                                             const std::vector<std::vector<float>> vMean,
                                             const std::vector<std::vector<float>> vMean2,
-                                            std::vector<cv::Mat> &vH, const float minSSIM)
+                                            std::vector<cv::Mat> &vH, const float minSSIM,
+                                            std::vector<cv::Mat>& vHessian)
 {
     auto startPos = nextPts;
     //Set status of all the points to true
     status = vector<bool>(nextPts.size(), true);
+
+    //covariance
+    vector<cv::Mat> jac_(nextPts.size());
+    for(size_t i = 0; i < jac_.size(); i++){
+        jac_[i] = cv::Mat(winSize.area(),2,CV_32F);
+    }
 
     //Dimensions of half of the window
     Point2f halfWin((winSize.width - 1) * 0.5f, (winSize.height - 1) * 0.5f);
@@ -1234,6 +1241,8 @@ int LucasKanadeTracker::TrackWithInfoWithHH(cv::Mat &newIm, std::vector<cv::KeyP
                 float iA11 = 0, iA12 = 0, iA22 = 0;
                 float A11, A12, A22;
 
+                int rr = 0;
+
                 for (y = 0; y < winSize.height; y++)
                 {
                     //Get pointers to the buffers
@@ -1255,10 +1264,16 @@ int LucasKanadeTracker::TrackWithInfoWithHH(cv::Mat &newIm, std::vector<cv::KeyP
                         iA11 += (float)(dx * dx);
                         iA22 += (float)(dy * dy);
                         iA12 += (float)(dx * dy);
+
+                        jac_[i].at<float>(rr,0) = (float) (diff * dx);
+                        jac_[i].at<float>(rr,1) = (float) (diff * dy);
+                        rr++;
                     }
                 }
                 b1 = ib1 * FLT_SCALE;
                 b2 = ib2 * FLT_SCALE;
+
+                jac_[i] *= FLT_SCALE;
 
                 //Compute spatial gradient matrix
                 A11 = iA11 * FLT_SCALE;
@@ -1376,6 +1391,8 @@ int LucasKanadeTracker::TrackWithInfoWithHH(cv::Mat &newIm, std::vector<cv::KeyP
         corrected.convertTo(vOutWins[i], CV_8U);
     }
 
+    vHessian.resize(status.size());
+
     //Check outliers with SSIM
     int toReturn = 0;
     const float C1 = (0.01 * 255) * (0.01 * 255), C2 = (0.03 * 255) * (0.03 * 255);
@@ -1419,6 +1436,9 @@ int LucasKanadeTracker::TrackWithInfoWithHH(cv::Mat &newIm, std::vector<cv::KeyP
 
             float SSIM = ((2.f * mu_x * mu_y + C1) * (2.f * sigma_xy + C2)) /
                          ((mu_x * mu_x + mu_y * mu_y + C1) * (sigma_x * sigma_x + sigma_y * sigma_y + C2));
+
+            cv::Mat hessian = jac_[i].t() * jac_[i];
+            hessian.copyTo(vHessian[i]);
 
             if (SSIM < minSSIM)
                 status[i] = false;

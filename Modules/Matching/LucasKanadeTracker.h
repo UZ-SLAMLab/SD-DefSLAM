@@ -55,7 +55,8 @@ public:
                             const std::vector<cv::KeyPoint> &prevPts,
                             std::vector<bool> &status, const std::vector<std::vector<cv::Mat>> vPatches,
                             const std::vector<std::vector<cv::Mat>> vGrad, const std::vector<std::vector<float>> vMean,
-                            const std::vector<std::vector<float>> vMean2, std::vector<cv::Mat> &vH, const float minSSIM);
+                            const std::vector<std::vector<float>> vMean2, std::vector<cv::Mat> &vH, const float minSSIM,
+                            std::vector<cv::Mat>& vHessian);
 
     void AddPointsFromMapPoints(const vector<ORB_SLAM2::MapPoint *> &vpNewMPs,
                                 const std::vector<cv::KeyPoint> &vNewKeys, const cv::Mat &im,

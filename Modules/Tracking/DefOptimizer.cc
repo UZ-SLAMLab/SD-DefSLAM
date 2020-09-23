@@ -357,6 +357,16 @@ namespace defSLAM
               e->setBarycentric(bary);
               e->setMeasurement(obs);
 
+              /*cv::Mat hess = pFrame->vHessian_[i];
+              //cout << "Hessian: " << hess << endl;
+              Eigen::Matrix2d information;
+              information(0,0) = hess.at<float>(0,0);
+              information(0,1) = hess.at<float>(0,1);
+              information(1,0) = hess.at<float>(1,0);
+              information(1,1) = hess.at<float>(1,1);
+
+              e->setInformation(information);*/
+
               const float invSigma2 = pFrame->mvInvLevelSigma2[kpUn.octave];
               e->setInformation(Eigen::Matrix2d::Identity() * invSigma2 / N);
 
