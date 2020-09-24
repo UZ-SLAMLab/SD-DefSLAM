@@ -115,9 +115,9 @@ RIGHT.P:  !!opencv-matrix
 Regularizer.laplacian: 700
 
 # Inextensibility regularizer: It penalizes the streching
-Regularizer.Inextensibility: 12000
+Regularizer.Inextensibility: 10000
 # Temporal regularizer: Smoothes the changes in the pose of the mesh frame to frame
-Regularizer.temporal: 0.005
+Regularizer.temporal: 0.001
 
 #Number of neighbours layers used in the local optimization
 Regularizer.LocalZone: 2
@@ -138,7 +138,7 @@ ORBextractor.nFeatures: 800 #1000
 ORBextractor.scaleFactor: 1.2
 
 # ORB Extractor: Number of levels in the scale pyramid
-ORBextractor.nLevels: 4 #
+ORBextractor.nLevels: 1 #
 
 # ORB Extractor: Fast threshold
 # Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
@@ -165,10 +165,10 @@ Viewer.SaveResults: 1
 #--------------------------------------------------------------------------------------------
 # Local Mapping Parameters
 #--------------------------------------------------------------------------------------------
-LocalMapping.pointsToTemplate: 150
-LocalMapping.chiLimit: 0.2
+LocalMapping.pointsToTemplate: 120
+LocalMapping.chiLimit: 0.005
 LocalMapping.Bending: 0.70
 LocalMapping.Schwarp.Regularizer: 0.1
 
 
-Filters.file: /home/user/Documents/DefKLTSLAM/filters.txt
+Filters.file: /home/jose/DefKLTSLAM/filters.txt

@@ -139,24 +139,13 @@ namespace ORB_SLAM2
           }
         }
       }
-
-      const int n2 = this->mvCurrentKeysCorr.size();
-      for (int i = 0; i < n2; i++)
+      for (const auto &pair : innovation)
       {
-        if (this->mvbMapcorr[i])
-        {
-          cv::Point2f pt1, pt2;
-          pt1.x = mvCurrentKeysCorr[i].pt.x - r;
-          pt1.y = mvCurrentKeysCorr[i].pt.y - r;
-          pt2.x = mvCurrentKeysCorr[i].pt.x + r;
-          pt2.y = mvCurrentKeysCorr[i].pt.y + r;
-
-          // This is a match to a MapPoint in the map
-
-          cv::rectangle(im, pt1, pt2, cv::Scalar(0, 255, 255));
-          cv::circle(im, mvCurrentKeysCorr[i].pt, 2, cv::Scalar(0, 255, 255), -1);
-          mnTracked++;
-        }
+        cv::line(im, pair.first.pt, pair.second.pt, cv::Scalar(10, 16, 255));
+      }
+      for (const auto &pair : innovationOutlier)
+      {
+        cv::line(im, pair.first.pt, pair.second.pt, cv::Scalar(255, 255, 255));
       }
     }
 
@@ -219,7 +208,6 @@ namespace ORB_SLAM2
     unique_lock<mutex> lock(mMutex);
     pTracker->mImRGB.copyTo(mIm);
     mvCurrentKeys = pTracker->mCurrentFrame->mvKeys;
-    this->mvCurrentKeysCorr = pTracker->mCurrentFrame->mvKeysUnCorr;
     mask_ = pTracker->mCurrentFrame->_mask.clone();
 
     N = mvCurrentKeys.size();
@@ -252,12 +240,18 @@ namespace ORB_SLAM2
           }
         }
       }
-      for (int i = 0; i < N2; i++)
+      uint i(-1);
+      for (auto &mp : pTracker->mCurrentFrame->mvpMapPoints)
       {
-        MapPoint *pMP = pTracker->mCurrentFrame->mvpMapPointsCorr[i];
-        if (pMP)
+        i++;
+        if (mp)
         {
-          this->mvbMapcorr[i] = true;
+          if (mp->isBad())
+            continue;
+          cv::KeyPoint kp_est =
+              pTracker->mCurrentFrame->ProjectPoints(mp->GetWorldPos());
+          cv::KeyPoint kp_m = pTracker->mCurrentFrame->mvKeys[i];
+          innovation.push_back(std::make_pair(kp_m, kp_est));
         }
       }
     }

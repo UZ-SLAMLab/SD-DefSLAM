@@ -127,9 +127,8 @@ namespace defSLAM
                      scale);
 
     double Huber(0.01);
-    double chi(pow(chiLimit_, 2));
     bool aceptable =
-        Optimizer::OptimizeHorn(cloud2pc, cloud1pc, transf, chi, Huber);
+        Optimizer::OptimizeHorn(cloud2pc, cloud1pc, transf, chiLimit_, Huber);
 
     if ((!aceptable) && (check_chi))
       return false;
