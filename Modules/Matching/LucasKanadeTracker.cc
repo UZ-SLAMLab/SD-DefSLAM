@@ -30,6 +30,38 @@ LucasKanadeTracker::LucasKanadeTracker(const cv::Size _winSize, const int _maxLe
     Idref = vector<vector<Mat>>(maxLevel + 1);
 }
 
+void LucasKanadeTracker::SetReferenceImage(cv::Mat &refIm, std::vector<ORB_SLAM2::MapPoint *> &refMps, std::vector<cv::KeyPoint> &refPts) {
+    //Compute reference pyramid
+    cv::buildOpticalFlowPyramid(refIm, refPyr, winSize, maxLevel);
+
+    //Store points
+    prevPts = refPts;
+
+    for(int level = maxLevel; level >= 0; level--){
+        vMeanI[level].clear();
+        vector<float>().swap(vMeanI[level]);
+        vMeanI2[level].clear();
+        vector<float>().swap(vMeanI2[level]);
+        Iref[level].clear();
+        vector<cv::Mat>().swap(Iref[level]);
+        Idref[level].clear();
+        vector<cv::Mat>().swap(Idref[level]);
+
+        vMeanI[level].resize(refMps.size());
+        vMeanI2[level].resize(refMps.size());
+        Iref[level].resize(refMps.size());
+        Idref[level].resize(refMps.size());
+
+        for(int i = 0; i < refMps.size(); i++){
+            if(!refMps[i]) continue;
+            vMeanI[level][i] = refMps[i]->mvMean[level];
+            vMeanI2[level][i] = refMps[i]->mvMean2[level];
+            Iref[level][i] = refMps[i]->mvPatch[level].clone();
+            Idref[level][i] = refMps[i]->mvGrad[level].clone();
+        }
+    }
+}
+
 void LucasKanadeTracker::SetReferenceImage(Mat &refIm, vector<KeyPoint> &refPts)
 {
     //Compute reference pyramid
@@ -148,11 +180,17 @@ void LucasKanadeTracker::SetReferenceImage(Mat &refIm, vector<KeyPoint> &refPts)
     }
 }
 
-int LucasKanadeTracker::PRE_Track(Mat &newIm, std::vector<KeyPoint> &nextPts, vector<bool> &status, const bool bInitialFlow,
-                                  const float minSSIM)
+int LucasKanadeTracker::PRE_Track(Mat &newIm, std::vector<KeyPoint> &nextPts, vector<bool> &status, std::vector<cv::Mat>& vHessian,
+                                const bool bInitialFlow, const float minSSIM)
 {
     //Dimensions of half of the window
     Point2f halfWin((winSize.width - 1) * 0.5f, (winSize.height - 1) * 0.5f);
+
+    //covariance
+    vector<cv::Mat> jac_(nextPts.size());
+    for(size_t i = 0; i < jac_.size(); i++){
+        jac_[i] = cv::Mat(winSize.area(),2,CV_32F);
+    }
 
     //Compute pyramid images
     vector<Mat> newPyr;
@@ -321,6 +359,8 @@ int LucasKanadeTracker::PRE_Track(Mat &newIm, std::vector<KeyPoint> &nextPts, ve
                 float iA11 = 0, iA12 = 0, iA22 = 0;
                 float A11, A12, A22;
 
+                int rr = 0;
+
                 for (y = 0; y < winSize.height; y++)
                 {
                     //Get pointers to the buffers
@@ -342,10 +382,16 @@ int LucasKanadeTracker::PRE_Track(Mat &newIm, std::vector<KeyPoint> &nextPts, ve
                         iA11 += (float)(dx * dx);
                         iA22 += (float)(dy * dy);
                         iA12 += (float)(dx * dy);
+
+                        jac_[i].at<float>(rr,0) = (float) (diff * dx);
+                        jac_[i].at<float>(rr,1) = (float) (diff * dy);
+                        rr++;
                     }
                 }
                 b1 = ib1 * FLT_SCALE;
                 b2 = ib2 * FLT_SCALE;
+
+                jac_[i] *= FLT_SCALE;
 
                 //Compute spatial gradient matrix
                 A11 = iA11 * FLT_SCALE;
@@ -464,6 +510,8 @@ int LucasKanadeTracker::PRE_Track(Mat &newIm, std::vector<KeyPoint> &nextPts, ve
         }
     }
 
+    vHessian.resize(status.size());
+
     //Check outliers with SSIM
     const float C1 = (0.01 * 255) * (0.01 * 255), C2 = (0.03 * 255) * (0.03 * 255);
     const float N_inv = 1.f / (float)winSize.area(), N_inv_1 = 1.f / (float)(winSize.area() - 1);
@@ -506,6 +554,9 @@ int LucasKanadeTracker::PRE_Track(Mat &newIm, std::vector<KeyPoint> &nextPts, ve
 
             float SSIM = ((2.f * mu_x * mu_y + C1) * (2.f * sigma_xy + C2)) /
                          ((mu_x * mu_x + mu_y * mu_y + C1) * (sigma_x * sigma_x + sigma_y * sigma_y + C2));
+
+            cv::Mat hessian = jac_[i].t() * jac_[i];
+            hessian.copyTo(vHessian[i]);
 
             if (SSIM < minSSIM)
             {
@@ -1007,11 +1058,18 @@ int LucasKanadeTracker::TrackWithInfoWithHH(cv::Mat &newIm, std::vector<cv::KeyP
                                             const std::vector<std::vector<cv::Mat>> vGrad,
                                             const std::vector<std::vector<float>> vMean,
                                             const std::vector<std::vector<float>> vMean2,
-                                            std::vector<cv::Mat> &vH, const float minSSIM)
+                                            std::vector<cv::Mat> &vH, const float minSSIM,
+                                            std::vector<cv::Mat>& vHessian)
 {
     auto startPos = nextPts;
     //Set status of all the points to true
     status = vector<bool>(nextPts.size(), true);
+
+    //covariance
+    vector<cv::Mat> jac_(nextPts.size());
+    for(size_t i = 0; i < jac_.size(); i++){
+        jac_[i] = cv::Mat(winSize.area(),2,CV_32F);
+    }
 
     //Dimensions of half of the window
     Point2f halfWin((winSize.width - 1) * 0.5f, (winSize.height - 1) * 0.5f);
@@ -1183,6 +1241,8 @@ int LucasKanadeTracker::TrackWithInfoWithHH(cv::Mat &newIm, std::vector<cv::KeyP
                 float iA11 = 0, iA12 = 0, iA22 = 0;
                 float A11, A12, A22;
 
+                int rr = 0;
+
                 for (y = 0; y < winSize.height; y++)
                 {
                     //Get pointers to the buffers
@@ -1204,10 +1264,16 @@ int LucasKanadeTracker::TrackWithInfoWithHH(cv::Mat &newIm, std::vector<cv::KeyP
                         iA11 += (float)(dx * dx);
                         iA22 += (float)(dy * dy);
                         iA12 += (float)(dx * dy);
+
+                        jac_[i].at<float>(rr,0) = (float) (diff * dx);
+                        jac_[i].at<float>(rr,1) = (float) (diff * dy);
+                        rr++;
                     }
                 }
                 b1 = ib1 * FLT_SCALE;
                 b2 = ib2 * FLT_SCALE;
+
+                jac_[i] *= FLT_SCALE;
 
                 //Compute spatial gradient matrix
                 A11 = iA11 * FLT_SCALE;
@@ -1325,6 +1391,8 @@ int LucasKanadeTracker::TrackWithInfoWithHH(cv::Mat &newIm, std::vector<cv::KeyP
         corrected.convertTo(vOutWins[i], CV_8U);
     }
 
+    vHessian.resize(status.size());
+
     //Check outliers with SSIM
     int toReturn = 0;
     const float C1 = (0.01 * 255) * (0.01 * 255), C2 = (0.03 * 255) * (0.03 * 255);
@@ -1368,6 +1436,9 @@ int LucasKanadeTracker::TrackWithInfoWithHH(cv::Mat &newIm, std::vector<cv::KeyP
 
             float SSIM = ((2.f * mu_x * mu_y + C1) * (2.f * sigma_xy + C2)) /
                          ((mu_x * mu_x + mu_y * mu_y + C1) * (sigma_x * sigma_x + sigma_y * sigma_y + C2));
+
+            cv::Mat hessian = jac_[i].t() * jac_[i];
+            hessian.copyTo(vHessian[i]);
 
             if (SSIM < minSSIM)
                 status[i] = false;

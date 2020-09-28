@@ -140,7 +140,7 @@ namespace defSLAM
       this->MapPointCulling();
       // Use NRSfM to create or refine surfaces.
       this->NRSfM();
-        
+
       mbAbortBA = false;
     }
   }
@@ -162,10 +162,10 @@ namespace defSLAM
       this->CreateNewMapPoints();
       static_cast<DefMap *>(mpMap)->createTemplate(referenceKF_);
       static_cast<DefKeyFrame *>(referenceKF_)->assignTemplate();
-      
+
       //Add to DB all ancho keyframes (relocalization)
       referenceKF_->addToDB();
-      
+
       createTemplate_ = false;
       return true;
     }
@@ -392,7 +392,7 @@ namespace defSLAM
       }
     }
     cv::Mat kernel;
-    int kernel_size = cols / 30;
+    int kernel_size = cols / 15;
     int ddepth = -1;
     cv::Point anchor(-1, -1);
     double delta;
@@ -413,7 +413,7 @@ namespace defSLAM
         {
           continue;
         }
-        auto tsize(cols / 30);
+        auto tsize(cols / 15);
         auto ycrop = kpt.y - tsize / 2;
         auto xcrop = kpt.x - tsize / 2;
         if (ycrop < 0)
@@ -469,7 +469,7 @@ namespace defSLAM
         CurrentKFMatches++;
       }
     }
-    
+
     // copy key-value pairs from the map to the vector
     // std::pair<KeyFrame *, int>
     std::vector<std::pair<KeyFrame *, int>> vec;
@@ -477,9 +477,9 @@ namespace defSLAM
               countKFMatches.end(),
               std::back_inserter<std::vector<std::pair<KeyFrame *, int>>>(vec));
 
-     /// We search all the possible matches with the reference keyframes.
+    /// We search all the possible matches with the reference keyframes.
     /// there will be more points
-    KeyFrame* bestBoy;
+    KeyFrame *bestBoy;
 
     // Get matched points
     const vector<MapPoint *> vpMapPointMatches =
@@ -514,11 +514,10 @@ namespace defSLAM
       {
         bestBoy = refkf;
         CountMatches = currentMatches;
-      }  
+      }
     }
 
-    return bestBoy;            
-    
+    return bestBoy;
   }
 
   // Reset the algorithm if reset bottom is pushed in the Viewer.

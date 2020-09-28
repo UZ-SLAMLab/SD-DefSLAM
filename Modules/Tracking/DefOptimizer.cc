@@ -266,7 +266,6 @@ namespace defSLAM
 
       // Set Frame vertex
       setMeshNodes(optimizer, mMap);
-      uint nBad(0);
       // Set MapPoint vertices
       const int N = pFrame->N;
 
@@ -304,12 +303,30 @@ namespace defSLAM
       vpEdgesMono.reserve(N);
       vnIndexEdgeMono.reserve(N);
       /////////// OBSERVATIONS ////////////////////////
-      const float deltaMono = sqrt(5.991);
+      const float deltaMono = sqrt(2.991);
       unique_lock<mutex> lock(MapPoint::mGlobalMutex);
 
       int Points_Obs(0);
       int Points_Facet(0);
       int PointsORB(0);
+      int Points_in_Opt(0);
+      for (int i = 0; i < N; i++)
+      {
+        if (!(pFrame->mvbOutlier[i]))
+        {
+          MapPoint *pMP = pFrame->mvpMapPoints[i];
+          if ((pMP))
+          {
+            Points_Obs++;
+            if ((pMP)->isBad())
+              continue;
+            if (static_cast<DefMapPoint *>(pMP)->getFacet())
+            {
+              Points_in_Opt++;
+            }
+          }
+        }
+      }
 
       for (int i = 0; i < N; i++)
       {
@@ -357,8 +374,25 @@ namespace defSLAM
               e->setBarycentric(bary);
               e->setMeasurement(obs);
 
+              //cv::Mat hess = pFrame->vHessian_[i];
+              //cv::Mat inf_matrix = hess.inv();
+              //cout << "Hessian: " << hess << endl;
+              //cout << "Information matrix: " << inf_matrix << endl;
+              // cv::PCA pt_pca(hess, cv::Mat(), cv::PCA::Flags::DATA_AS_ROW, 0);
+              //cout << "Eigen values: " << pt_pca.eigenvalues << endl;
+
+              //Eigen::Matrix2d information;
+              //information(0, 0) = inf_matrix.at<float>(0, 0);
+              //information(0, 1) = inf_matrix.at<float>(0, 1);
+              //information(1, 0) = inf_matrix.at<float>(1, 0);
+              //information(1, 1) = inf_matrix.at<float>(1, 1);
+
+              // e->setInformation(information / N);
+
               const float invSigma2 = pFrame->mvInvLevelSigma2[kpUn.octave];
-              e->setInformation(Eigen::Matrix2d::Identity() * invSigma2 / N);
+              e->setInformation(Eigen::Matrix2d::Identity() * invSigma2 / Points_in_Opt);
+
+              // std::cout << "Points : " << i << " " << Eigen::Matrix2d::Identity() * invSigma2 << std::endl;
 
               g2o::RobustKernelHuber *rk = new g2o::RobustKernelHuber;
               e->setRobustKernel(rk);
@@ -526,36 +560,54 @@ namespace defSLAM
         err_inex.push_back(er);
         optimizer.addEdge(e);
       }
+      // We perform 4 optimizations, after each optimization we classify observation as inlier/outlier
+      // At the next optimization, outliers are not included, but at the end they can be classified as inliers again.
+      const float chi2Mono[4] = {20.991, 15.991, 15.991, 10.991};
+      const int its[4] = {10, 10, 10, 10};
 
-      optimizer.setVerbose(false);
-
-      optimizer.initializeOptimization(0);
-
-      optimizer.optimize(50);
-
-      for (size_t i = 0, iend = vpEdgesMono.size(); i < iend; i++)
+      int nBad = 0;
+      for (size_t it = 0; it < 4; it++)
       {
-        g2o::EdgeNodesCamera *e = vpEdgesMono[i];
 
-        const size_t idx = vnIndexEdgeMono[i];
+        vSE3->setEstimate(Converter::toSE3Quat(pFrame->mTcw));
+        optimizer.initializeOptimization(0);
+        optimizer.optimize(its[it]);
 
-        if (pFrame->mvbOutlier[idx])
+        nBad = 0;
+        for (size_t i = 0, iend = vpEdgesMono.size(); i < iend; i++)
         {
-          e->computeError();
+          g2o::EdgeNodesCamera *e = vpEdgesMono[i];
+
+          const size_t idx = vnIndexEdgeMono[i];
+
+          if (pFrame->mvbOutlier[idx])
+          {
+            e->computeError();
+          }
+
+          const float chi2 = e->chi2();
+
+          if (chi2 > chi2Mono[it] / Points_in_Opt)
+          {
+            pFrame->mvbOutlier[idx] = true;
+            e->setLevel(1);
+            nBad++;
+          }
+          else
+          {
+            pFrame->mvbOutlier[idx] = false;
+            e->setLevel(0);
+          }
+
+          if (it == 2)
+            e->setRobustKernel(0);
         }
 
-        const float chi2 = e->chi2();
-
-        if (chi2 > 5.991)
-        {
-          pFrame->mvbOutlier[idx] = true;
-          nBad++;
-        }
-        else
-        {
-          pFrame->mvbOutlier[idx] = false;
-        }
+        if (optimizer.edges().size() < 10)
+          break;
       }
+
+      std::cout << " INLIERS-OUTLIERS : " << vpEdgesMono.size() << "  " << nBad << std::endl;
       double sumError(0.0);
       std::vector<float> vectorError;
       uint n(0);
@@ -922,7 +974,7 @@ namespace defSLAM
       {
         if (edgesSimple[i]->chi2() > chi)
         {
-          // edgesSimple[i]->setLevel(1);
+          edgesSimple[i]->setLevel(1);
         }
         else
         {
@@ -931,15 +983,23 @@ namespace defSLAM
       }
       optimizer.initializeOptimization(0);
       optimizer.optimize(50);
+      count = 0;
+      for (int i = 0; i < N; i++)
+      {
+        if (!(edgesSimple[i]->chi2() > chi))
+        {
+          count++;
+        }
+      }
 
-      std::cout << "chi " << optimizer.chi2() / count << "  " << chi << "  "
+      std::cout << "chi " << float(count) / float(N) << "  " << chi << "  "
                 << count << std::endl;
       if (std::isnan(optimizer.chi2()))
         return false;
       else if (std::isinf(optimizer.chi2()))
         return false;
       else
-        return (optimizer.chi2() / count < chi);
+        return (float(count) / float(N) > 0.40);
     }
 
     // Set nodes to optimize. This function numbers them from 1 to N+1 and

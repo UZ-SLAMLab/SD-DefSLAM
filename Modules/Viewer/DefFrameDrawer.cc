@@ -184,8 +184,10 @@ namespace defSLAM
     auto points = mpMap->GetReferenceMapPoints();
     mvCurrentLocalMap.clear();
     mask_ = pTracker->mCurrentFrame->_mask.clone();
-
-    cout << "DefFramer drawer begins" << endl;
+    innovation.clear();
+    innovationOutlier.clear();
+    cout
+        << "DefFramer drawer begins" << endl;
 
     mvCurrentKeys = pTracker->mCurrentFrame->mvKeys;
     this->mvCurrentKeysCorr = pTracker->mCurrentFrame->mvKeysUnCorr;
@@ -222,11 +224,34 @@ namespace defSLAM
               }
           }
         }
+        uint i(-1);
+        for (auto &mp : pTracker->mCurrentFrame->mvpMapPoints)
+        {
+          i++;
+          if (mp)
+          {
+            if (mp->isBad())
+              continue;
+            if (!pTracker->mCurrentFrame->mvbOutlier[i])
+            {
+              cv::KeyPoint kp_est =
+                  pTracker->mCurrentFrame->ProjectPoints(mp->GetWorldPos());
+              cv::KeyPoint kp_m = pTracker->mCurrentFrame->mvKeys[i];
+              innovation.push_back(std::make_pair(kp_m, kp_est));
+            }
+            else
+            {
+              cv::KeyPoint kp_est =
+                  pTracker->mCurrentFrame->ProjectPoints(mp->GetWorldPos());
+              cv::KeyPoint kp_m = pTracker->mCurrentFrame->mvKeys[i];
+              innovationOutlier.push_back(std::make_pair(kp_m, kp_est));
+            }
+          }
+        }
       }
 
       for (int i = 0; i < N; i++)
       {
-        // Failure is here
         MapPoint *pMP = pTracker->mCurrentFrame->mvpMapPoints[i];
         if (pMP)
         {

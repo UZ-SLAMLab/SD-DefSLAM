@@ -954,7 +954,8 @@ namespace ORB_SLAM2
     }
   }
 
-  void Frame::SetTrackedPoints(std::vector<cv::KeyPoint> &vPoints, const std::vector<bool> &vGood, const std::vector<MapPoint *> vpMapPoints)
+  void Frame::SetTrackedPoints(std::vector<cv::KeyPoint> &vPoints, const std::vector<bool> &vGood,
+          const std::vector<MapPoint *> vpMapPoints, const std::vector<cv::Mat>& vHessian)
   {
     mvKeys.clear();
     vector<cv::KeyPoint>().swap(mvKeys);
@@ -962,6 +963,8 @@ namespace ORB_SLAM2
     vector<MapPoint *>().swap(mvpMapPoints);
     mvbOutlier.clear();
     vector<bool>().swap(mvbOutlier);
+    vHessian_.clear();
+    vector<cv::Mat>().swap(vHessian_);
     for (size_t i = 0; i < vPoints.size(); i++)
     {
       if (vGood[i] && vpMapPoints[i])
@@ -969,6 +972,7 @@ namespace ORB_SLAM2
         mvKeys.push_back(vPoints[i]);
         mvpMapPoints.push_back(vpMapPoints[i]);
         mvbOutlier.push_back(false);
+        vHessian_.push_back(vHessian[i]);
       }
     }
 
@@ -986,7 +990,7 @@ namespace ORB_SLAM2
   }
 
   void Frame::AppendTrackedPoints(std::vector<cv::KeyPoint> &vPoints, const std::vector<bool> &vGood,
-                                  const vector<MapPoint *> &vpMapPoints)
+                                  const vector<MapPoint *> &vpMapPoints, const std::vector<cv::Mat>& vHessian)
   {
     for (int i = 0; i < vPoints.size(); i++)
     {
@@ -997,6 +1001,7 @@ namespace ORB_SLAM2
         mvuRight.push_back(-1);
         mvDepth.push_back(-1);
         mvbOutlier.push_back(false);
+        vHessian_.push_back(vHessian[i]);
       }
     }
 

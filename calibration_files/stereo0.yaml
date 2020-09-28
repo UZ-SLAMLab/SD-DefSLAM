@@ -6,7 +6,7 @@
 # Estos son los parámetros que queremos tener de las imágenes rectificadas
 
 # ------------------- DONT TOUCH ---------------------
-# Camera calibration and distortion parameters (OpenCV) 
+# Camera calibration and distortion parameters (OpenCV)
 Camera.fx: 435.2046959714599
 Camera.fy: 435.2046959714599
 Camera.cx: 367.4517211914062
@@ -111,13 +111,13 @@ RIGHT.P:  !!opencv-matrix
 # Regularizer Parameters
 #--------------------------------------------------------------------------------------------
 
-# Laplacian regularizer: It penalizes changes in curvature	
+# Laplacian regularizer: It penalizes changes in curvature
 Regularizer.laplacian: 700
 
 # Inextensibility regularizer: It penalizes the streching
-Regularizer.Inextensibility: 12000
+Regularizer.Inextensibility: 10000
 # Temporal regularizer: Smoothes the changes in the pose of the mesh frame to frame
-Regularizer.temporal: 0.005
+Regularizer.temporal: 0.001
 
 #Number of neighbours layers used in the local optimization
 Regularizer.LocalZone: 2
@@ -125,25 +125,25 @@ Regularizer.LocalZone: 2
 #Number of neighbours layers affected by propagation
 Regularizer.PropagationZone: 0
 
-# Reliability: It uses just the more found keypoints  (Reliability = found / "viewed)	
+# Reliability: It uses just the more found keypoints  (Reliability = found / "viewed)
 Regularizer.Reliability: 0
 
 #--------------------------------------------------------------------------------------------
 # ORB Parameters (keep always the same)
 #--------------------------------------------------------------------------------------------
 # ORB Extractor: Number of features per image
-ORBextractor.nFeatures: 1000
+ORBextractor.nFeatures: 800 #1000
 
-# ORB Extractor: Scale factor between levels in the scale pyramid 	
+# ORB Extractor: Scale factor between levels in the scale pyramid
 ORBextractor.scaleFactor: 1.2
 
-# ORB Extractor: Number of levels in the scale pyramid	
-ORBextractor.nLevels: 1
+# ORB Extractor: Number of levels in the scale pyramid
+ORBextractor.nLevels: 1 #
 
 # ORB Extractor: Fast threshold
 # Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
 # Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
-# You can lower these values if your images have low contrast			
+# You can lower these values if your images have low contrast
 ORBextractor.iniThFAST: 15
 ORBextractor.minThFAST: 7
 
@@ -165,9 +165,10 @@ Viewer.SaveResults: 1
 #--------------------------------------------------------------------------------------------
 # Local Mapping Parameters
 #--------------------------------------------------------------------------------------------
-LocalMapping.pointsToTemplate: 150
-LocalMapping.chiLimit: 0.2
+LocalMapping.pointsToTemplate: 120
+LocalMapping.chiLimit: 0.005
 LocalMapping.Bending: 0.70
-LocalMapping.Schwarp.Regularizer: 0.2
+LocalMapping.Schwarp.Regularizer: 0.1
+
 
 Filters.file: /home/jose/DefKLTSLAM/filters.txt

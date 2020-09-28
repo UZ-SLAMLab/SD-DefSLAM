@@ -224,12 +224,15 @@ namespace ORB_SLAM2
 
         void UndistortKeyPoints(std::vector<cv::KeyPoint> &mvDistorted, std::vector<cv::KeyPoint> &mvUndistorted);
 
-        void SetTrackedPoints(std::vector<cv::KeyPoint> &vPoints, const std::vector<bool> &vGood, const std::vector<MapPoint *> vpMapPoints);
+        void SetTrackedPoints(std::vector<cv::KeyPoint> &vPoints, const std::vector<bool> &vGood,
+                            const std::vector<MapPoint *> vpMapPoints, const std::vector<cv::Mat>& vHessian);
 
         void AppendTrackedPoints(std::vector<cv::KeyPoint> &vPoints, const std::vector<bool> &vGood,
-                                 const vector<MapPoint *> &vpMapPoints);
+                                 const vector<MapPoint *> &vpMapPoints, const std::vector<cv::Mat>& vHessian);
 
         void extractORBToRelocate();
+
+        std::vector<cv::Mat> vHessian_;
     };
 
 } // namespace ORB_SLAM2
