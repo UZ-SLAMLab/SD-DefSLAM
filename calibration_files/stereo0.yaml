@@ -112,12 +112,12 @@ RIGHT.P:  !!opencv-matrix
 #--------------------------------------------------------------------------------------------
 
 # Laplacian regularizer: It penalizes changes in curvature
-Regularizer.laplacian: 700
+Regularizer.laplacian: 100
 
 # Inextensibility regularizer: It penalizes the streching
-Regularizer.Inextensibility: 10000
+Regularizer.Inextensibility: 5000
 # Temporal regularizer: Smoothes the changes in the pose of the mesh frame to frame
-Regularizer.temporal: 0.001
+Regularizer.temporal: 0.01
 
 #Number of neighbours layers used in the local optimization
 Regularizer.LocalZone: 2
@@ -165,10 +165,10 @@ Viewer.SaveResults: 1
 #--------------------------------------------------------------------------------------------
 # Local Mapping Parameters
 #--------------------------------------------------------------------------------------------
-LocalMapping.pointsToTemplate: 120
+LocalMapping.pointsToTemplate: 100
 LocalMapping.chiLimit: 0.005
 LocalMapping.Bending: 0.70
-LocalMapping.Schwarp.Regularizer: 0.1
+LocalMapping.Schwarp.Regularizer: 0.05
 
 
 Filters.file: /home/jose/DefKLTSLAM/filters.txt
