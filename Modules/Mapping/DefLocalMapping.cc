@@ -61,6 +61,11 @@ namespace defSLAM
     double reg_ = fSettings["LocalMapping.Schwarp.Regularizer"];
     bendingReg_ = fSettings["LocalMapping.Bending"];
     saveResults_ = bool(int(fSettings["Viewer.SaveResults"]));
+
+    std::cout << "Deformation Mapping parameters" << std::endl;
+    std::cout << " - PointsToTemplate_ : " << pointsToTemplate_ << std::endl;
+    std::cout << " - chiLimit_ : " << chiLimit_ << std::endl;
+    std::cout << " - bendingReg_: " << bendingReg_ << std::endl;
     warpDB_ = new SchwarpDatabase(reg_);
   }
 
@@ -78,6 +83,11 @@ namespace defSLAM
     double reg_ = settingsLoader.getschwarpReg();
     bendingReg_ = settingsLoader.getbendingReg();
     saveResults_ = settingsLoader.getSaveResults();
+
+    std::cout << "Deformation Mapping parameters" << std::endl;
+    std::cout << " - PointsToTemplate_ : " << pointsToTemplate_ << std::endl;
+    std::cout << " - chiLimit_ : " << chiLimit_ << std::endl;
+    std::cout << " - bendingReg_: " << bendingReg_ << std::endl;
     warpDB_ = new SchwarpDatabase(reg_);
   }
 

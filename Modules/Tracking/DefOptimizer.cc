@@ -303,7 +303,6 @@ namespace defSLAM
       vpEdgesMono.reserve(N);
       vnIndexEdgeMono.reserve(N);
       /////////// OBSERVATIONS ////////////////////////
-      const float deltaMono = sqrt(2.991);
       unique_lock<mutex> lock(MapPoint::mGlobalMutex);
 
       int Points_Obs(0);
@@ -327,6 +326,8 @@ namespace defSLAM
           }
         }
       }
+
+      const float deltaMono = sqrt(5.991);
 
       for (int i = 0; i < N; i++)
       {
@@ -390,7 +391,7 @@ namespace defSLAM
               // e->setInformation(information / N);
 
               const float invSigma2 = pFrame->mvInvLevelSigma2[kpUn.octave];
-              e->setInformation(Eigen::Matrix2d::Identity() * invSigma2 / Points_in_Opt);
+              e->setInformation(Eigen::Matrix2d::Identity() * invSigma2);
 
               // std::cout << "Points : " << i << " " << Eigen::Matrix2d::Identity() * invSigma2 << std::endl;
 
@@ -431,7 +432,7 @@ namespace defSLAM
         (*it)->getInitialPose(x, y, z);
         v << x, y, z;
         e->setMeasurement(v);
-        e->setInformation(RegTemp * Eigen::Matrix3d::Identity() / pow(m, 2));
+        e->setInformation(RegTemp * Eigen::Matrix3d::Identity() / pow(m, 2) * Points_in_Opt);
         optimizer.addEdge(e);
         e->computeError();
       }
@@ -510,7 +511,7 @@ namespace defSLAM
             auto a = e->errorData();
             double er = std::abs(a[0]);
             meanlap += er / OptLap.size();
-            e->setInformation(RegLap * Eigen::Vector1D::Identity() / OptLap.size());
+            e->setInformation(RegLap * Eigen::Vector1D::Identity() / OptLap.size() * Points_in_Opt);
             optimizer.addEdge(e);
             Index_Neigh++;
           }
@@ -551,7 +552,7 @@ namespace defSLAM
         Eigen::Vector1D s;
         s << (*ite)->getDist();
         e->setMeasurement(s);
-        e->setInformation(RegInex * Eigen::Vector1D::Identity() / medges.size());
+        e->setInformation(RegInex * Eigen::Vector1D::Identity() / medges.size() * Points_in_Opt);
         e->computeError();
         vpInextensibilityEdges.push_back(e);
         auto a = e->errorData();
@@ -562,8 +563,8 @@ namespace defSLAM
       }
       // We perform 4 optimizations, after each optimization we classify observation as inlier/outlier
       // At the next optimization, outliers are not included, but at the end they can be classified as inliers again.
-      const float chi2Mono[4] = {20.991, 15.991, 15.991, 10.991};
-      const int its[4] = {10, 10, 10, 10};
+      const float chi2Mono[4] = {20.991, 15.991, 10.991, 5.991};
+      const int its[4] = {10, 5, 5, 5};
 
       int nBad = 0;
       for (size_t it = 0; it < 4; it++)
@@ -587,7 +588,7 @@ namespace defSLAM
 
           const float chi2 = e->chi2();
 
-          if (chi2 > chi2Mono[it] / Points_in_Opt)
+          if (chi2 > chi2Mono[it])
           {
             pFrame->mvbOutlier[idx] = true;
             e->setLevel(1);
