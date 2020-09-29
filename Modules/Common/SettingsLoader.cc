@@ -143,6 +143,10 @@ namespace defSLAM
         cameraSize_ = fSettings["Viewer.CameraSize"];
         cameraLineWidth_ = fSettings["Viewer.CameraLineWidth"];
 
+        float debugPoints = fSettings["Debug.bool"];
+
+        debugPoints_ = bool(uint(debugPoints));
+
         filterPath_ = fSettings["Filters.file"].string();
     }
 
@@ -301,6 +305,10 @@ namespace defSLAM
     std::string SettingsLoader::getFilterPath() const
     {
         return filterPath_;
+    }
+    bool SettingsLoader::getDebugPoints() const
+    {
+        return debugPoints_;
     }
     void SettingsLoader::setSaveResults(const bool save)
     {

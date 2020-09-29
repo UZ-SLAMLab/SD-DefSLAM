@@ -36,6 +36,8 @@ namespace defSLAM
     double a = fSettings["Regularizer.LocalZone"];
     double SaveResults = fSettings["Viewer.SaveResults"];
     saveResults = bool(uint(SaveResults));
+    double debug = fSettings["Debug.bool"];
+    debugPoints = bool(uint(debug));
     cout << endl
          << "Defomation tracking Parameters: " << endl;
     cout << "- Reg. Inextensibility: " << RegInex << endl;
@@ -67,6 +69,7 @@ namespace defSLAM
     LocalZone = settingLoader.getLocalZone();
     ReliabilityThreshold = settingLoader.getreliabilityThreshold();
     saveResults = settingLoader.getSaveResults();
+    debugPoints = settingLoader.getDebugPoints();
 
     ///-------------------------------
     mKLTtracker = LucasKanadeTracker(cv::Size(11, 11), 4, 10, 0.01, 1e-4);
@@ -121,6 +124,9 @@ namespace defSLAM
           bOK = this->LocalisationAndMapping();
           mCurrentFrame->mpReferenceKF = mpReferenceKF;
 
+          if (debugPoints)
+            printCurrentPoints("DefSLAM: points post-KLT motion model");
+
           if ((static_cast<DefLocalMapping *>(mpLocalMapper)
                    ->updateTemplate()))
           {
@@ -136,8 +142,16 @@ namespace defSLAM
                   ->updateTemplateAtRest();
             }
           }
+
+          if (debugPoints)
+            printCurrentPoints("DefSLAM: points post-optimization");
+
           if (bOK)
+          {
             bOK = KLT_TrackLocalMap();
+            if (debugPoints)
+              printCurrentPoints("DefSLAM: points post-KLT local map");
+          }           
         }
         else
         {
@@ -168,6 +182,9 @@ namespace defSLAM
       if (bOK)
       {
         mState = OK;
+
+        if (debugPoints)
+          printPointsWatchedByKeyframes("DefSLAM: points watched by KeyFrames");
 
         // Update motion model
         if (!mLastFrame.mTcw.empty())
@@ -1661,5 +1678,82 @@ namespace defSLAM
     }
 
     return toReturn;
+  }
+  void DefKLTTracking::printCurrentPoints(string nameWindow)
+  {
+    vector<cv::KeyPoint> vCurrKeys = mCurrentFrame->mvKeys;
+    int numberKeys = vCurrKeys.size();
+    cv::Mat mImOutlier = mImRGB.clone();
+    
+    cv::namedWindow(nameWindow);
+
+    cout << "Updating outliers..." << endl;
+    cout << numberKeys << " keypoints" << endl;
+
+    const float r = 5;  
+
+    for (int i = 0; i < numberKeys; i++)
+    {
+      MapPoint *pMP = mCurrentFrame->mvpMapPoints[i];
+      if (pMP)
+      {
+        cv::Point2f pt1, pt2;
+        pt1.x = vCurrKeys[i].pt.x - r;
+        pt1.y = vCurrKeys[i].pt.y - r;
+        pt2.x = vCurrKeys[i].pt.x + r;
+        pt2.y = vCurrKeys[i].pt.y + r;
+
+        cv::KeyPoint kp = mCurrentFrame->ProjectPoints(pMP->GetWorldPos());
+
+        if (mCurrentFrame->mvbOutlier[i])
+        {
+          cv::rectangle(mImOutlier, pt1, pt2, cv::Scalar(0, 0, 255));
+          cv::circle(mImOutlier, vCurrKeys[i].pt, 2, cv::Scalar(0, 0, 255), -1);
+          cv::line(mImOutlier, vCurrKeys[i].pt, kp.pt, cv::Scalar(0, 0, 255));
+          cv::circle(mImOutlier, kp.pt, 2, cv::Scalar(240, 255, 255), -1);
+        }
+        else
+        {
+          cv::rectangle(mImOutlier, pt1, pt2, cv::Scalar(0, 255, 0));
+          cv::circle(mImOutlier, vCurrKeys[i].pt, 2, cv::Scalar(0, 255, 0), -1);
+          cv::line(mImOutlier, vCurrKeys[i].pt, kp.pt, cv::Scalar(0, 255, 0));
+          cv::circle(mImOutlier, kp.pt, 2, cv::Scalar(240, 255, 255), -1);
+        }
+      }
+    }
+
+    cv::imshow(nameWindow, mImOutlier);
+    cv::waitKey(10);
+
+  }
+
+  void DefKLTTracking::printPointsWatchedByKeyframes(string nameWindow)
+  {
+    vector<cv::KeyPoint> vCurrKeys = mCurrentFrame->mvKeys;
+    int numberKeys = vCurrKeys.size();
+    cv::Mat mImColors = mImRGB.clone();
+
+    cv::namedWindow(nameWindow);
+
+    for (int i = 0; i < numberKeys; i++)
+    {
+      MapPoint *pMP = mCurrentFrame->mvpMapPoints[i];
+      if (pMP)
+      {
+        if (!mCurrentFrame->mvbOutlier[i])
+        {
+          cv::KeyPoint kp = vCurrKeys[i];
+
+          int observations = pMP->Observations();
+          int maxObs = 5;
+          double alpha = std::min(1.0, 1.0 * observations / maxObs);
+          // Color range from blue (0 obs) to red (+10 obs)
+          cv::circle(mImColors, kp.pt, 4, cv::Scalar(255 * (1 - alpha), 0, 255 * alpha), -1);
+        }
+      }
+    }
+
+    cv::imshow(nameWindow, mImColors);
+    cv::waitKey(10);
   }
 } // namespace defSLAM

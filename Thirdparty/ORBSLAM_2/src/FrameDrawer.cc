@@ -141,11 +141,19 @@ namespace ORB_SLAM2
       }
       for (const auto &pair : innovation)
       {
-        cv::line(im, pair.first.pt, pair.second.pt, cv::Scalar(10, 16, 255));
+        std::string s = std::to_string(pair.first); 
+        std::pair<cv::KeyPoint, cv::KeyPoint> kps = pair.second;
+
+        cv::line(im, kps.first.pt, kps.second.pt, cv::Scalar(10, 255, 10));
+        cv::putText(im, s, kps.first.pt, cv::FONT_HERSHEY_PLAIN, 0.5, cv::Scalar(255, 10, 10), 1, 4);
       }
       for (const auto &pair : innovationOutlier)
       {
-        cv::line(im, pair.first.pt, pair.second.pt, cv::Scalar(255, 255, 255));
+        std::string s = std::to_string(pair.first); 
+        std::pair<cv::KeyPoint, cv::KeyPoint> kps = pair.second;
+
+        cv::line(im, kps.first.pt, kps.second.pt, cv::Scalar(10, 255, 10));
+        cv::putText(im, s, kps.first.pt, cv::FONT_HERSHEY_PLAIN, 0.5, cv::Scalar(255, 10, 10), 1, 4);
       }
     }
 
@@ -251,7 +259,8 @@ namespace ORB_SLAM2
           cv::KeyPoint kp_est =
               pTracker->mCurrentFrame->ProjectPoints(mp->GetWorldPos());
           cv::KeyPoint kp_m = pTracker->mCurrentFrame->mvKeys[i];
-          innovation.push_back(std::make_pair(kp_m, kp_est));
+          std::pair<cv::KeyPoint, cv::KeyPoint> kps = std::make_pair(kp_m, kp_est);
+          innovation.push_back(std::make_pair(mp->mnId, kps));
         }
       }
     }

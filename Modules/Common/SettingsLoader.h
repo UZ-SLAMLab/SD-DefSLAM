@@ -76,6 +76,7 @@ namespace defSLAM
         float getfps() const;
         float getT() const;
         std::string getFilterPath() const;
+        bool getDebugPoints() const;
 
     public:
         void setSaveResults(const bool);
@@ -93,6 +94,7 @@ namespace defSLAM
         double localZoneSize_;       // local zone size
         float reliabilityThreshold_; // threshold of reliability
         bool saveResults_;           // Saving the results
+        bool debugPoints_;           // Debug current points
         // Tracking
         cv::Mat K_;        // Intrinsic Calibration Matrix
         cv::Mat distCoef_; //distorsion coefficients
