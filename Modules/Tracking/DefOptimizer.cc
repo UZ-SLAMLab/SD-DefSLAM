@@ -327,7 +327,7 @@ namespace defSLAM
         }
       }
 
-      const float deltaMono = sqrt(5.991);
+      const float deltaMono = sqrt(10.991);
 
       for (int i = 0; i < N; i++)
       {
@@ -420,6 +420,8 @@ namespace defSLAM
       double m(1.0);
       if (static_cast<DefMap *>(mMap)->GetTemplate())
         m = (static_cast<DefMap *>(mMap)->GetTemplate())->getEdgeMeanSize();
+
+      std::vector<g2o::EdgesReference *> vpReferenceEdges;
       for (std::set<Node *>::iterator it = ViewedNodes.begin();
            it != ViewedNodes.end(); it++)
       {
@@ -434,6 +436,7 @@ namespace defSLAM
         e->setMeasurement(v);
         e->setInformation(RegTemp * Eigen::Matrix3d::Identity() / pow(m, 2) * Points_in_Opt);
         optimizer.addEdge(e);
+        vpReferenceEdges.push_back(e);
         e->computeError();
       }
 
@@ -464,6 +467,8 @@ namespace defSLAM
       /// Laplacian Regularizer
       double meanlap(0.0);
       /// Implementation ECCV
+      std::vector<g2o::EdgeMeanCurvature *> vpMeanCurvatureEdges;
+
       for (std::set<Node *>::iterator it = OptLap.begin(); it != OptLap.end();
            it++)
       {
@@ -513,6 +518,7 @@ namespace defSLAM
             meanlap += er / OptLap.size();
             e->setInformation(RegLap * Eigen::Vector1D::Identity() / OptLap.size() * Points_in_Opt);
             optimizer.addEdge(e);
+            vpMeanCurvatureEdges.push_back(e);
             Index_Neigh++;
           }
         }
@@ -563,17 +569,17 @@ namespace defSLAM
       }
       // We perform 4 optimizations, after each optimization we classify observation as inlier/outlier
       // At the next optimization, outliers are not included, but at the end they can be classified as inliers again.
-      const float chi2Mono[4] = {20.991, 15.991, 10.991, 5.991};
-      const int its[4] = {10, 5, 5, 5};
+      const float chi2Mono[4] = {20.991, 15.991, 15.991, 15.991};
+      const int its[4] = {10, 7, 7, 5};
 
       int nBad = 0;
+      optimizer.setVerbose(0);
       for (size_t it = 0; it < 4; it++)
       {
 
         vSE3->setEstimate(Converter::toSE3Quat(pFrame->mTcw));
         optimizer.initializeOptimization(0);
         optimizer.optimize(its[it]);
-
         nBad = 0;
         for (size_t i = 0, iend = vpEdgesMono.size(); i < iend; i++)
         {
@@ -608,7 +614,13 @@ namespace defSLAM
           break;
       }
 
-      std::cout << " INLIERS-OUTLIERS : " << vpEdgesMono.size() << "  " << nBad << std::endl;
+      std::cout << "Rep : " << vpEdgesMono[0]->chi2() << std::endl
+                << "Cauchy : " << vpInextensibilityEdges[0]->chi2() << std::endl
+                << "Mean Curvature : " << vpMeanCurvatureEdges[0]->chi2() << std::endl
+                << "Ref : " << vpReferenceEdges[0]->chi2();
+
+      std::cout
+          << " INLIERS-OUTLIERS : " << vpEdgesMono.size() << "  " << nBad << std::endl;
       double sumError(0.0);
       std::vector<float> vectorError;
       uint n(0);
