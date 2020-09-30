@@ -30,6 +30,7 @@
 
 #include "DefKeyFrame.h"
 #include "DefORBmatcher.h"
+#include "DefMapPoint.h"
 
 #include "Schwarp.h"
 #include "SchwarpDatabase.h"
@@ -119,6 +120,8 @@ namespace defSLAM
         if (!mapPoint)
           continue;
         if (mapPoint->isBad())
+          continue;
+        if (!static_cast<DefMapPoint *>(mapPoint)->getFacet())
           continue;
         /// Check that the point is in both keyframes
         if (mapPoint->IsInKeyFrame(mpCurrentKeyFrame) &&

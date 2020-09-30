@@ -112,12 +112,12 @@ RIGHT.P:  !!opencv-matrix
 #--------------------------------------------------------------------------------------------
 
 # Laplacian regularizer: It penalizes changes in curvature	
-Regularizer.laplacian: 100
+Regularizer.laplacian: 70
 
 # Inextensibility regularizer: It penalizes the streching
-Regularizer.Inextensibility: 5200
+Regularizer.Inextensibility: 3200
 # Temporal regularizer: Smoothes the changes in the pose of the mesh frame to frame
-Regularizer.temporal: 0.05
+Regularizer.temporal: 0.1
 
 #Number of neighbours layers used in the local optimization
 Regularizer.LocalZone: 2

@@ -165,10 +165,10 @@ Viewer.SaveResults: 1
 #--------------------------------------------------------------------------------------------
 # Local Mapping Parameters
 #--------------------------------------------------------------------------------------------
-LocalMapping.pointsToTemplate: 100
+LocalMapping.pointsToTemplate: 180
 LocalMapping.chiLimit: 0.005
 LocalMapping.Bending: 0.70
-LocalMapping.Schwarp.Regularizer: 0.05
+LocalMapping.Schwarp.Regularizer: 0.1
 
 
 Filters.file: /home/jose/DefKLTSLAM/filters.txt

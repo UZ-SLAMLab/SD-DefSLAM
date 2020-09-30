@@ -569,8 +569,8 @@ namespace defSLAM
       }
       // We perform 4 optimizations, after each optimization we classify observation as inlier/outlier
       // At the next optimization, outliers are not included, but at the end they can be classified as inliers again.
-      const float chi2Mono[4] = {20.991, 15.991, 15.991, 15.991};
-      const int its[4] = {10, 7, 7, 5};
+      const float chi2Mono[4] = {20.991, 20.991, 20.991, 15.991};
+      const int its[4] = {10, 10, 7, 5};
 
       int nBad = 0;
       optimizer.setVerbose(0);
