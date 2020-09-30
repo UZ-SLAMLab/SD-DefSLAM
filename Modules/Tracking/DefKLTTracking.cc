@@ -46,7 +46,9 @@ namespace defSLAM
     LocalZone = uint(a);
 
     ReliabilityThreshold = fSettings["Regularizer.Reliability"];
+    std::ofstream myfile("matches.txt");
 
+    myfile.close();
     ///-------------------------------
     mKLTtracker = LucasKanadeTracker(cv::Size(11, 11), 4, 10, 0.01, 1e-4);
     ///-------------------------------
@@ -200,7 +202,7 @@ namespace defSLAM
           this->KLT_CreateNewKeyFrame();
         }
 #else
-        if ((mCurrentFrame->mnId % 10) < 1)
+        if (NeedNewKeyFrame())
         {
           this->KLT_CreateNewKeyFrame();
         }
@@ -1102,7 +1104,6 @@ namespace defSLAM
       for (uint i(0); i < _NumberOfControlPointsU * _NumberOfControlPointsV;
            i++)
       {
-        float r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
         Array[i] = 1;
       }
       BBS::bbs_t bbs;
@@ -1225,7 +1226,7 @@ namespace defSLAM
 
     cout << "[KLT_TrackWithMotionModel]: points tracked by KLT: " << nmatches << " of " << toTrack << endl;
 
-    mCurrentFrame->SetTrackedPoints(mvKLTKeys, mvKLTStatus, mvKLTMPs,vHessian_);
+    mCurrentFrame->SetTrackedPoints(mvKLTKeys, mvKLTStatus, mvKLTMPs, vHessian_);
 
     std::set<MapPoint *> setM;
 
@@ -1233,7 +1234,12 @@ namespace defSLAM
     {
       setM.insert(pMP);
     }
-
+    if (static_cast<DefMap *>(mpMap)->GetTemplate())
+    {
+      Optimizer::DefPoseOptimization(
+          mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(),
+          this->getRegTemp(), LocalZone);
+    }
     cout << "[KLT_TrackWithMotionModel]: " << mCurrentFrame->mvpMapPoints.size() << " --- " << setM.size() << endl;
 
     std::set<MapPoint *> setklt;
@@ -1342,7 +1348,7 @@ namespace defSLAM
 
     //Set new reference image for KLT
     //mKLTtracker.SetReferenceImage(mCurrentFrame->ImGray, mvKLTKeys);
-    mKLTtracker.SetReferenceImage(mCurrentFrame->ImGray,mvKLTMPs,mvKLTKeys);
+    mKLTtracker.SetReferenceImage(mCurrentFrame->ImGray, mvKLTMPs, mvKLTKeys);
 
     //Create new KeyFrame
     KeyFrame *pKF = new GroundTruthKeyFrame(*mCurrentFrame, mpMap, mpKeyFrameDB);
@@ -1413,6 +1419,31 @@ namespace defSLAM
       }
     }
 
+    auto points = mpMap->GetReferenceMapPoints();
+    auto numberLocalMapPoints(0);
+    set<MapPoint *> refPts;
+    for (auto pMP : points)
+    {
+      if (pMP)
+      {
+        if (pMP->isBad())
+          continue;
+        refPts.insert(pMP);
+        if (static_cast<DefMapPoint *>(pMP)->getFacet())
+          if (mCurrentFrame->isInFrustum(pMP, 0.5))
+          {
+            numberLocalMapPoints++;
+          }
+      }
+    }
+
+    std::fstream myfile("matches.txt", std::ios::in | std::ios::out | std::ios::ate);
+    std::ostringstream out;
+    out << std::internal << std::setfill('0') << std::setw(5)
+        << uint(mCurrentFrame->mTimeStamp);
+    myfile << out.str() << " " << numberLocalMapPoints << " " << mnMatchesInliers << " " << mnMatchesOutliers << std::endl;
+    myfile.close();
+
     vector<cv::KeyPoint> vAllGoodKeys, vNewKLTKeys;
     vector<MapPoint *> vAllGoodMps, vNewKLTMPs;
     vector<bool> vGood;
@@ -1456,36 +1487,6 @@ namespace defSLAM
 
     cout << "[LucasKanade-LocalMap]: " << vectorklt.size() << " --- " << setklt.size() << endl;
 
-    auto points = mpMap->GetReferenceMapPoints();
-    auto numberLocalMapPoints(0);
-    set<MapPoint *> refPts;
-    for (auto pMP : points)
-    {
-      if (pMP)
-      {
-        if (pMP->isBad())
-          continue;
-        refPts.insert(pMP);
-        if (static_cast<DefMapPoint *>(pMP)->getFacet())
-          if (mCurrentFrame->isInFrustum(pMP, 0.5))
-          {
-            numberLocalMapPoints++;
-          }
-      }
-    }
-
-    int notInRef = 0;
-    for (MapPoint *pMP : mCurrentFrame->mvpMapPoints)
-    {
-      if (pMP && !pMP->isBad())
-      {
-        if (refPts.count(pMP) == 0)
-          notInRef++;
-      }
-    }
-
-    cout << "Points not in ref: " << notInRef << endl;
-
     int notInFrustrum = 0;
     for (MapPoint *pMP : mCurrentFrame->mvpMapPoints)
     {
@@ -1497,41 +1498,6 @@ namespace defSLAM
     }
 
     cout << "Points not in frustrum: " << notInFrustrum << endl;
-
-    // Optimize Pose
-    int observedFrame(0);
-    int mI(0);
-    int mO(0);
-    std::vector<MapPoint *> vect;
-    std::set<MapPoint *> setM;
-    for (int i = 0; i < mCurrentFrame->N; i++)
-    {
-      if (mCurrentFrame->mvpMapPoints[i])
-      {
-        if (mCurrentFrame->mvpMapPoints[i]->isBad())
-          continue;
-        vect.push_back(mCurrentFrame->mvpMapPoints[i]);
-        setM.insert(mCurrentFrame->mvpMapPoints[i]);
-        observedFrame++;
-        if (!mCurrentFrame->mvbOutlier[i])
-        {
-          mI++;
-        }
-        else
-        {
-          mO++;
-        }
-      }
-    }
-
-    std::cout << "UEJAAA :" << vect.size() << " " << setM.size() << std::endl;
-    std::ostringstream out;
-    out << std::internal << std::setfill('0') << std::setw(5)
-        << uint(mCurrentFrame->mTimeStamp);
-    std::cout << out.str() << " " << mI << " " << mO << " "
-              << numberLocalMapPoints << " ---- " << points.size() << std::endl;
-    this->matches << out.str() << " " << mI << " " << mO << " "
-                  << numberLocalMapPoints << std::endl;
 
     // Decide if the tracking was succesful
     // More restrictive if there was a relocalization recently
@@ -1638,7 +1604,7 @@ namespace defSLAM
 
     if (nToMatch > 0)
     {
-        vector<cv::Mat> vHessian;
+      vector<cv::Mat> vHessian;
       LucasKanadeTracker kltLocalTracker = LucasKanadeTracker(cv::Size(11, 11), 1, 5, 0.1, 1e-4);
       //Use KLT to estimate Projected Local MapPoints
       int goodKLT = kltLocalTracker.TrackWithInfoWithHH(mCurrentFrame->ImGray, vNextPts, vPrevPts, bStatus, vPatches, vGrad, vMean, vMean2, vH, 0.75, vHessian);
