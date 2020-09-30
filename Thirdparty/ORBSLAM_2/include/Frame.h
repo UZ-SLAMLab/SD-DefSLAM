@@ -233,6 +233,7 @@ namespace ORB_SLAM2
         void extractORBToRelocate();
 
         std::vector<cv::Mat> vHessian_;
+        std::vector<bool> vRematched_;
     };
 
 } // namespace ORB_SLAM2

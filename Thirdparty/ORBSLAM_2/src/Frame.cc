@@ -238,6 +238,7 @@ namespace ORB_SLAM2
 
     mvpMapPoints = vector<MapPoint *>(N, static_cast<MapPoint *>(nullptr));
     mvbOutlier = vector<bool>(N, false);
+    vRematched_ = vector<bool>(N, false);
 
     // This is done only for the first Frame (or after a change in the calibration)
     if (mbInitialComputations)
@@ -965,6 +966,8 @@ namespace ORB_SLAM2
     vector<bool>().swap(mvbOutlier);
     vHessian_.clear();
     vector<cv::Mat>().swap(vHessian_);
+    vRematched_.clear();
+    vector<bool>().swap(vRematched_);
     for (size_t i = 0; i < vPoints.size(); i++)
     {
       if (vGood[i] && vpMapPoints[i])
@@ -973,6 +976,7 @@ namespace ORB_SLAM2
         mvpMapPoints.push_back(vpMapPoints[i]);
         mvbOutlier.push_back(false);
         vHessian_.push_back(vHessian[i]);
+        vRematched_.push_back(false);
       }
     }
 
@@ -1002,6 +1006,7 @@ namespace ORB_SLAM2
         mvDepth.push_back(-1);
         mvbOutlier.push_back(false);
         vHessian_.push_back(vHessian[i]);
+        vRematched_.push_back(true);
       }
     }
 

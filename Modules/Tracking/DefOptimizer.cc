@@ -331,7 +331,7 @@ namespace defSLAM
 
       for (int i = 0; i < N; i++)
       {
-        if (!(pFrame->mvbOutlier[i]))
+        //if (!(pFrame->mvbOutlier[i]))
         {
           MapPoint *pMP = pFrame->mvpMapPoints[i];
           if ((pMP))

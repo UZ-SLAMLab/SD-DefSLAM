@@ -124,9 +124,6 @@ namespace defSLAM
           bOK = this->LocalisationAndMapping();
           mCurrentFrame->mpReferenceKF = mpReferenceKF;
 
-          if (debugPoints)
-            printCurrentPoints("DefSLAM: points post-KLT motion model");
-
           if ((static_cast<DefLocalMapping *>(mpLocalMapper)
                    ->updateTemplate()))
           {
@@ -142,9 +139,6 @@ namespace defSLAM
                   ->updateTemplateAtRest();
             }
           }
-
-          if (debugPoints)
-            printCurrentPoints("DefSLAM: points post-optimization");
 
           if (bOK)
           {
@@ -1244,6 +1238,21 @@ namespace defSLAM
 
     mCurrentFrame->SetTrackedPoints(mvKLTKeys, mvKLTStatus, mvKLTMPs,vHessian_);
 
+    if (debugPoints)
+      printCurrentPoints("1_TrackingMotionModel");
+
+    if (static_cast<DefMap *>(mpMap)->GetTemplate())
+    {
+      nmatches = Optimizer::DefPoseOptimization(
+          mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
+          LocalZone);
+    }
+    else
+      nmatches = ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
+
+    if (debugPoints)
+      printCurrentPoints("2_OptimizationMotionModel");
+
     std::set<MapPoint *> setM;
 
     for (MapPoint *pMP : mCurrentFrame->mvpMapPoints)
@@ -1387,6 +1396,9 @@ namespace defSLAM
     int basePoints = KLT_SearchLocalMapPoints();
     //int basePoints = mCurrentFrame->N;
 
+    if (debugPoints)
+      printCurrentPoints("3_SearchKLTLocalMap");
+
     if (static_cast<DefMap *>(mpMap)->GetTemplate())
     {
       Optimizer::DefPoseOptimization(
@@ -1398,6 +1410,8 @@ namespace defSLAM
       ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
     }
 
+    if (debugPoints)
+      printCurrentPoints("4_OptimizationKLTLocalMap");
     // Optimize Pose
     mnMatchesInliers = 0;
     int mnMatchesOutliers(0);
@@ -1689,6 +1703,7 @@ namespace defSLAM
 
     cout << "Updating outliers..." << endl;
     cout << numberKeys << " keypoints" << endl;
+    cout << "size of rematched: " << mCurrentFrame->vRematched_.size() << endl;
 
     const float r = 5;  
 
@@ -1705,14 +1720,21 @@ namespace defSLAM
 
         cv::KeyPoint kp = mCurrentFrame->ProjectPoints(pMP->GetWorldPos());
 
-        if (mCurrentFrame->mvbOutlier[i])
+        if (mCurrentFrame->mvbOutlier[i]) // Outlier
         {
           cv::rectangle(mImOutlier, pt1, pt2, cv::Scalar(0, 0, 255));
           cv::circle(mImOutlier, vCurrKeys[i].pt, 2, cv::Scalar(0, 0, 255), -1);
           cv::line(mImOutlier, vCurrKeys[i].pt, kp.pt, cv::Scalar(0, 0, 255));
           cv::circle(mImOutlier, kp.pt, 2, cv::Scalar(240, 255, 255), -1);
         }
-        else
+        else if (mCurrentFrame->vRematched_[i]) // Point rematched from map
+        {
+          cv::rectangle(mImOutlier, pt1, pt2, cv::Scalar(255, 0, 0));
+          cv::circle(mImOutlier, vCurrKeys[i].pt, 2, cv::Scalar(255, 0, 0), -1);
+          cv::line(mImOutlier, vCurrKeys[i].pt, kp.pt, cv::Scalar(255, 0, 0));
+          cv::circle(mImOutlier, kp.pt, 2, cv::Scalar(240, 255, 255), -1);
+        }
+        else // Tracked inlier
         {
           cv::rectangle(mImOutlier, pt1, pt2, cv::Scalar(0, 255, 0));
           cv::circle(mImOutlier, vCurrKeys[i].pt, 2, cv::Scalar(0, 255, 0), -1);
@@ -1721,6 +1743,11 @@ namespace defSLAM
         }
       }
     }
+
+    std::ostringstream out;
+    out << std::internal << std::setfill('0') << std::setw(5)
+        << uint(mCurrentFrame->mTimeStamp);
+    cv::imwrite("/home/jmorlana/debugResults/" + nameWindow + "/" + out.str() + ".png", mImOutlier);
 
     cv::imshow(nameWindow, mImOutlier);
     cv::waitKey(10);
