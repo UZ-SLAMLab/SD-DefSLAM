@@ -1241,15 +1241,6 @@ namespace defSLAM
     if (debugPoints)
       printCurrentPoints("1_TrackingMotionModel");
 
-    if (static_cast<DefMap *>(mpMap)->GetTemplate())
-    {
-      nmatches = Optimizer::DefPoseOptimization(
-          mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
-          LocalZone);
-    }
-    else
-      nmatches = ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
-
     if (debugPoints)
       printCurrentPoints("2_OptimizationMotionModel");
 
