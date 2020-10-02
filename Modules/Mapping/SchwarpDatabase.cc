@@ -30,6 +30,7 @@
 
 #include "DefKeyFrame.h"
 #include "DefORBmatcher.h"
+#include "DefMapPoint.h"
 
 #include "Schwarp.h"
 #include "SchwarpDatabase.h"
@@ -86,16 +87,16 @@ namespace defSLAM
               std::back_inserter<std::vector<std::pair<KeyFrame *, int>>>(vec));
 
     uint numberOfKeyframes(15);
-    if (vec.size() >= numberOfKeyframes)
-    {
-      std::nth_element(vec.begin(), vec.begin(), vec.begin() + numberOfKeyframes,
+    /* if (vec.size() >= numberOfKeyframes)
+     {
+       std::nth_element(vec.begin(), vec.begin(), vec.begin() + numberOfKeyframes,
                        [](const std::pair<KeyFrame *, int> &l, const std::pair<KeyFrame *, int> &r) {
-                         if (l.second != r.second)
-                           return l.second > r.second;
-
-                         return l.first > r.first;
+                          if (l.second != r.second)
+                            return l.second > r.second;
+    
+                          return l.first > r.first;
                        });
-    }
+    }*/
 
     std::cout << "list of covisibles :" << std::endl;
     for (uint i(0); i < vec.size() && i < numberOfKeyframes; i++)
@@ -106,7 +107,7 @@ namespace defSLAM
     /**/
     /// We search all the possible matches with the reference keyframes.
     /// there will be more points
-    for (uint i(0); i < vec.size() && i < numberOfKeyframes; i++)
+    for (uint i(0); i < vec.size() && i < vec.size(); i++)
     {
       const std::pair<KeyFrame *, int> kv = vec[i];
       // Only take into account those with more than 30 matches
@@ -119,6 +120,8 @@ namespace defSLAM
         if (!mapPoint)
           continue;
         if (mapPoint->isBad())
+          continue;
+        if (!static_cast<DefMapPoint *>(mapPoint)->getFacet())
           continue;
         /// Check that the point is in both keyframes
         if (mapPoint->IsInKeyFrame(mpCurrentKeyFrame) &&
@@ -329,7 +332,7 @@ namespace defSLAM
       }*/
       /// All map points are used for the warp estimation, but only those
       /// whose reference keyframe is the estimated one are saved.
-      auto pKfref = mapPoint->GetReferenceKeyFrame();
+      //auto pKfref = mapPoint->GetReferenceKeyFrame();
       // if (pKfref != KFi)
       //   continue;
       mapPointsDB_[mapPoint].push_back(std::shared_ptr<DiffProp>(new DiffProp()));

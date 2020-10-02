@@ -46,7 +46,7 @@ namespace defSLAM
  * 
  * *******************/
           float scaleMinMedian(std::vector<std::vector<float>> &PosMono,
-                               std::vector<std::vector<float>> &PosStereo);
+                               std::vector<std::vector<float>> &PosStereo, float perc = 0.25);
           /**********************
  * The funtion SaveResults saves a vector in a text file
  * 

@@ -419,10 +419,12 @@ namespace defSLAM
       if (!pMP)
       {
         const auto &kpt = mpCurrentKeyFrame->mvKeysUn[i].pt;
+
         if (uint8_t(mask.at<char>(kpt.y, kpt.x)) > 125)
         {
           continue;
         }
+
         auto tsize(cols / 15);
         auto ycrop = kpt.y - tsize / 2;
         auto xcrop = kpt.x - tsize / 2;
@@ -489,7 +491,7 @@ namespace defSLAM
 
     /// We search all the possible matches with the reference keyframes.
     /// there will be more points
-    KeyFrame *bestBoy;
+    KeyFrame *bestBoy(referenceKF_);
 
     // Get matched points
     const vector<MapPoint *> vpMapPointMatches =
@@ -515,8 +517,6 @@ namespace defSLAM
         if (mapPoint->IsInKeyFrame(mpCurrentKeyFrame) &&
             (mapPoint->IsInKeyFrame(refkf)))
         {
-          const int idx1 = mapPoint->GetIndexInKeyFrame(refkf);
-          const int idx2 = mapPoint->GetIndexInKeyFrame(mpCurrentKeyFrame);
           currentMatches++;
         }
       }

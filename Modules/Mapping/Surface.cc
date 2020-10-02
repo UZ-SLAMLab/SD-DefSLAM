@@ -163,5 +163,7 @@ namespace defSLAM
       x3D.at<float>(3, 0) = 1;
       NodesSurface.push_back(x3D);
     }
+    //std::cout << "Mesh : " << std::endl;
+    //std::cout << Val2 << std::endl;
   }
 } // namespace defSLAM
