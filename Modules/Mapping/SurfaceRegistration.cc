@@ -107,9 +107,10 @@ namespace defSLAM
       return false;
     // Used to initialize the scale. Although is from GroundTruthTools
     // is not using anything of groundtruth to the scale computation.
-    float scale = GroundTruthTools::scaleMinMedian(cloud2pc, cloud1pc);
+    float scale = GroundTruthTools::scaleMinMedian(cloud2pc, cloud1pc, 0.5);
     Eigen::Matrix4f TwcEigen;
     cv::cv2eigen(Twc, TwcEigen);
+    std::cout << "scale" << scale << std::endl;
 
     Eigen::Matrix4f transform_;
     transform_ << 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1;
@@ -141,6 +142,8 @@ namespace defSLAM
     Eigen::MatrixXf TT2 =
         TwcEigen.block(0, 0, 3, 3) * (TwcEigen.block(0, 0, 3, 3)).transpose();
     double s22 = std::sqrt(TT2(0, 0)); // Recover the scale
+    std::cout << "scale 2 : " << s22 << std::endl;
+
     static_cast<DefKeyFrame *>(refKF)->surface->applyScale(s22);
 
     TwcEigen.block(0, 0, 3, 3) = TwcEigen.block(0, 0, 3, 3) / (s22);

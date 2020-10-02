@@ -332,7 +332,7 @@ namespace defSLAM
       }*/
       /// All map points are used for the warp estimation, but only those
       /// whose reference keyframe is the estimated one are saved.
-      auto pKfref = mapPoint->GetReferenceKeyFrame();
+      //auto pKfref = mapPoint->GetReferenceKeyFrame();
       // if (pKfref != KFi)
       //   continue;
       mapPointsDB_[mapPoint].push_back(std::shared_ptr<DiffProp>(new DiffProp()));

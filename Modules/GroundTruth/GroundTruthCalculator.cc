@@ -53,7 +53,7 @@ namespace defSLAM
  * *******************/
     float scaleMinMedian(
         std::vector<std::vector<float>> &PosMono,
-        std::vector<std::vector<float>> &PosStereo)
+        std::vector<std::vector<float>> &PosStereo, float perc)
     {
 
       float min_med = 10000.0;
@@ -65,7 +65,7 @@ namespace defSLAM
       {
         double r_i = ((double)rand() / (RAND_MAX));
 
-        if (r_i > 0.25)
+        if (r_i > perc)
           continue;
         double scale =
             PosStereo[i][2] / PosMono[i][2]; // stereo_z/mono_z
@@ -80,7 +80,7 @@ namespace defSLAM
               continue;
             double r_j = ((double)rand() / (RAND_MAX));
 
-            if (r_j > 0.25)
+            if (r_j > perc)
               continue;
             float r2(0.0);
             for (uint k(0); k < 3; k++)

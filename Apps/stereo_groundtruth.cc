@@ -144,8 +144,14 @@ int main(int argc, char **argv)
     }
 
     cv::Mat _mask(imLeftRect.rows, imLeftRect.cols, CV_8UC1, cv::Scalar(255));
-
-    SLAM.TrackMonocularGT(imLeftRect, imRightRect, ni, _mask);
+    if (true)
+    {
+      SLAM.TrackMonocularGT(imLeftRect, imRightRect, ni, _mask);
+    }
+    else
+    {
+      SLAM.TrackMonocularGT(imRightRect, imLeftRect, ni, _mask);
+    }
   }
 
   // Stop all threads

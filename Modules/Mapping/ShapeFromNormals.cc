@@ -157,11 +157,11 @@ namespace defSLAM
 
     for (uint i(0); i < Val.rows(); i++)
     {
-      cv::Vec3f X3d;
-      X3d(0) = u_vector_[i] * Val(i, 0);
-      X3d(1) = v_vector_[i] * Val(i, 0);
-      X3d(2) = Val(i, 0);
-      defrefKf_->surface->set3DSurfacePoint(i, X3d);
+      cv::Vec3f X3c;
+      X3c(0) = u_vector_[i] * Val(i, 0);
+      X3c(1) = v_vector_[i] * Val(i, 0);
+      X3c(2) = Val(i, 0);
+      defrefKf_->surface->set3DSurfacePoint(i, X3c);
     }
 
     defrefKf_->surface->saveArray(Array, bbs);

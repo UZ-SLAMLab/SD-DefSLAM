@@ -65,13 +65,11 @@ namespace defSLAM
     //     1: Binary Inverted
     cv::threshold(mask, mask, threshold_value, max_BINARY_value, 0);
     uint newPoints(0);
+    std::cout << Twc << std::endl;
 
     for (size_t i = 0; i < nval; i++)
     {
       MapPoint *pMP = referenceKF_->GetMapPoint(i);
-      cv::Vec3b rgb = this->referenceKF_->RGBimage.at<cv::Vec3b>(
-          this->referenceKF_->mvKeys[i].pt);
-
       if (pMP)
       {
         if (pMP->isBad())
@@ -81,6 +79,7 @@ namespace defSLAM
 
         static_cast<DefKeyFrame *>(referenceKF_)
             ->surface->get3DSurfacePoint(i, x3c);
+        //std::cout << i << " " << x3c << std::endl;
 
         cv::Mat x3ch(4, 1, CV_32F);
         x3ch.at<float>(0, 0) = x3c(0);
@@ -94,17 +93,13 @@ namespace defSLAM
         x3w.at<float>(0, 0) = x3wh.at<float>(0, 0);
         x3w.at<float>(1, 0) = x3wh.at<float>(1, 0);
         x3w.at<float>(2, 0) = x3wh.at<float>(2, 0);
-        cv::Mat X3Do = static_cast<DefMapPoint *>(pMP)
-                           ->PosesKeyframes[referenceKF_]
-                           .clone();
-
-        if (X3Do.empty())
-        {
-          pMP->SetWorldPos(x3w);
-          defMP->lastincorporasion = false;
-          continue;
-        }
+        //if (X3Do.empty())
+        //{
         pMP->SetWorldPos(x3w);
+        defMP->lastincorporasion = false;
+        ///  continue;
+        //}
+        //pMP->SetWorldPos(x3w);
       }
       else
       {
@@ -113,9 +108,11 @@ namespace defSLAM
         {
           continue;
         }
+
         cv::Vec3f x3c;
         static_cast<DefKeyFrame *>(referenceKF_)
             ->surface->get3DSurfacePoint(i, x3c);
+        //std::cout << i << " " << x3c << std::endl;
 
         cv::Mat x3ch(4, 1, CV_32F);
         x3ch.at<float>(0, 0) = x3c(0);
@@ -133,7 +130,6 @@ namespace defSLAM
         static_cast<DefKeyFrame *>(referenceKF_)
             ->surface->getNormalSurfacePoint(i, x3n);
         pMP = new DefMapPoint(x3w, referenceKF_, mpMap, referenceKF_->mvKeys[i].pt, x3n);
-        //pMP = new DefMapPoint(x3w, referenceKF_, mpMap);
 
         pMP->AddObservation(referenceKF_, i);
         referenceKF_->addMapPoint(pMP, i);
