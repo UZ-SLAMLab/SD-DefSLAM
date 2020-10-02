@@ -62,8 +62,8 @@ namespace ORB_SLAM2
         int mnTracked, mnTrackedVO;
         vector<cv::KeyPoint> mvIniKeys;
         vector<int> mvIniMatches;
-        std::vector<std::pair<cv::KeyPoint, cv::KeyPoint>> innovation;
-        std::vector<std::pair<cv::KeyPoint, cv::KeyPoint>> innovationOutlier;
+        std::vector<std::pair<int, std::pair<cv::KeyPoint, cv::KeyPoint>>> innovation;
+        std::vector<std::pair<int, std::pair<cv::KeyPoint, cv::KeyPoint>>> innovationOutlier;
 
         int mState;
         double error;

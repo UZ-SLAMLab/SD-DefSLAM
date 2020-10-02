@@ -36,6 +36,8 @@ namespace defSLAM
     double a = fSettings["Regularizer.LocalZone"];
     double SaveResults = fSettings["Viewer.SaveResults"];
     saveResults = bool(uint(SaveResults));
+    double debug = fSettings["Debug.bool"];
+    debugPoints = bool(uint(debug));
     cout << endl
          << "Defomation tracking Parameters: " << endl;
     cout << "- Reg. Inextensibility: " << RegInex << endl;
@@ -67,6 +69,7 @@ namespace defSLAM
     LocalZone = settingLoader.getLocalZone();
     ReliabilityThreshold = settingLoader.getreliabilityThreshold();
     saveResults = settingLoader.getSaveResults();
+    debugPoints = settingLoader.getDebugPoints();
 
     ///-------------------------------
     mKLTtracker = LucasKanadeTracker(cv::Size(11, 11), 4, 10, 0.01, 1e-4);
@@ -136,8 +139,13 @@ namespace defSLAM
                   ->updateTemplateAtRest();
             }
           }
+
           if (bOK)
+          {
             bOK = KLT_TrackLocalMap();
+            if (debugPoints)
+              printCurrentPoints("DefSLAM: points post-KLT local map");
+          }           
         }
         else
         {
@@ -168,6 +176,9 @@ namespace defSLAM
       if (bOK)
       {
         mState = OK;
+
+        if (debugPoints)
+          printPointsWatchedByKeyframes("DefSLAM: points watched by KeyFrames");
 
         // Update motion model
         if (!mLastFrame.mTcw.empty())
@@ -1227,6 +1238,12 @@ namespace defSLAM
 
     mCurrentFrame->SetTrackedPoints(mvKLTKeys, mvKLTStatus, mvKLTMPs,vHessian_);
 
+    if (debugPoints)
+      printCurrentPoints("1_TrackingMotionModel");
+
+    if (debugPoints)
+      printCurrentPoints("2_OptimizationMotionModel");
+
     std::set<MapPoint *> setM;
 
     for (MapPoint *pMP : mCurrentFrame->mvpMapPoints)
@@ -1370,6 +1387,9 @@ namespace defSLAM
     int basePoints = KLT_SearchLocalMapPoints();
     //int basePoints = mCurrentFrame->N;
 
+    if (debugPoints)
+      printCurrentPoints("3_SearchKLTLocalMap");
+
     if (static_cast<DefMap *>(mpMap)->GetTemplate())
     {
       Optimizer::DefPoseOptimization(
@@ -1381,6 +1401,8 @@ namespace defSLAM
       ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
     }
 
+    if (debugPoints)
+      printCurrentPoints("4_OptimizationKLTLocalMap");
     // Optimize Pose
     mnMatchesInliers = 0;
     int mnMatchesOutliers(0);
@@ -1661,5 +1683,95 @@ namespace defSLAM
     }
 
     return toReturn;
+  }
+  void DefKLTTracking::printCurrentPoints(string nameWindow)
+  {
+    vector<cv::KeyPoint> vCurrKeys = mCurrentFrame->mvKeys;
+    int numberKeys = vCurrKeys.size();
+    cv::Mat mImOutlier = mImRGB.clone();
+    
+    cv::namedWindow(nameWindow);
+
+    cout << "Updating outliers..." << endl;
+    cout << numberKeys << " keypoints" << endl;
+    cout << "size of rematched: " << mCurrentFrame->vRematched_.size() << endl;
+
+    const float r = 5;  
+
+    for (int i = 0; i < numberKeys; i++)
+    {
+      MapPoint *pMP = mCurrentFrame->mvpMapPoints[i];
+      if (pMP)
+      {
+        cv::Point2f pt1, pt2;
+        pt1.x = vCurrKeys[i].pt.x - r;
+        pt1.y = vCurrKeys[i].pt.y - r;
+        pt2.x = vCurrKeys[i].pt.x + r;
+        pt2.y = vCurrKeys[i].pt.y + r;
+
+        cv::KeyPoint kp = mCurrentFrame->ProjectPoints(pMP->GetWorldPos());
+
+        if (mCurrentFrame->mvbOutlier[i]) // Outlier
+        {
+          cv::rectangle(mImOutlier, pt1, pt2, cv::Scalar(0, 0, 255));
+          cv::circle(mImOutlier, vCurrKeys[i].pt, 2, cv::Scalar(0, 0, 255), -1);
+          cv::line(mImOutlier, vCurrKeys[i].pt, kp.pt, cv::Scalar(0, 0, 255));
+          cv::circle(mImOutlier, kp.pt, 2, cv::Scalar(240, 255, 255), -1);
+        }
+        else if (mCurrentFrame->vRematched_[i]) // Point rematched from map
+        {
+          cv::rectangle(mImOutlier, pt1, pt2, cv::Scalar(255, 0, 0));
+          cv::circle(mImOutlier, vCurrKeys[i].pt, 2, cv::Scalar(255, 0, 0), -1);
+          cv::line(mImOutlier, vCurrKeys[i].pt, kp.pt, cv::Scalar(255, 0, 0));
+          cv::circle(mImOutlier, kp.pt, 2, cv::Scalar(240, 255, 255), -1);
+        }
+        else // Tracked inlier
+        {
+          cv::rectangle(mImOutlier, pt1, pt2, cv::Scalar(0, 255, 0));
+          cv::circle(mImOutlier, vCurrKeys[i].pt, 2, cv::Scalar(0, 255, 0), -1);
+          cv::line(mImOutlier, vCurrKeys[i].pt, kp.pt, cv::Scalar(0, 255, 0));
+          cv::circle(mImOutlier, kp.pt, 2, cv::Scalar(240, 255, 255), -1);
+        }
+      }
+    }
+
+    std::ostringstream out;
+    out << std::internal << std::setfill('0') << std::setw(5)
+        << uint(mCurrentFrame->mTimeStamp);
+    cv::imwrite("/home/jmorlana/debugResults/" + nameWindow + "/" + out.str() + ".png", mImOutlier);
+
+    cv::imshow(nameWindow, mImOutlier);
+    cv::waitKey(10);
+
+  }
+
+  void DefKLTTracking::printPointsWatchedByKeyframes(string nameWindow)
+  {
+    vector<cv::KeyPoint> vCurrKeys = mCurrentFrame->mvKeys;
+    int numberKeys = vCurrKeys.size();
+    cv::Mat mImColors = mImRGB.clone();
+
+    cv::namedWindow(nameWindow);
+
+    for (int i = 0; i < numberKeys; i++)
+    {
+      MapPoint *pMP = mCurrentFrame->mvpMapPoints[i];
+      if (pMP)
+      {
+        if (!mCurrentFrame->mvbOutlier[i])
+        {
+          cv::KeyPoint kp = vCurrKeys[i];
+
+          int observations = pMP->Observations();
+          int maxObs = 5;
+          double alpha = std::min(1.0, 1.0 * observations / maxObs);
+          // Color range from blue (0 obs) to red (+10 obs)
+          cv::circle(mImColors, kp.pt, 4, cv::Scalar(255 * (1 - alpha), 0, 255 * alpha), -1);
+        }
+      }
+    }
+
+    cv::imshow(nameWindow, mImColors);
+    cv::waitKey(10);
   }
 } // namespace defSLAM

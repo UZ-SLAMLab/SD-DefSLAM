@@ -237,19 +237,22 @@ namespace defSLAM
               cv::KeyPoint kp_est =
                   pTracker->mCurrentFrame->ProjectPoints(mp->GetWorldPos());
               cv::KeyPoint kp_m = pTracker->mCurrentFrame->mvKeys[i];
-              innovation.push_back(std::make_pair(kp_m, kp_est));
+              std::pair<cv::KeyPoint, cv::KeyPoint> kps = std::make_pair(kp_m, kp_est);
+              innovation.push_back(std::make_pair(mp->mnId, kps));
             }
             else
             {
               cv::KeyPoint kp_est =
                   pTracker->mCurrentFrame->ProjectPoints(mp->GetWorldPos());
               cv::KeyPoint kp_m = pTracker->mCurrentFrame->mvKeys[i];
-              innovationOutlier.push_back(std::make_pair(kp_m, kp_est));
+              std::pair<cv::KeyPoint, cv::KeyPoint> kps = std::make_pair(kp_m, kp_est);
+              innovationOutlier.push_back(std::make_pair(mp->mnId, kps));
             }
           }
         }
       }
 
+      int Inliers(0);
       for (int i = 0; i < N; i++)
       {
         MapPoint *pMP = pTracker->mCurrentFrame->mvpMapPoints[i];
@@ -257,6 +260,7 @@ namespace defSLAM
         {
           if (!pTracker->mCurrentFrame->mvbOutlier[i])
           {
+            Inliers++;
             if (static_cast<DefMapPoint *>(pMP)->getFacet())
             {
               if (pMP->Observations() > 0)
@@ -267,6 +271,7 @@ namespace defSLAM
           }
         }
       }
+      cout << Inliers << " inliers in drawer." << endl;
     }
     try
     {

@@ -170,5 +170,6 @@ LocalMapping.chiLimit: 0.005
 LocalMapping.Bending: 0.70
 LocalMapping.Schwarp.Regularizer: 0.05
 
+Debug.bool: 1
 
-Filters.file: /home/jose/DefKLTSLAM/filters.txt
+Filters.file: /home/jmorlana/DefKLTSLAM/filters.txt

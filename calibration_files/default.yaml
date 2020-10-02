@@ -66,4 +66,5 @@ Viewer.ViewpointZ: -0.4
 Viewer.ViewpointF: 600
 Viewer.SaveResults: 1
 #--------------------------------
-Filters.file: /home/jose/DefKLTSLAM/filters.txt
+Debug.bool: 1
+Filters.file: /home/jmorlana/DefKLTSLAM/filters.txt

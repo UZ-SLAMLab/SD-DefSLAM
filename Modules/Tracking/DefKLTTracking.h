@@ -129,6 +129,13 @@ namespace defSLAM
     void KLT_CreateNewKeyFrame();
     bool KLT_TrackLocalMap();
     int KLT_SearchLocalMapPoints();
+
+    ///------------------------------------
+    ///          Debugging
+    ///------------------------------------
+    bool debugPoints;
+    void printCurrentPoints(string nameWindow);
+    void printPointsWatchedByKeyframes(string nameWindow);
   };
 
 } // namespace defSLAM
