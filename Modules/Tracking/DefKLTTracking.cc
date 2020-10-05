@@ -771,7 +771,7 @@ namespace defSLAM
             {
               if (static_cast<DefMap *>(mpMap)->GetTemplate())
               {
-                Optimizer::DefPoseOptimization(
+                nGood = Optimizer::DefPoseOptimization(
                     mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
                     LocalZone);
               }
@@ -809,6 +809,19 @@ namespace defSLAM
               }
             }
           }
+          else
+          {
+            // Deformable optimization must be performed in any case
+            if (static_cast<DefMap *>(mpMap)->GetTemplate())
+              {
+                nGood = Optimizer::DefPoseOptimization(
+                    mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
+                    LocalZone);
+              }
+              else
+                nGood = ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
+          }
+          
 
           // If the pose is supported by enough inliers stop ransacs and continue
           if (nGood >= 10) //50
