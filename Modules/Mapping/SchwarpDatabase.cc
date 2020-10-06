@@ -87,27 +87,27 @@ namespace defSLAM
               std::back_inserter<std::vector<std::pair<KeyFrame *, int>>>(vec));
 
     uint numberOfKeyframes(15);
-    /* if (vec.size() >= numberOfKeyframes)
+    if (vec.size() >= numberOfKeyframes)
      {
-       std::nth_element(vec.begin(), vec.begin(), vec.begin() + numberOfKeyframes,
+       std::nth_element(vec.begin(), vec.begin()+ numberOfKeyframes, vec.end() ,
                        [](const std::pair<KeyFrame *, int> &l, const std::pair<KeyFrame *, int> &r) {
                           if (l.second != r.second)
-                            return l.second > r.second;
+                            return l.second < r.second;
     
                           return l.first > r.first;
-                       });
-    }*/
+       });
+    }
 
     std::cout << "list of covisibles :" << std::endl;
     for (uint i(0); i < vec.size() && i < numberOfKeyframes; i++)
     {
       const std::pair<KeyFrame *, int> kf = vec[i];
-      std::cout << kf.first << " " << kf.second << std::endl;
+      std::cout << kf.first->mnId << " " << kf.second << std::endl;
     }
     /**/
     /// We search all the possible matches with the reference keyframes.
     /// there will be more points
-    for (uint i(0); i < vec.size() && i < vec.size(); i++)
+    for (uint i(0); i < vec.size() && i < numberOfKeyframes; i++)
     {
       const std::pair<KeyFrame *, int> kv = vec[i];
       // Only take into account those with more than 30 matches

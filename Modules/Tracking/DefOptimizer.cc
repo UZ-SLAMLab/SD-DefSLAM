@@ -614,12 +614,6 @@ namespace defSLAM
         if (optimizer.edges().size() < 10)
           break;
       }
-
-      std::cout << "Rep : " << vpEdgesMono[0]->chi2() << std::endl
-                << "Cauchy : " << vpInextensibilityEdges[0]->chi2() << std::endl
-                << "Mean Curvature : " << vpMeanCurvatureEdges[0]->chi2() << std::endl
-                << "Ref : " << vpReferenceEdges[0]->chi2();
-
       std::cout
           << " INLIERS-OUTLIERS : " << vpEdgesMono.size() << "  " << nBad << std::endl;
       double sumError(0.0);
