@@ -59,6 +59,8 @@ namespace defSLAM
     double a = fSettings["Regularizer.LocalZone"];
     double SaveResults = fSettings["Viewer.SaveResults"];
     saveResults = bool(uint(SaveResults));
+    double debug = fSettings["Debug.bool"];
+    debugPoints = bool(uint(debug));
 
     cout << endl
          << "Defomation tracking Parameters: " << endl;
@@ -87,6 +89,7 @@ namespace defSLAM
     LocalZone = settingLoader.getLocalZone();
     saveResults = settingLoader.getSaveResults();
     ReliabilityThreshold = settingLoader.getreliabilityThreshold();
+    debugPoints = settingLoader.getDebugPoints();
   }
   // Main function of tracking.
   void DefTracking::Track()
@@ -159,6 +162,9 @@ namespace defSLAM
       if (bOK)
       {
         mState = OK;
+
+        if (debugPoints)
+          printPointsWatchedByKeyframes("DefSLAM: points watched by KeyFrames");
 
         // Update motion model
         if (!mLastFrame.mTcw.empty())
@@ -254,11 +260,31 @@ namespace defSLAM
   //Main function of tracking where the map is considered deformable.
   bool DefTracking::TrackLocalMap()
   {
+    // FOR VISUALIZATION:
+    // Retrieve matched points before searching new ones
+    vector<MapPoint *> prevMapPoints = mCurrentFrame->mvpMapPoints;
+
     // We have an estimation of the camera pose and some map points tracked in the
     // frame. We retrieve the local map and try to find matches to points in the
     // local map.
     UpdateLocalMap();
     SearchLocalPoints();
+
+    // FOR VISUALIZATION
+    // Compare vectors to get revisited points
+    int nPoints = mCurrentFrame->mvpMapPoints.size();
+    for (int i = 0; i < nPoints; i++)
+    {
+      MapPoint* pMPprev = prevMapPoints[i];
+      MapPoint* pMPcurr = mCurrentFrame->mvpMapPoints[i];
+
+      if (!pMPprev && pMPcurr) 
+        mCurrentFrame->vRematched_[i] = true;
+    }
+
+    if (debugPoints)
+      printCurrentPoints("3_TrackLocalMap");
+
     // Optimize with deformable function if there is a template.
     if (static_cast<DefMap *>(mpMap)->GetTemplate())
     {
@@ -270,6 +296,9 @@ namespace defSLAM
     {
       ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
     }
+
+    if (debugPoints)
+      printCurrentPoints("4_PostOptimizationLocalMap");
 
     // Count inliers, outliers and make statistics for map point culling.
     mnMatchesInliers = 0;
@@ -391,13 +420,19 @@ namespace defSLAM
     }
     // std::cout << "mnMatches 2 Motion: " << nmatches << std::endl;
 
-    if (nmatches < 15)
+    if (debugPoints)
+      printCurrentPoints("1_TrackMotionModel");
+
+    /*if (nmatches < 15)
       return false;
-    return true;
+    return true;*/
 
     /// Optimize frame pose with all matches with a rigid model to initialize the
     /// pose of the camera
-    Optimizer::poseOptimization(mCurrentFrame, myfile);
+    Optimizer::poseOptimization(mCurrentFrame);
+
+    if (debugPoints)
+      printCurrentPoints("2_PostOptimizationMotionModel");
 
     // Discard outliers
     int nmatchesMap = 0;
@@ -726,5 +761,94 @@ namespace defSLAM
     mpLocalMapper->SetNotStop(false);
     mnLastKeyFrameId = mCurrentFrame->mnId;
     mpLastKeyFrame = pKF;
+  }
+  
+  void DefTracking::printCurrentPoints(string nameWindow)
+  {
+    vector<cv::KeyPoint> vCurrKeys = mCurrentFrame->mvKeys;
+    int numberKeys = vCurrKeys.size();
+    cv::Mat mImOutlier = mImRGB.clone();
+    
+    cv::namedWindow(nameWindow);
+
+    cout << "Updating outliers..." << endl;
+    cout << numberKeys << " keypoints" << endl;
+    cout << "size of rematched: " << mCurrentFrame->vRematched_.size() << endl;
+
+    const float r = 5;  
+
+    for (int i = 0; i < numberKeys; i++)
+    {
+      MapPoint *pMP = mCurrentFrame->mvpMapPoints[i];
+      if (pMP)
+      {
+        cv::Point2f pt1, pt2;
+        pt1.x = vCurrKeys[i].pt.x - r;
+        pt1.y = vCurrKeys[i].pt.y - r;
+        pt2.x = vCurrKeys[i].pt.x + r;
+        pt2.y = vCurrKeys[i].pt.y + r;
+
+        cv::KeyPoint kp = mCurrentFrame->ProjectPoints(pMP->GetWorldPos());
+
+        if (mCurrentFrame->mvbOutlier[i]) // Outlier
+        {
+          cv::rectangle(mImOutlier, pt1, pt2, cv::Scalar(0, 0, 255));
+          cv::circle(mImOutlier, vCurrKeys[i].pt, 2, cv::Scalar(0, 0, 255), -1);
+          cv::line(mImOutlier, vCurrKeys[i].pt, kp.pt, cv::Scalar(0, 0, 255));
+          cv::circle(mImOutlier, kp.pt, 2, cv::Scalar(240, 255, 255), -1);
+        }
+        else if (mCurrentFrame->vRematched_[i]) // Point rematched from map
+        {
+          cv::rectangle(mImOutlier, pt1, pt2, cv::Scalar(255, 0, 0));
+          cv::circle(mImOutlier, vCurrKeys[i].pt, 2, cv::Scalar(255, 0, 0), -1);
+          cv::line(mImOutlier, vCurrKeys[i].pt, kp.pt, cv::Scalar(255, 0, 0));
+          cv::circle(mImOutlier, kp.pt, 2, cv::Scalar(240, 255, 255), -1);
+        }
+        else // Tracked inlier
+        {
+          cv::rectangle(mImOutlier, pt1, pt2, cv::Scalar(0, 255, 0));
+          cv::circle(mImOutlier, vCurrKeys[i].pt, 2, cv::Scalar(0, 255, 0), -1);
+          cv::line(mImOutlier, vCurrKeys[i].pt, kp.pt, cv::Scalar(0, 255, 0));
+          cv::circle(mImOutlier, kp.pt, 2, cv::Scalar(240, 255, 255), -1);
+        }
+      }
+    }
+
+    std::ostringstream out;
+    out << std::internal << std::setfill('0') << std::setw(5)
+        << uint(mCurrentFrame->mTimeStamp);
+    cv::imwrite(nameWindow + "-" + out.str() + ".png", mImOutlier);
+
+    cv::imshow(nameWindow, mImOutlier);
+
+  }
+
+  void DefTracking::printPointsWatchedByKeyframes(string nameWindow)
+  {
+    vector<cv::KeyPoint> vCurrKeys = mCurrentFrame->mvKeys;
+    int numberKeys = vCurrKeys.size();
+    cv::Mat mImColors = mImRGB.clone();
+
+    cv::namedWindow(nameWindow);
+
+    for (int i = 0; i < numberKeys; i++)
+    {
+      MapPoint *pMP = mCurrentFrame->mvpMapPoints[i];
+      if (pMP)
+      {
+        if (!mCurrentFrame->mvbOutlier[i])
+        {
+          cv::KeyPoint kp = vCurrKeys[i];
+
+          int observations = pMP->Observations();
+          int maxObs = 5;
+          double alpha = std::min(1.0, 1.0 * observations / maxObs);
+          // Color range from blue (0 obs) to red (+10 obs)
+          cv::circle(mImColors, kp.pt, 4, cv::Scalar(255 * (1 - alpha), 0, 255 * alpha), -1);
+        }
+      }
+    }
+
+    cv::imshow(nameWindow, mImColors);
   }
 } // namespace defSLAM

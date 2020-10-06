@@ -597,7 +597,7 @@ namespace defSLAM
 
     /// Optimize frame pose with all matches with a rigid model to initialize the
     /// pose of the camera
-    Optimizer::poseOptimization(mCurrentFrame, myfile);
+    Optimizer::poseOptimization(mCurrentFrame);
 
     // Discard outliers
     int nmatchesMap = 0;
@@ -1255,9 +1255,6 @@ namespace defSLAM
     if (debugPoints)
       printCurrentPoints("1_TrackingMotionModel");
 
-    if (debugPoints)
-      printCurrentPoints("2_OptimizationMotionModel");
-
     std::set<MapPoint *> setM;
 
     for (MapPoint *pMP : mCurrentFrame->mvpMapPoints)
@@ -1270,6 +1267,10 @@ namespace defSLAM
           mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(),
           this->getRegTemp(), LocalZone);
     }
+
+    if (debugPoints)
+      printCurrentPoints("2_OptimizationMotionModel");
+
     cout << "[KLT_TrackWithMotionModel]: " << mCurrentFrame->mvpMapPoints.size() << " --- " << setM.size() << endl;
 
     std::set<MapPoint *> setklt;
@@ -1717,11 +1718,9 @@ namespace defSLAM
     std::ostringstream out;
     out << std::internal << std::setfill('0') << std::setw(5)
         << uint(mCurrentFrame->mTimeStamp);
-    cv::imwrite("/home/jmorlana/debugResults/" + nameWindow + "/" + out.str() + ".png", mImOutlier);
+    cv::imwrite(nameWindow + "-" + out.str() + ".png", mImOutlier);
 
     cv::imshow(nameWindow, mImOutlier);
-    cv::waitKey(10);
-
   }
 
   void DefKLTTracking::printPointsWatchedByKeyframes(string nameWindow)
@@ -1751,6 +1750,5 @@ namespace defSLAM
     }
 
     cv::imshow(nameWindow, mImColors);
-    cv::waitKey(10);
   }
 } // namespace defSLAM

@@ -112,6 +112,13 @@ namespace defSLAM
     uint LocalZone;
     ofstream myfile;
     bool saveResults;
+
+    ///------------------------------------
+    ///          Debugging
+    ///------------------------------------
+    bool debugPoints;
+    void printCurrentPoints(string nameWindow);
+    void printPointsWatchedByKeyframes(string nameWindow);
   };
 
 } // namespace defSLAM
