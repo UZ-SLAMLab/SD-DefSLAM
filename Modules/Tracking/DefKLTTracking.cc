@@ -1255,9 +1255,6 @@ namespace defSLAM
     if (debugPoints)
       printCurrentPoints("1_TrackingMotionModel");
 
-    if (debugPoints)
-      printCurrentPoints("2_OptimizationMotionModel");
-
     std::set<MapPoint *> setM;
 
     for (MapPoint *pMP : mCurrentFrame->mvpMapPoints)
@@ -1270,6 +1267,10 @@ namespace defSLAM
           mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(),
           this->getRegTemp(), LocalZone);
     }
+
+    if (debugPoints)
+      printCurrentPoints("2_OptimizationMotionModel");
+
     cout << "[KLT_TrackWithMotionModel]: " << mCurrentFrame->mvpMapPoints.size() << " --- " << setM.size() << endl;
 
     std::set<MapPoint *> setklt;
