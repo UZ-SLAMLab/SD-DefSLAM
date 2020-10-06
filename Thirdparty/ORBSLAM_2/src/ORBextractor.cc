@@ -765,9 +765,9 @@ namespace ORB_SLAM2
     void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint>> &allKeypoints)
     {
 
-        //const double akaze_thresh = 3e-4;
-        //Ptr<AKAZE> akaze = AKAZE::create();
-        //akaze->setThreshold(akaze_thresh);
+        const double akaze_thresh = 7e-4;
+        Ptr<AKAZE> akaze = AKAZE::create();
+        akaze->setThreshold(akaze_thresh);
         allKeypoints.resize(nlevels);
 
         const float W = 30;
@@ -785,8 +785,8 @@ namespace ORB_SLAM2
             const float width = (maxBorderX - minBorderX);
             const float height = (maxBorderY - minBorderY);
 
-            const int nCols = width / W;
-            const int nRows = height / W;
+            const int nCols = 1;//width / W;
+            const int nRows = 1;//height / W;
             const int wCell = ceil(width / nCols);
             const int hCell = ceil(height / nRows);
 
@@ -819,8 +819,9 @@ namespace ORB_SLAM2
                     }
                     if (vKeysCell.empty())
                     {
-                        FAST(mvImagePyramid[level].rowRange(iniY, maxY).colRange(iniX, maxX),
-                             vKeysCell, minThFAST, true);
+                        akaze->detect(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),vKeysCell,mvImageMask[level].rowRange(iniY,maxY).colRange(iniX,maxX));
+                        /*FAST(mvImagePyramid[level].rowRange(iniY, maxY).colRange(iniX, maxX),
+                             vKeysCell, minThFAST, true);*/
                         if (mvImageMask.size() > 0)
                         {
                             KeyPointsFilter::runByPixelsMask(vKeysCell, mvImageMask[level].rowRange(iniY, maxY).colRange(iniX, maxX));
@@ -842,8 +843,9 @@ namespace ORB_SLAM2
             vector<KeyPoint> &keypoints = allKeypoints[level];
             keypoints.reserve(nfeatures);
 
-            keypoints = DistributeOctTree(vToDistributeKeys, minBorderX, maxBorderX,
-                                          minBorderY, maxBorderY, mnFeaturesPerLevel[level], level);
+            keypoints = vToDistributeKeys;
+            /*keypoints = DistributeOctTree(vToDistributeKeys, minBorderX, maxBorderX,
+                                          minBorderY, maxBorderY, mnFeaturesPerLevel[level], level);*/
 
             const int scaledPatchSize = PATCH_SIZE * mvScaleFactor[level];
 

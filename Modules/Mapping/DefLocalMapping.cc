@@ -444,7 +444,7 @@ namespace defSLAM
         }
         auto crop = cv::Rect(xcrop, ycrop, tsize, tsize);
         cv::Mat Roi = mask(crop);
-        Roi = cv::Scalar(255);
+        //Roi = cv::Scalar(255);
         newPoints++;
       }
     }
