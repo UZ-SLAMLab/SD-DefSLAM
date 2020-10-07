@@ -629,13 +629,13 @@ namespace defSLAM
         {
           e->computeError();
           auto a = e->errorData();
-          double er = sqrt(pow(a[0], 2) + pow(a[1], 2));
+          double er = sqrt(a[0] * a[0] + a[1] * a[1]);
           vectorError.push_back(er);
           sumError += er;
           n++;
         }
       }
-      cout << "Reprojection error: " << sumError / n << endl;
+      cout << "Reprojection error: " << sumError/n << endl;
       cout << "Points considered: " << n << endl;
       pFrame->repError = sumError / n;
 

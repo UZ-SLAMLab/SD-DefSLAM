@@ -87,16 +87,12 @@ namespace defSLAM
               std::back_inserter<std::vector<std::pair<KeyFrame *, int>>>(vec));
 
     uint numberOfKeyframes(15);
-    if (vec.size() >= numberOfKeyframes)
-     {
-       std::nth_element(vec.begin(), vec.begin()+ numberOfKeyframes, vec.end() ,
+
+    std::sort(vec.begin(), vec.end(),
                        [](const std::pair<KeyFrame *, int> &l, const std::pair<KeyFrame *, int> &r) {
-                          if (l.second != r.second)
-                            return l.second < r.second;
+        return (l.second > r.second);
+    });
     
-                          return l.first > r.first;
-       });
-    }
 
     std::cout << "list of covisibles :" << std::endl;
     for (uint i(0); i < vec.size() && i < numberOfKeyframes; i++)

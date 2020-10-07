@@ -107,7 +107,7 @@ namespace defSLAM
       return false;
     // Used to initialize the scale. Although is from GroundTruthTools
     // is not using anything of groundtruth to the scale computation.
-    float scale = GroundTruthTools::scaleMinMedian(cloud2pc, cloud1pc, 0.5);
+    float scale = GroundTruthTools::scaleMinMedian(cloud2pc, cloud1pc, 1);
     Eigen::Matrix4f TwcEigen;
     cv::cv2eigen(Twc, TwcEigen);
     std::cout << "scale" << scale << std::endl;
@@ -128,8 +128,8 @@ namespace defSLAM
                      scale);
 
     double Huber(0.01);
-    bool aceptable =
-        Optimizer::OptimizeHorn(cloud2pc, cloud1pc, transf, chiLimit_, Huber);
+    bool aceptable = true;
+    Optimizer::OptimizeHorn(cloud2pc, cloud1pc, transf, chiLimit_, Huber);
 
     if ((!aceptable) && (check_chi))
       return false;

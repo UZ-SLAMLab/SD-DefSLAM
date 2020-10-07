@@ -18,7 +18,7 @@ bool DUtils::Random::m_already_seeded = false;
 void DUtils::Random::SeedRand(){
 	Timestamp time;
 	time.setToCurrentTime();
-	srand((unsigned)time.getFloatTime()); 
+	srand(1); 
 }
 
 void DUtils::Random::SeedRandOnce()
@@ -32,7 +32,7 @@ void DUtils::Random::SeedRandOnce()
 
 void DUtils::Random::SeedRand(int seed)
 {
-	srand(seed); 
+	srand(1); 
 }
 
 void DUtils::Random::SeedRandOnce(int seed)

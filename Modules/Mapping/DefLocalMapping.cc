@@ -384,7 +384,8 @@ namespace defSLAM
    ********************************/
   bool DefLocalMapping::needNewTemplate()
   {
-    int nval = this->mpCurrentKeyFrame->mvKeysUn.size();
+    return (static_cast<DefKeyFrame*>(mpCurrentKeyFrame)->kindKeyframe == DefKeyFrame::kindofKeyFrame::REFERENCE);
+    /*int nval = this->mpCurrentKeyFrame->mvKeysUn.size();
     int cols = mpCurrentKeyFrame->imGray.cols;
     cv::Mat mask(mpCurrentKeyFrame->imGray.rows, mpCurrentKeyFrame->imGray.cols,
                  CV_8UC1, cv::Scalar(0));
@@ -452,7 +453,7 @@ namespace defSLAM
     bool createNewTemplate = (newPoints > pointsToTemplate_);
     std::cout << "Points potential : " << newPoints << "  " << pointsToTemplate_
               << std::endl;
-    return createNewTemplate;
+    return createNewTemplate;*/
   }
 
   /***************************************
