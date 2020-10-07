@@ -277,7 +277,7 @@ namespace defSLAM
   }
 
   bool DefKLTTracking::DebugNeedNewKeyFrame(){
-    if (mCurrentFrame->mnId%50 == 0){
+    if (mCurrentFrame->mnId%30 == 0){
       newReferenceKeyframe_ = true;
       return true;
     }else if(mCurrentFrame->mnId%10 == 0){
