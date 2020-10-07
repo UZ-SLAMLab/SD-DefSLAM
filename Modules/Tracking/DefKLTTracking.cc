@@ -207,17 +207,10 @@ namespace defSLAM
         EraseTemporalPoints();
 
 // Check if we need to insert a new keyframe
-#ifdef PARALLEL
-        if (Tracking::NeedNewKeyFrame())
+        if (DebugNeedNewKeyFrame())
         {
           this->KLT_CreateNewKeyFrame();
         }
-#else
-        if (NeedNewKeyFrame())
-        {
-          this->KLT_CreateNewKeyFrame();
-        }
-#endif
 
         // We allow points with high innovation (considererd outliers by the Huber
         // Function) pass to the new keyframe, so that bundle adjustment will
@@ -283,6 +276,19 @@ namespace defSLAM
     return bOK;
   }
 
+  bool DefKLTTracking::DebugNeedNewKeyFrame(){
+    if (mCurrentFrame->mnId%30 == 0){
+      newReferenceKeyframe_ = true;
+      return true;
+    }else if(mCurrentFrame->mnId%10 == 0){
+      newReferenceKeyframe_ = false;
+      return true;
+    }
+    else{
+      return false;
+    }
+  }
+
   bool DefKLTTracking::NeedNewKeyFrame()
   {
     // Morlana's implementation of the keyframe insertion criteria
@@ -313,34 +319,21 @@ namespace defSLAM
     // potentially created.
     int nNonTrackedClose = 0;
     int nTrackedClose = 0;
-    if (mSensor != System::MONOCULAR)
+
+    for (int i = 0; i < mCurrentFrame->N; i++)
     {
-      for (int i = 0; i < mCurrentFrame->N; i++)
       {
-        if (mCurrentFrame->mvDepth[i] > 0 &&
-            mCurrentFrame->mvDepth[i] < mThDepth)
-        {
-          if (mCurrentFrame->mvpMapPoints[i] && !mCurrentFrame->mvbOutlier[i])
+        if (mCurrentFrame->mvpMapPoints[i] && !mCurrentFrame->mvbOutlier[i])
             nTrackedClose++;
           else
             nNonTrackedClose++;
-        }
       }
     }
+    
 
-    bool bNeedToInsertClose =
-        false; //(nTrackedClose<200) && (nNonTrackedClose>50);
-
-    // Thresholds
-    float thRefRatio = 0.75f;
-    if (nKFs < 2)
-      thRefRatio = 0.4f;
-
-    if (mSensor == System::MONOCULAR)
-      thRefRatio = 0.9f;
+    float outlierPerc = float(nTrackedClose)/float(nNonTrackedClose+nTrackedClose);
 
     // Nodes viewed
-
     int nodesViewed = 0;
 
     std::set<Node *> Nodes =
@@ -358,11 +351,18 @@ namespace defSLAM
     cout << "Total NODES: " << Nodes.size() << endl;
     cout << "nodes viewed: " << nodesViewed << endl;
     cout << "Ratio of viewed nodes: " << ratioViewed << endl;
+    cout << "Reprojection Error: " << mCurrentFrame->repError << endl;
+    cout << "Outlier perc: " << outlierPerc <<" " << perctOutliers_ << endl;
 
-    bNeedToInsertClose = ratioViewed < 0.80; // 0.4
+    bool bNeedToInsertClose = (ratioViewed < 0.75); // 0.4
     // bNeedToInsertClose = true;GrabImageMonocularGT
 
-    bool badTemplate = mCurrentFrame->repError > 5.0;
+    bool badTemplate = (mCurrentFrame->repError > 1);
+    if (bNeedToInsertClose){
+      newReferenceKeyframe_ = true;
+    }else{
+      newReferenceKeyframe_ = false;
+    }
 
     // Condition 1a: More than "MaxFrames" have passed from last keyframe
     // insertion
@@ -1383,7 +1383,17 @@ namespace defSLAM
 
     //Create new KeyFrame
     KeyFrame *pKF = new GroundTruthKeyFrame(*mCurrentFrame, mpMap, mpKeyFrameDB);
+    if (newReferenceKeyframe_){
+      static_cast<DefKeyFrame *>(pKF)->kindKeyframe = DefKeyFrame::kindofKeyFrame::REFERENCE;
+      std::cout << "KEYFRAME FOR REFERENCE" << std::endl;
+    }
+    else
+    {
+      static_cast<DefKeyFrame *>(pKF)->kindKeyframe = DefKeyFrame::kindofKeyFrame::REFINEMENT;
+            std::cout << "KEYFRAME FOR REFINEMENT" << std::endl;
 
+    }
+      
     //Set image pyramid
     pKF->imPyr = vector<cv::Mat>(mKLTtracker.refPyr.size());
     for (int i = 0; i < mKLTtracker.refPyr.size(); i++)
@@ -1478,6 +1488,7 @@ namespace defSLAM
     out << std::internal << std::setfill('0') << std::setw(5)
         << uint(mCurrentFrame->mTimeStamp);
     myfile << out.str() << " " << numberLocalMapPoints << " " << mnMatchesInliers << " " << mnMatchesOutliers << std::endl;
+    perctOutliers_ = float(mnMatchesInliers) / float(mnMatchesInliers + mnMatchesOutliers);
     myfile.close();
 
     vector<cv::KeyPoint> vAllGoodKeys, vNewKLTKeys;

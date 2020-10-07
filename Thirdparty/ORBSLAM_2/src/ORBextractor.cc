@@ -60,6 +60,7 @@
 #include <vector>
 
 #include "ORBextractor.h"
+#include "set_MAC.h"
 
 using namespace cv;
 using namespace std;
@@ -764,10 +765,6 @@ namespace ORB_SLAM2
 
     void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint>> &allKeypoints)
     {
-
-        //const double akaze_thresh = 3e-4;
-        //Ptr<AKAZE> akaze = AKAZE::create();
-        //akaze->setThreshold(akaze_thresh);
         allKeypoints.resize(nlevels);
 
         const float W = 30;
@@ -861,6 +858,45 @@ namespace ORB_SLAM2
         // compute orientations
         for (int level = 0; level < nlevels; ++level)
             computeOrientation(mvImagePyramid[level], allKeypoints[level], umax);
+    }
+
+    void ORBextractor::ComputeAKAZE(vector<vector<KeyPoint>> &allKeypoints)
+    {
+        if (nlevels != 1)
+            printf("Careful! Using AKAZE: implemented just for one octave");
+
+        const double akaze_thresh = 3e-4;
+        Ptr<AKAZE> akaze = AKAZE::create();
+        akaze->setThreshold(akaze_thresh);
+        akaze->setNOctaves(1);
+        akaze->setNOctaveLayers(1);
+        allKeypoints.resize(1);
+
+        vector<cv::KeyPoint> vKeys;
+
+        akaze->detect(mvImagePyramid[0], vKeys);
+        if (mvImageMask.size() > 0)
+        {
+            KeyPointsFilter::runByPixelsMask(vKeys, mvImageMask[0]);
+        }
+
+        vector<KeyPoint> &keypoints = allKeypoints[0];
+        keypoints.reserve(nfeatures);
+
+        keypoints = vKeys;
+
+        // TODO: Work with more than one scale
+        const int scaledPatchSize = PATCH_SIZE * mvScaleFactor[0];
+
+        // Add border to coordinates and scale information
+        const int nkps = keypoints.size();
+        for (int i = 0; i < nkps; i++)
+        {
+            keypoints[i].size = scaledPatchSize;
+        }
+
+        // compute orientations
+        computeOrientation(mvImagePyramid[0], allKeypoints[0], umax);
     }
 
     void ORBextractor::ComputeKeyPointsOld(std::vector<std::vector<KeyPoint>> &allKeypoints)
@@ -1067,8 +1103,13 @@ namespace ORB_SLAM2
         }
 
         vector<vector<KeyPoint>> allKeypoints;
+
+#ifndef USE_AKAZE
         this->ComputeKeyPointsOctTree(allKeypoints);
-        //ComputeKeyPointsOld(allKeypoints);
+#else
+        this->ComputeAKAZE(allKeypoints);
+#endif
+        
 
         Mat descriptors;
 
@@ -1196,7 +1237,12 @@ namespace ORB_SLAM2
         ComputePyramid(image, mask);
 
         vector<vector<KeyPoint>> allKeypoints;
-        ComputeKeyPointsOctTree(allKeypoints);
+
+#ifndef USE_AKAZE
+        this->ComputeKeyPointsOctTree(allKeypoints);
+#else
+        this->ComputeAKAZE(allKeypoints);
+#endif
 
         int nkeypoints = 0;
         for (int level = 0; level < nlevels; ++level)

@@ -145,7 +145,7 @@ namespace ORB_SLAM2
         std::pair<cv::KeyPoint, cv::KeyPoint> kps = pair.second;
 
         cv::line(im, kps.first.pt, kps.second.pt, cv::Scalar(10, 255, 10));
-        cv::putText(im, s, kps.first.pt, cv::FONT_HERSHEY_PLAIN, 0.5, cv::Scalar(255, 10, 10), 1, 4);
+        //cv::putText(im, s, kps.first.pt, cv::FONT_HERSHEY_PLAIN, 0.5, cv::Scalar(255, 10, 10), 1, 4);
       }
       for (const auto &pair : innovationOutlier)
       {
@@ -153,7 +153,7 @@ namespace ORB_SLAM2
         std::pair<cv::KeyPoint, cv::KeyPoint> kps = pair.second;
 
         cv::line(im, kps.first.pt, kps.second.pt, cv::Scalar(10, 255, 10));
-        cv::putText(im, s, kps.first.pt, cv::FONT_HERSHEY_PLAIN, 0.5, cv::Scalar(255, 10, 10), 1, 4);
+        //cv::putText(im, s, kps.first.pt, cv::FONT_HERSHEY_PLAIN, 0.5, cv::Scalar(255, 10, 10), 1, 4);
       }
     }
 

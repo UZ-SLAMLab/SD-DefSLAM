@@ -384,75 +384,7 @@ namespace defSLAM
    ********************************/
   bool DefLocalMapping::needNewTemplate()
   {
-    int nval = this->mpCurrentKeyFrame->mvKeysUn.size();
-    int cols = mpCurrentKeyFrame->imGray.cols;
-    cv::Mat mask(mpCurrentKeyFrame->imGray.rows, mpCurrentKeyFrame->imGray.cols,
-                 CV_8UC1, cv::Scalar(0));
-    int const max_BINARY_value = 255;
-
-    for (int i = 0; i < nval; i++)
-    {
-      MapPoint *pMP = mpCurrentKeyFrame->GetMapPoint(i);
-      if (pMP)
-      {
-        if (pMP->isBad())
-          continue;
-        mask.at<char>(this->mpCurrentKeyFrame->mvKeysUn[i].pt.y,
-                      this->mpCurrentKeyFrame->mvKeysUn[i].pt.x) = 255;
-      }
-    }
-    cv::Mat kernel;
-    int kernel_size = cols / 15;
-    int ddepth = -1;
-    cv::Point anchor(-1, -1);
-    double delta;
-    delta = 0;
-    kernel = cv::Mat::ones(kernel_size, kernel_size, CV_32F);
-    cv::filter2D(mask, mask, ddepth, kernel, anchor, delta, cv::BORDER_DEFAULT);
-    double threshold_value = 1;
-    cv::threshold(mask, mask, threshold_value, max_BINARY_value, 0);
-
-    int newPoints(0);
-    for (int i = 0; i < nval; i++)
-    {
-      MapPoint *pMP = mpCurrentKeyFrame->GetMapPoint(i);
-      if (!pMP)
-      {
-        const auto &kpt = mpCurrentKeyFrame->mvKeysUn[i].pt;
-
-        if (uint8_t(mask.at<char>(kpt.y, kpt.x)) > 125)
-        {
-          continue;
-        }
-
-        auto tsize(cols / 15);
-        auto ycrop = kpt.y - tsize / 2;
-        auto xcrop = kpt.x - tsize / 2;
-        if (ycrop < 0)
-          ycrop = 0;
-        if ((ycrop + tsize) > mask.rows)
-        {
-          ycrop = mask.rows - tsize - 1;
-        }
-        if (xcrop < 0)
-        {
-          xcrop = 0;
-        }
-        if ((xcrop + tsize) > mask.cols)
-        {
-          xcrop = mask.cols - tsize - 1;
-        }
-        auto crop = cv::Rect(xcrop, ycrop, tsize, tsize);
-        cv::Mat Roi = mask(crop);
-        Roi = cv::Scalar(255);
-        newPoints++;
-      }
-    }
-
-    bool createNewTemplate = (newPoints > pointsToTemplate_);
-    std::cout << "Points potential : " << newPoints << "  " << pointsToTemplate_
-              << std::endl;
-    return createNewTemplate;
+    return (static_cast<DefKeyFrame*>(mpCurrentKeyFrame)->kindKeyframe == DefKeyFrame::kindofKeyFrame::REFERENCE);
   }
 
   /***************************************

@@ -96,6 +96,12 @@ namespace defSLAM
     int KeyframesRelated;
     Surface *surface;
     float accMean;
+    enum kindofKeyFrame
+    {
+      REFINEMENT,
+      REFERENCE
+    };
+    kindofKeyFrame kindKeyframe;
 
   private:
     std::mutex mutex;

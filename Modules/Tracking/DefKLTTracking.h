@@ -98,7 +98,7 @@ namespace defSLAM
 
     // More sophisticated way of selecting keyframes (Author J.Morlana)
     bool NeedNewKeyFrame() override;
-
+    bool DebugNeedNewKeyFrame();
     void CreateNewKeyFrame() override;
 
     void MonocularInitialization() override;
@@ -123,7 +123,10 @@ namespace defSLAM
     std::vector<MapPoint *> mvKLTMPs;
     std::vector<bool> mvKLTStatus;
     std::vector<cv::Mat> vHessian_;
+    bool newReferenceKeyframe_;
+    float perctOutliers_;
 
+  protected:
     bool KLT_TrackWithMotionModel();
     void KLT_UpdateSeeds();
     void KLT_CreateNewKeyFrame();
