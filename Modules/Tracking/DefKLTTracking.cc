@@ -207,7 +207,7 @@ namespace defSLAM
         EraseTemporalPoints();
 
 // Check if we need to insert a new keyframe
-        if (NeedNewKeyFrame())
+        if (DebugNeedNewKeyFrame())
         {
           this->KLT_CreateNewKeyFrame();
         }
@@ -276,6 +276,19 @@ namespace defSLAM
     return bOK;
   }
 
+  bool DefKLTTracking::DebugNeedNewKeyFrame(){
+    if (mCurrentFrame->mnId%50 == 0){
+      newReferenceKeyframe_ = true;
+      return true;
+    }else if(mCurrentFrame->mnId%10 == 0){
+      newReferenceKeyframe_ = false;
+      return true;
+    }
+    else{
+      return false;
+    }
+  }
+
   bool DefKLTTracking::NeedNewKeyFrame()
   {
     // Morlana's implementation of the keyframe insertion criteria
@@ -341,7 +354,7 @@ namespace defSLAM
     cout << "Reprojection Error: " << mCurrentFrame->repError << endl;
     cout << "Outlier perc: " << outlierPerc <<" " << perctOutliers_ << endl;
 
-    bool bNeedToInsertClose = (ratioViewed < 0.70); // 0.4
+    bool bNeedToInsertClose = (ratioViewed < 0.75); // 0.4
     // bNeedToInsertClose = true;GrabImageMonocularGT
 
     bool badTemplate = (mCurrentFrame->repError > 1);
@@ -1372,10 +1385,13 @@ namespace defSLAM
     KeyFrame *pKF = new GroundTruthKeyFrame(*mCurrentFrame, mpMap, mpKeyFrameDB);
     if (newReferenceKeyframe_){
       static_cast<DefKeyFrame *>(pKF)->kindKeyframe = DefKeyFrame::kindofKeyFrame::REFERENCE;
+      std::cout << "KEYFRAME FOR REFERENCE" << std::endl;
     }
     else
     {
       static_cast<DefKeyFrame *>(pKF)->kindKeyframe = DefKeyFrame::kindofKeyFrame::REFINEMENT;
+            std::cout << "KEYFRAME FOR REFINEMENT" << std::endl;
+
     }
       
     //Set image pyramid

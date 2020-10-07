@@ -98,7 +98,7 @@ namespace defSLAM
 
     // More sophisticated way of selecting keyframes (Author J.Morlana)
     bool NeedNewKeyFrame() override;
-
+    bool DebugNeedNewKeyFrame();
     void CreateNewKeyFrame() override;
 
     void MonocularInitialization() override;

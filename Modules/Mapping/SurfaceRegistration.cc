@@ -103,6 +103,7 @@ namespace defSLAM
       }
     }
 
+    std::cout << "Points for alignment" << CounterMP << std::endl;
     if (CounterMP < 15)
       return false;
     // Used to initialize the scale. Although is from GroundTruthTools
