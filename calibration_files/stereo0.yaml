@@ -112,12 +112,12 @@ RIGHT.P:  !!opencv-matrix
 #--------------------------------------------------------------------------------------------
 
 # Laplacian regularizer: It penalizes changes in curvature
-Regularizer.laplacian: 100
+Regularizer.laplacian: 80
 
 # Inextensibility regularizer: It penalizes the streching
-Regularizer.Inextensibility: 5000
+Regularizer.Inextensibility: 4000
 # Temporal regularizer: Smoothes the changes in the pose of the mesh frame to frame
-Regularizer.temporal: 0.01
+Regularizer.temporal: 0.05
 
 #Number of neighbours layers used in the local optimization
 Regularizer.LocalZone: 2
@@ -132,7 +132,7 @@ Regularizer.Reliability: 0
 # ORB Parameters (keep always the same)
 #--------------------------------------------------------------------------------------------
 # ORB Extractor: Number of features per image
-ORBextractor.nFeatures: 800 #1000
+ORBextractor.nFeatures: 1000 #1000
 
 # ORB Extractor: Scale factor between levels in the scale pyramid
 ORBextractor.scaleFactor: 1.2
@@ -144,7 +144,7 @@ ORBextractor.nLevels: 1 #
 # Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
 # Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
 # You can lower these values if your images have low contrast
-ORBextractor.iniThFAST: 15
+ORBextractor.iniThFAST: 20
 ORBextractor.minThFAST: 7
 
 #--------------------------------------------------------------------------------------------
@@ -166,7 +166,7 @@ Viewer.SaveResults: 1
 # Local Mapping Parameters
 #--------------------------------------------------------------------------------------------
 LocalMapping.pointsToTemplate: 75
-LocalMapping.chiLimit: 0.005
+LocalMapping.chiLimit: 0.05
 LocalMapping.Bending: 0.70
 LocalMapping.Schwarp.Regularizer: 0.1
 
