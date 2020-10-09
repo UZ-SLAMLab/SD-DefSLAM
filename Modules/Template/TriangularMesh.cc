@@ -228,7 +228,7 @@ namespace defSLAM
     Eigen::Vector3f newPose = triangle_vertex_0 * alpha +
                               triangle_vertex_1 * beta +
                               triangle_vertex_2 * gamma;
-    if ((newPose - query_point).squaredNorm() > 1E-1)
+    if ((newPose - query_point).squaredNorm() > 1E-2)
       return false;
     // The point P′ lies inside T if:
     return ((0 <= alpha) && (alpha <= 1) && (0 <= beta) && (beta <= 1) &&

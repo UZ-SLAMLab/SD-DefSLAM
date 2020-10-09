@@ -24,4 +24,4 @@
 //Uncomment to run ORBSLAM adaptation. TODO: Do it from Cmake
 //#define ORBSLAM
 #define USE_KLT
-#define USE_AKAZE
+//#define USE_AKAZE

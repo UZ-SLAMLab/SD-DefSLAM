@@ -145,6 +145,7 @@ namespace defSLAM
           if (bOK)
           {
             bOK = KLT_TrackLocalMap();
+
             if (debugPoints)
               printCurrentPoints("DefSLAM: points post-KLT local map");
           }           
@@ -172,7 +173,7 @@ namespace defSLAM
         // system relocalizes
         // the camera we will use the local map again.
         if (bOK && !mbVO)
-          bOK = TrackLocalMap();
+          bOK = KLT_TrackLocalMap();
       }
 
       if (bOK)
@@ -277,10 +278,10 @@ namespace defSLAM
   }
 
   bool DefKLTTracking::DebugNeedNewKeyFrame(){
-    if (mCurrentFrame->mnId%30 == 0){
+    if (mCurrentFrame->mnId%25 == 0){
       newReferenceKeyframe_ = true;
       return true;
-    }else if(mCurrentFrame->mnId%10 == 0){
+    }else if(mCurrentFrame->mnId%5 == 0){
       newReferenceKeyframe_ = false;
       return true;
     }
@@ -772,7 +773,7 @@ namespace defSLAM
               if (static_cast<DefMap *>(mpMap)->GetTemplate())
               {
                 nGood = Optimizer::DefPoseOptimization(
-                    mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
+                    mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), this->getRegTemp(),
                     LocalZone);
               }
               else
@@ -1159,7 +1160,7 @@ namespace defSLAM
       mlRelativeFramePoses.push_back(Tcr);
       // Initialize the SLAM
       static_cast<DefKeyFrame *>(pKFini)->assignTemplate();
-      static_cast<DefMap *>(mpMap)->createTemplate(pKFini);
+      static_cast<DefMap *>(mpMap)->createInitialTemplate(pKFini);
       std::cout << static_cast<DefMap *>(mpMap)->GetTemplate()->getNodes().size() << std::endl;
 
       if (viewerOn)
