@@ -102,13 +102,6 @@ namespace defSLAM
       // tracking is lost)
       if (!mbOnlyTracking)
       {
-
-        if (mCurrentFrame->mnId==99)
-        {
-          cout << "State set to LOST" << endl;
-          mState = LOST;
-        }
-
         // If we have an initial estimation of the camera pose and matching. Track
         // the local map.
         if (mState == OK)
