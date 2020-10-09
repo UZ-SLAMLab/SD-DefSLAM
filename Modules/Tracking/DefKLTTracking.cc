@@ -103,7 +103,7 @@ namespace defSLAM
       if (!mbOnlyTracking)
       {
 
-        if (mCurrentFrame->mnId==300)
+        if (mCurrentFrame->mnId==99)
         {
           cout << "State set to LOST" << endl;
           mState = LOST;
@@ -862,7 +862,6 @@ namespace defSLAM
       mnLastRelocFrameId = mCurrentFrame->mnId;
 
       // We need to retrieve old template from the accepted KF
-      // CHECK update template method
       mpReferenceKF = pKFreloc;
       mCurrentFrame->mpReferenceKF = mpReferenceKF;
 
@@ -873,38 +872,23 @@ namespace defSLAM
 
       cout << "Frame lost: " << mCurrentFrame->mnId << endl;
       cout << "KeyFrame reloc: " << pKFreloc->mnId << endl;
-      //cv::waitKey(0);
-
-      /*std::unique_lock<std::mutex> M(static_cast<DefMap *>(mpMap)->MutexUpdating);
-      static_cast<DefMap *>(mpMap)->clearTemplate();
-
-      //static_cast<DefKeyFrame *>(pKFreloc)->assignTemplate();
-      static_cast<DefMap *>(mpMap)->createTemplate(pKFreloc);*/
 
       // Update KLT stuff
       mpLastKeyFrame = pKFreloc;
-      mvKLTKeys = pKFreloc->mvKeys;
-      mvKLTMPs = pKFreloc->GetMapPointMatches();
-      mvKLTStatus.resize(mvKLTKeys.size(), true);
+      mvKLTKeys = mCurrentFrame->mvKeys;
+      mvKLTMPs = mCurrentFrame->mvpMapPoints;
+      mvKLTStatus.resize(mvKLTKeys.size(), false);
 
-      mKLTtracker.SetReferenceImage(pKFreloc->imGray, mvKLTKeys);
-
-      int nmatches = mKLTtracker.PRE_Track(pKFreloc->imGray, mvKLTKeys, mvKLTStatus, vHessian_, true, 0.85);
-
-      for (size_t i = 0; i < mvKLTMPs.size(); i++)
+      for (int i = 0; i < mvKLTMPs.size(); i++)
       {
-        if (!mvKLTStatus[i])
-          continue;
-        if (mvKLTKeys[i].pt.x < 20 || mvKLTKeys[i].pt.x > mCurrentFrame->ImGray.cols - 20 ||
-            mvKLTKeys[i].pt.y < 20 || mvKLTKeys[i].pt.y > mCurrentFrame->ImGray.rows - 20)
-        {
-          mvKLTStatus[i] = false;
-        }
-        if (mCurrentFrame->_mask.at<uchar>(mvKLTKeys[i].pt.y, mvKLTKeys[i].pt.x) < 125)
-          mvKLTStatus[i] = false;
+        MapPoint* pMP = mvKLTMPs[i];
+        if (pMP)
+          mvKLTStatus[i] = true;
       }
 
       mCurrentFrame->SetTrackedPoints(mvKLTKeys, mvKLTStatus, mvKLTMPs, vHessian_);
+
+      mKLTtracker.SetReferenceImage(mCurrentFrame->ImGray, mvKLTKeys);
 
       return true;
     }
