@@ -103,7 +103,7 @@ namespace defSLAM
       if (!mbOnlyTracking)
       {
 
-        if (mCurrentFrame->mnId==310)
+        if (mCurrentFrame->mnId==300)
         {
           cout << "State set to LOST" << endl;
           mState = LOST;
@@ -699,9 +699,9 @@ namespace defSLAM
           ORB_SLAM2::PnPsolver *pSolver =
               new ORB_SLAM2::PnPsolver(*mCurrentFrame, vvpMapPointMatches[i]);
           // Increase threshold to allow points with deformation
-          pSolver->SetRansacParameters(0.99, 10, 300, 4, 0.5, 20); //5.991 last position
+          pSolver->SetRansacParameters(0.99, 8, 300, 4, 0.5, 20); //5.991 last position
           vpPnPsolvers[i] = pSolver;
-          cout << "Accepted: " << pKF->mnId << endl;
+          cout << "Accepted: " << pKF->mnId << " / Matches: " << nmatches << endl;
           nCandidates++;
         }
       }
@@ -712,7 +712,8 @@ namespace defSLAM
     bool bMatch = false;
     ORBmatcher matcher2(0.9, true);
 
-    KeyFrame *pKFreloc;
+    KeyFrame* pKFreloc;
+    KeyFrame* pKFref;
 
     while (nCandidates > 0 && !bMatch)
     {
@@ -734,8 +735,9 @@ namespace defSLAM
         {
           vbDiscarded[i] = true;
           nCandidates--;
-          cout << "Max iterations reached: " << i << endl;
         }
+
+        cout << "Keyframe: " << vpCandidateKFs[i]->mnId << " / Inliers: " << nInliers << endl;
 
         // If a Camera Pose is computed, optimize
         if (!Tcw.empty())
@@ -757,8 +759,7 @@ namespace defSLAM
               mCurrentFrame->mvpMapPoints[j] = NULL;
           }
 
-          cout << "Optimizing pose..." << endl;
-          int nGood = ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
+          /*int nGood = Optimizer::poseOptimization(mCurrentFrame);
           cout << "Pose optimized with " << nGood << " inliers." << endl;
 
           if (nGood < 10)
@@ -766,38 +767,42 @@ namespace defSLAM
 
           for (int io = 0; io < mCurrentFrame->N; io++)
             if (mCurrentFrame->mvbOutlier[io])
-              mCurrentFrame->mvpMapPoints[io] = static_cast<MapPoint *>(nullptr);
+              mCurrentFrame->mvpMapPoints[io] = static_cast<MapPoint *>(nullptr);*/
 
           // Assign temporal template
           pKFreloc = vpCandidateKFs[i];
+          cout << "Relocalization Keyframe: " << pKFreloc->mnId << endl;
+          pKFref = static_cast<DefKeyFrame *>(pKFreloc)->getReferenceKeyframe();
+          cout << "Reference Keyframe: " << pKFref->mnId << endl;
+
 
           std::unique_lock<std::mutex> M(static_cast<DefMap *>(mpMap)->MutexUpdating);
           static_cast<DefMap *>(mpMap)->clearTemplate();
 
           //static_cast<DefKeyFrame *>(pKFreloc)->assignTemplate();
-          static_cast<DefMap *>(mpMap)->createTemplate(pKFreloc);
+          static_cast<DefMap *>(mpMap)->createTemplate(pKFref);
 
+          int nGood = Optimizer::DefPoseOptimization(
+                  mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
+                  LocalZone);
+
+          if (nGood < 10)
+            continue;
 
           // If few inliers, search by projection in a coarse window and optimize again
           if (nGood < 20)
           {
             int nadditional = matcher2.SearchByProjection(
-                *mCurrentFrame, vpCandidateKFs[i], sFound, 10, 100);
+                *mCurrentFrame, vpCandidateKFs[i], sFound, 15, 100);
 
             if (nadditional + nGood >= 40)
             {
-              if (static_cast<DefMap *>(mpMap)->GetTemplate())
-              {
-                cout << "1_DEFORMABLE OPT in reloc" << endl;
-                nGood = Optimizer::DefPoseOptimization(
-                    mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
-                    LocalZone);
-              }
-              else
-              {
-                cout << "1_RIGID OPT in reloc" << endl;
-                nGood = ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
-              }
+
+              cout << "1_DEFORMABLE OPT in reloc" << endl;
+              nGood = Optimizer::DefPoseOptimization(
+                  mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
+                  LocalZone);
+
               // If many inliers but still not enough, search by projection again in a narrower window
               // the camera has been already optimized with many points
               if (nGood > 40 && nGood < 50)
@@ -813,19 +818,11 @@ namespace defSLAM
                 // Final optimization
                 if (nGood + nadditional >= 50)
                 {
-                  if (static_cast<DefMap *>(mpMap)->GetTemplate())
-                  {
-                    cout << "2_DEFORMABLE OPT in reloc" << endl;
-                    Optimizer::DefPoseOptimization(
-                        mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
-                        LocalZone);
-                  }
-                  else
-                  {
-                    cout << "2_RIGID OPT in reloc" << endl;
-                    ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
-                  }
-                    
+                  cout << "2_DEFORMABLE OPT in reloc" << endl;
+                  Optimizer::DefPoseOptimization(
+                      mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
+                      LocalZone);
+
                   for (int io = 0; io < mCurrentFrame->N; io++)
                     if (mCurrentFrame->mvbOutlier[io])
                       mCurrentFrame->mvpMapPoints[io] = NULL;
@@ -836,26 +833,18 @@ namespace defSLAM
           else
           {
             // Deformable optimization must be performed in any case
-            if (static_cast<DefMap *>(mpMap)->GetTemplate())
-              {
-                cout << "3_DEFORMABLE OPT in reloc" << endl;
-                nGood = Optimizer::DefPoseOptimization(
-                    mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
-                    LocalZone);
-              }
-              else
-              {
-                cout << "3_RIGID OPT in reloc" << endl;
-                nGood = ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
-              }
+
+            cout << "3_DEFORMABLE OPT in reloc" << endl;
+            nGood = Optimizer::DefPoseOptimization(
+                mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
+                LocalZone);
           }
-          
 
           // If the pose is supported by enough inliers stop ransacs and continue
           if (nGood >= 10) //50
           {
             bMatch = true;
-            cout << "Relocalization succeded with Keyframe: " << i << endl;
+            cout << "Relocalization succeded with Keyframe: " << pKFreloc->mnId << endl;
             //pKFreloc = vpCandidateKFs[i];
             break;
           }
@@ -865,6 +854,7 @@ namespace defSLAM
 
     if (!bMatch)
     {
+      mCurrentFrame->mTcw = cv::Mat();
       return false;
     }
     else
