@@ -62,6 +62,7 @@ namespace defSLAM
    *********/
     virtual void createTemplate(KeyFrame *Kf);
 
+    void createInitialTemplate(KeyFrame *pKF);
     // return the template
     virtual void clear();
 

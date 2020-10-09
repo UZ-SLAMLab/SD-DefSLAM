@@ -21,9 +21,9 @@
 
 #include "DefMap.h"
 #include "TemplateGenerator.h"
-
+#include "DefKeyFrame.h"
 #include <mutex>
-
+#include <unordered_set>
 namespace defSLAM
 {
   /***********
@@ -52,14 +52,89 @@ namespace defSLAM
    *  Function that generates a template with the estimated surface for the keyframe kf. 
    * (Kf->surface must have been initializated.)
    *********/
-  void DefMap::createTemplate(KeyFrame *Kf)
+  void DefMap::createTemplate(KeyFrame *pKF)
   {
+    std::unordered_set<KeyFrame *> lLocalKeyFrames;
+    lLocalKeyFrames.insert(pKF);
+    pKF->mnBALocalForKF = pKF->mnId;
+
+    const vector<KeyFrame *> vNeighKFs = pKF->GetVectorCovisibleKeyFrames();
+    for (int i = 0, iend = vNeighKFs.size(); i < iend; i++)
+    {
+      KeyFrame *pKFi = vNeighKFs[i];
+      pKFi->mnBALocalForKF = pKF->mnId;
+      if (!pKFi->isBad())
+        if(static_cast<DefKeyFrame*>(pKFi)->templateAssigned()){
+          lLocalKeyFrames.insert(pKFi);
+          }
+    }
+
+    // Local MapPoints seen in Local KeyFrames
+    unordered_set<MapPoint *> lLocalMapPoints;
+    for (unordered_set<KeyFrame *>::iterator lit = lLocalKeyFrames.begin(), lend = lLocalKeyFrames.end(); lit != lend; lit++)
+    {
+      vector<MapPoint *> vpMPs = (*lit)->GetMapPointMatches();
+      for (vector<MapPoint *>::iterator vit = vpMPs.begin(), vend = vpMPs.end(); vit != vend; vit++)
+      {
+        MapPoint *pMP = *vit;
+        if (pMP)
+          if (!pMP->isBad())
+              lLocalMapPoints.insert(pMP);
+      }
+    }
+    std::cout << "keyframes for template : " << lLocalKeyFrames.size() << "; Map Points for template : " << lLocalMapPoints.size() << std::endl;
+    std::set<MapPoint *> mapPointsForTemplate(lLocalMapPoints.begin(), lLocalMapPoints.end());
+
     // It creates a template with the current mapped points
-    Mesh = TemplateGenerator::LaplacianMeshCreate(mspMapPoints, this, Kf);
+    Mesh = TemplateGenerator::LaplacianMeshCreate(mapPointsForTemplate, this, pKF);
 
     ThereIsATemplate = true;
   }
 
+  /***********
+   *  Function that generates a template with the estimated surface for the keyframe kf. 
+   * (Kf->surface must have been initializated.)
+   *********/
+  void DefMap::createInitialTemplate(KeyFrame *pKF)
+  {
+    std::list<KeyFrame *> lLocalKeyFrames;
+    lLocalKeyFrames.push_back(pKF);
+    pKF->mnBALocalForKF = pKF->mnId;
+
+    const vector<KeyFrame *> vNeighKFs = pKF->GetVectorCovisibleKeyFrames();
+    for (int i = 0, iend = vNeighKFs.size(); i < iend; i++)
+    {
+      KeyFrame *pKFi = vNeighKFs[i];
+      pKFi->mnBALocalForKF = pKF->mnId;
+      if (!pKFi->isBad())
+        lLocalKeyFrames.push_back(pKFi);
+    }
+
+    // Local MapPoints seen in Local KeyFrames
+    list<MapPoint *> lLocalMapPoints;
+    for (list<KeyFrame *>::iterator lit = lLocalKeyFrames.begin(), lend = lLocalKeyFrames.end(); lit != lend; lit++)
+    {
+      vector<MapPoint *> vpMPs = (*lit)->GetMapPointMatches();
+      for (vector<MapPoint *>::iterator vit = vpMPs.begin(), vend = vpMPs.end(); vit != vend; vit++)
+      {
+        MapPoint *pMP = *vit;
+        if (pMP)
+          if (!pMP->isBad())
+            if (pMP->mnBALocalForKF != pKF->mnId)
+            {
+              lLocalMapPoints.push_back(pMP);
+              pMP->mnBALocalForKF = pKF->mnId;
+            }
+      }
+    }
+    std::cout << "keyframes for template : " << lLocalKeyFrames.size()<< "Map Points for template : " << lLocalMapPoints.size() << std::endl;
+    std::set<MapPoint *> mapPointsForTemplate(lLocalMapPoints.begin(), lLocalMapPoints.end());
+
+    // It creates a template with the current mapped points
+    Mesh = TemplateGenerator::LaplacianMeshCreate(mspMapPoints, this, pKF);
+
+    ThereIsATemplate = true;
+  }
   // return the template
   Template *DefMap::GetTemplate() { return Mesh; }
 

@@ -807,8 +807,8 @@ namespace ORB_SLAM2
                         maxX = maxBorderX;
 
                     vector<cv::KeyPoint> vKeysCell;
-                    //FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
-                    //     vKeysCell,iniThFAST,true);
+                    FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
+                         vKeysCell,iniThFAST,true);
                     //akaze->detect(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),vKeysCell,mvImageMask[level].rowRange(iniY,maxY).colRange(iniX,maxX));
                     if (mvImageMask.size() > 0)
                     {
