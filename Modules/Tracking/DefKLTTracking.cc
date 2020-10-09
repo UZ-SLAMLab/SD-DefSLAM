@@ -145,7 +145,7 @@ namespace defSLAM
           if (bOK)
           {
             bOK = KLT_TrackLocalMap();
-            bOK = true;
+
             if (debugPoints)
               printCurrentPoints("DefSLAM: points post-KLT local map");
           }           
@@ -278,7 +278,7 @@ namespace defSLAM
   }
 
   bool DefKLTTracking::DebugNeedNewKeyFrame(){
-    if (mCurrentFrame->mnId%50 == 0){
+    if (mCurrentFrame->mnId%25 == 0){
       newReferenceKeyframe_ = true;
       return true;
     }else if(mCurrentFrame->mnId%5 == 0){
@@ -773,7 +773,7 @@ namespace defSLAM
               if (static_cast<DefMap *>(mpMap)->GetTemplate())
               {
                 nGood = Optimizer::DefPoseOptimization(
-                    mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
+                    mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), this->getRegTemp(),
                     LocalZone);
               }
               else
