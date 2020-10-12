@@ -174,7 +174,7 @@ namespace defSLAM
       static_cast<DefKeyFrame *>(referenceKF_)->assignTemplate();
 
       //Add to DB all ancho keyframes (relocalization)
-      referenceKF_->addToDB();
+      //referenceKF_->addToDB();
 
       createTemplate_ = false;
       return true;
@@ -260,6 +260,10 @@ namespace defSLAM
       }
     }
     referenceKF_ = kfForTemplate;
+    //Add all keyframes to DB (relocalization)
+    static_cast<DefKeyFrame *>(mpCurrentKeyFrame)->setReferenceKeyframe(referenceKF_);
+    mpCurrentKeyFrame->addToDB();
+    
     createTemplate_ = true;
   }
 

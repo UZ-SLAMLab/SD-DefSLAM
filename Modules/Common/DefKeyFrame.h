@@ -82,7 +82,16 @@ namespace defSLAM
    * i.e., if it is anchor keyframe. It is used just for visualization.
    *************************/
     bool templateAssigned();
-
+    /************
+   * This function sets the reference keyframe with the associated template
+   * wich was refined in the optimization. If KF is reference, points to itself.
+   *************************/
+    void setReferenceKeyframe(KeyFrame* pKF);
+    /************
+   * This function returns, for a refining keyframe, the reference keyframe 
+   * with the associated template wich was refined in the optimization.
+   *************************/
+    KeyFrame* getReferenceKeyframe();
   public:
     double umin;
     double umax;
@@ -102,10 +111,11 @@ namespace defSLAM
       REFERENCE
     };
     kindofKeyFrame kindKeyframe;
-
+    
   private:
     std::mutex mutex;
     bool haveATemplate_;
+    KeyFrame* keyframeWithTemplate;
   };
 
 } // namespace defSLAM

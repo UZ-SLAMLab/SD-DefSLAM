@@ -102,7 +102,6 @@ namespace defSLAM
       // tracking is lost)
       if (!mbOnlyTracking)
       {
-
         // If we have an initial estimation of the camera pose and matching. Track
         // the local map.
         if (mState == OK)
@@ -694,9 +693,9 @@ namespace defSLAM
           ORB_SLAM2::PnPsolver *pSolver =
               new ORB_SLAM2::PnPsolver(*mCurrentFrame, vvpMapPointMatches[i]);
           // Increase threshold to allow points with deformation
-          pSolver->SetRansacParameters(0.99, 10, 300, 4, 0.5, 20); //5.991 last position
+          pSolver->SetRansacParameters(0.99, 8, 300, 4, 0.5, 20); //5.991 last position
           vpPnPsolvers[i] = pSolver;
-          cout << "Accepted: " << pKF->mnId << endl;
+          cout << "Accepted: " << pKF->mnId << " / Matches: " << nmatches << endl;
           nCandidates++;
         }
       }
@@ -707,7 +706,8 @@ namespace defSLAM
     bool bMatch = false;
     ORBmatcher matcher2(0.9, true);
 
-    KeyFrame *pKFreloc;
+    KeyFrame* pKFreloc;
+    KeyFrame* pKFref;
 
     while (nCandidates > 0 && !bMatch)
     {
@@ -731,6 +731,8 @@ namespace defSLAM
           nCandidates--;
         }
 
+        cout << "Keyframe: " << vpCandidateKFs[i]->mnId << " / Inliers: " << nInliers << endl;
+
         // If a Camera Pose is computed, optimize
         if (!Tcw.empty())
         {
@@ -751,8 +753,7 @@ namespace defSLAM
               mCurrentFrame->mvpMapPoints[j] = NULL;
           }
 
-          cout << "Optimizing pose..." << endl;
-          int nGood = ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
+          /*int nGood = Optimizer::poseOptimization(mCurrentFrame);
           cout << "Pose optimized with " << nGood << " inliers." << endl;
 
           if (nGood < 10)
@@ -760,24 +761,41 @@ namespace defSLAM
 
           for (int io = 0; io < mCurrentFrame->N; io++)
             if (mCurrentFrame->mvbOutlier[io])
-              mCurrentFrame->mvpMapPoints[io] = static_cast<MapPoint *>(nullptr);
+              mCurrentFrame->mvpMapPoints[io] = static_cast<MapPoint *>(nullptr);*/
+
+          // Assign temporal template
+          pKFreloc = vpCandidateKFs[i];
+          cout << "Relocalization Keyframe: " << pKFreloc->mnId << endl;
+          pKFref = static_cast<DefKeyFrame *>(pKFreloc)->getReferenceKeyframe();
+          cout << "Reference Keyframe: " << pKFref->mnId << endl;
+
+
+          std::unique_lock<std::mutex> M(static_cast<DefMap *>(mpMap)->MutexUpdating);
+          static_cast<DefMap *>(mpMap)->clearTemplate();
+
+          //static_cast<DefKeyFrame *>(pKFreloc)->assignTemplate();
+          static_cast<DefMap *>(mpMap)->createTemplate(pKFref);
+
+          int nGood = Optimizer::DefPoseOptimization(
+                  mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
+                  LocalZone);
+
+          if (nGood < 10)
+            continue;
 
           // If few inliers, search by projection in a coarse window and optimize again
           if (nGood < 20)
           {
             int nadditional = matcher2.SearchByProjection(
-                *mCurrentFrame, vpCandidateKFs[i], sFound, 10, 100);
+                *mCurrentFrame, vpCandidateKFs[i], sFound, 15, 100);
 
             if (nadditional + nGood >= 40)
             {
-              if (static_cast<DefMap *>(mpMap)->GetTemplate())
-              {
-                nGood = Optimizer::DefPoseOptimization(
-                    mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), this->getRegTemp(),
-                    LocalZone);
-              }
-              else
-                nGood = ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
+              
+              cout << "1_DEFORMABLE OPT in reloc" << endl;
+              nGood = Optimizer::DefPoseOptimization(
+                  mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
+                  LocalZone);
 
               // If many inliers but still not enough, search by projection again in a narrower window
               // the camera has been already optimized with many points
@@ -794,14 +812,10 @@ namespace defSLAM
                 // Final optimization
                 if (nGood + nadditional >= 50)
                 {
-                  if (static_cast<DefMap *>(mpMap)->GetTemplate())
-                  {
-                    Optimizer::DefPoseOptimization(
-                        mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
-                        LocalZone);
-                  }
-                  else
-                    ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
+                  cout << "2_DEFORMABLE OPT in reloc" << endl;
+                  Optimizer::DefPoseOptimization(
+                      mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
+                      LocalZone);
 
                   for (int io = 0; io < mCurrentFrame->N; io++)
                     if (mCurrentFrame->mvbOutlier[io])
@@ -813,23 +827,19 @@ namespace defSLAM
           else
           {
             // Deformable optimization must be performed in any case
-            if (static_cast<DefMap *>(mpMap)->GetTemplate())
-              {
-                nGood = Optimizer::DefPoseOptimization(
-                    mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
-                    LocalZone);
-              }
-              else
-                nGood = ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
+
+            cout << "3_DEFORMABLE OPT in reloc" << endl;
+            nGood = Optimizer::DefPoseOptimization(
+                mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
+                LocalZone);
           }
-          
 
           // If the pose is supported by enough inliers stop ransacs and continue
           if (nGood >= 10) //50
           {
             bMatch = true;
-            cout << "Relocalization succeded." << endl;
-            pKFreloc = vpCandidateKFs[i];
+            cout << "Relocalization succeded with Keyframe: " << pKFreloc->mnId << endl;
+            //pKFreloc = vpCandidateKFs[i];
             break;
           }
         }
@@ -838,6 +848,7 @@ namespace defSLAM
 
     if (!bMatch)
     {
+      mCurrentFrame->mTcw = cv::Mat();
       return false;
     }
     else
@@ -845,7 +856,6 @@ namespace defSLAM
       mnLastRelocFrameId = mCurrentFrame->mnId;
 
       // We need to retrieve old template from the accepted KF
-      // CHECK update template method
       mpReferenceKF = pKFreloc;
       mCurrentFrame->mpReferenceKF = mpReferenceKF;
 
@@ -855,39 +865,24 @@ namespace defSLAM
       cv::imshow("Reloc Keyframe", imreloc);
 
       cout << "Frame lost: " << mCurrentFrame->mnId << endl;
-      cout << "Frame reloc: " << pKFreloc->mnId << endl;
-      //cv::waitKey(0);
-
-      std::unique_lock<std::mutex> M(static_cast<DefMap *>(mpMap)->MutexUpdating);
-      static_cast<DefMap *>(mpMap)->clearTemplate();
-
-      //static_cast<DefKeyFrame *>(pKFreloc)->assignTemplate();
-      static_cast<DefMap *>(mpMap)->createTemplate(pKFreloc);
+      cout << "KeyFrame reloc: " << pKFreloc->mnId << endl;
 
       // Update KLT stuff
       mpLastKeyFrame = pKFreloc;
-      mvKLTKeys = pKFreloc->mvKeys;
-      mvKLTMPs = pKFreloc->GetMapPointMatches();
-      mvKLTStatus.resize(mvKLTKeys.size(), true);
+      mvKLTKeys = mCurrentFrame->mvKeys;
+      mvKLTMPs = mCurrentFrame->mvpMapPoints;
+      mvKLTStatus.resize(mvKLTKeys.size(), false);
 
-      mKLTtracker.SetReferenceImage(pKFreloc->imGray, mvKLTKeys);
-
-      int nmatches = mKLTtracker.PRE_Track(pKFreloc->imGray, mvKLTKeys, mvKLTStatus, vHessian_, true, 0.85);
-
-      for (size_t i = 0; i < mvKLTMPs.size(); i++)
+      for (int i = 0; i < mvKLTMPs.size(); i++)
       {
-        if (!mvKLTStatus[i])
-          continue;
-        if (mvKLTKeys[i].pt.x < 20 || mvKLTKeys[i].pt.x > mCurrentFrame->ImGray.cols - 20 ||
-            mvKLTKeys[i].pt.y < 20 || mvKLTKeys[i].pt.y > mCurrentFrame->ImGray.rows - 20)
-        {
-          mvKLTStatus[i] = false;
-        }
-        if (mCurrentFrame->_mask.at<uchar>(mvKLTKeys[i].pt.y, mvKLTKeys[i].pt.x) < 125)
-          mvKLTStatus[i] = false;
+        MapPoint* pMP = mvKLTMPs[i];
+        if (pMP)
+          mvKLTStatus[i] = true;
       }
 
       mCurrentFrame->SetTrackedPoints(mvKLTKeys, mvKLTStatus, mvKLTMPs, vHessian_);
+
+      mKLTtracker.SetReferenceImage(mCurrentFrame->ImGray, mvKLTKeys);
 
       return true;
     }
