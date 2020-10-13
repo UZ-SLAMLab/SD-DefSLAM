@@ -633,4 +633,30 @@ namespace defSLAM
     unique_lock<mutex> lock(mMutexState);
     return mTrackingState;
   }
+
+  void System::saveMapPointsObservations()
+  {
+    cout << "Saving observations..." << endl;
+    auto allPoints = mpMap->GetAllMapPoints();
+    int n = allPoints.size();
+    auto sum(0.0);
+    
+    for (auto pMP : allPoints)
+    {
+      int nObs = pMP->Observations();
+      sum += (double)nObs;
+    }
+    
+    sum = sum / n;
+    cout << "The mean of observations is: " << sum << " keyframes/points." << endl;
+    cout << "Map Points in the sequence: " << n << endl;
+
+    std::string name("ObservationStats.txt");
+    std::ofstream myfile;
+    myfile.open(name);
+    myfile << "Map Points in the sequence: " << n << endl;
+    myfile << "The mean of observations is: " << sum << endl;
+    myfile.close();
+
+  }
 } // namespace defSLAM

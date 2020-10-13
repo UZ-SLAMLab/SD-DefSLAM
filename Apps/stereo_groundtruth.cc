@@ -154,6 +154,8 @@ int main(int argc, char **argv)
     }
   }
 
+  SLAM.saveMapPointsObservations();
+  
   // Stop all threads
   SLAM.Shutdown();
 

@@ -144,6 +144,9 @@ namespace defSLAM
     // You can call this right after TrackMonocular (or stereo or RGBD)
     int GetTrackingState();
 
+    // Save observations of points by the end of the sequence
+    void saveMapPointsObservations();
+
   protected:
     // Input sensor
     eSensor mSensor;
