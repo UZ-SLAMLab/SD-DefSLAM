@@ -149,4 +149,23 @@ namespace defSLAM
     std::unique_lock<std::mutex> lk(mutex);
     return this->haveATemplate_;
   }
+  /************
+   * This function sets the reference keyframe with the associated template
+   * wich was refined in the optimization. If KF is reference, points to itself.
+   *************************/
+  void DefKeyFrame::setReferenceKeyframe(KeyFrame *pKF)
+  {
+    std::unique_lock<std::mutex> lk(mutex);
+    this->keyframeWithTemplate = pKF;
+  }
+  /************
+   * This function returns, for a refining keyframe, the reference keyframe 
+   * with the associated template wich was refined in the optimization.
+   *************************/
+  KeyFrame *DefKeyFrame::getReferenceKeyframe()
+  {
+    std::unique_lock<std::mutex> lk(mutex);
+    return this->keyframeWithTemplate;
+  }
+
 } // namespace defSLAM
