@@ -211,7 +211,7 @@ namespace defSLAM
       {
         for (auto pMP : points)
         {
-          if (pMP)
+          if (false)//pMP)
           {
             if (pMP->isBad())
               continue;

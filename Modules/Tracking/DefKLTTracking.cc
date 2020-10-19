@@ -497,10 +497,16 @@ namespace defSLAM
             }
           }
           else
+                        if (static_cast<DefMapPoint *>(
+                      mCurrentFrame->mvpMapPoints[i])
+                      ->getFacet())
             mnMatchesInliers++;
         }
         else
         {
+                        if (static_cast<DefMapPoint *>(
+                      mCurrentFrame->mvpMapPoints[i])
+                      ->getFacet())
           mnMatchesOutliers++;
         }
       }
@@ -542,13 +548,14 @@ namespace defSLAM
       }
     }
 
+
+    std::cout << "Saving matches " << std::endl;
+    std::fstream myfile("matches.txt", std::ios::in | std::ios::out | std::ios::ate);
     std::ostringstream out;
     out << std::internal << std::setfill('0') << std::setw(5)
         << uint(mCurrentFrame->mTimeStamp);
-    std::cout << out.str() << " " << mI << " " << mO << " "
-              << numberLocalMapPoints << std::endl;
-    this->matches << out.str() << " " << mI << " " << mO << " "
-                  << numberLocalMapPoints << std::endl;
+    myfile << out.str() << " " << numberLocalMapPoints << " " << mnMatchesInliers << " " << mnMatchesOutliers << std::endl;
+    myfile.close();
     // Decide if the tracking was succesful
     // More restrictive if there was a relocalization recently
     if (mCurrentFrame->mnId < mnLastRelocFrameId + mMaxFrames &&
@@ -559,73 +566,6 @@ namespace defSLAM
       return false;
     else
       return true;
-  }
-
-  bool DefKLTTracking::TrackWithMotionModel()
-  {
-    DefORBmatcher Defmatcher(0.9, false);
-
-    // Update last frame pose according to its reference keyframe
-    // Create "visual odometry" points if in Localization Mode
-    UpdateLastFrame();
-
-    mCurrentFrame->SetPose(mLastFrame.mTcw);
-
-    fill(mCurrentFrame->mvpMapPoints.begin(), mCurrentFrame->mvpMapPoints.end(),
-         static_cast<MapPoint *>(nullptr));
-
-    // Project points seen in previous frame
-    int th(20);
-    int nmatches = Defmatcher.SearchByProjection(*mCurrentFrame, mLastFrame, th,
-                                                 mSensor == System::MONOCULAR);
-
-    std::cout << "POINTS matched:" << nmatches << std::endl;
-
-    // If few matches, uses a wider window search
-    if (nmatches /* +nmatches2 */ < 20)
-    {
-      fill(mCurrentFrame->mvpMapPoints.begin(), mCurrentFrame->mvpMapPoints.end(),
-           static_cast<MapPoint *>(nullptr));
-      nmatches = Defmatcher.SearchByProjection(*mCurrentFrame, mLastFrame, th + 5,
-                                               mSensor == System::MONOCULAR);
-    }
-    // std::cout << "mnMatches 2 Motion: " << nmatches << std::endl;
-
-    if (nmatches < 15)
-      return false;
-    return true;
-
-    /// Optimize frame pose with all matches with a rigid model to initialize the
-    /// pose of the camera
-    Optimizer::poseOptimization(mCurrentFrame);
-
-    // Discard outliers
-    int nmatchesMap = 0;
-    for (int i = 0; i < mCurrentFrame->N; i++)
-    {
-      if (mCurrentFrame->mvpMapPoints[i])
-      {
-        if (mCurrentFrame->mvbOutlier[i])
-        {
-          MapPoint *pMP = mCurrentFrame->mvpMapPoints[i];
-          mCurrentFrame->mvpMapPoints[i] = static_cast<MapPoint *>(nullptr);
-          mCurrentFrame->mvbOutlier[i] = false;
-          pMP->mbTrackInView = false;
-          pMP->mnLastFrameSeen = mCurrentFrame->mnId;
-          nmatches--;
-        }
-        else if (mCurrentFrame->mvpMapPoints[i]->Observations() > 0)
-          nmatchesMap++;
-      }
-    }
-
-    if (mbOnlyTracking)
-    {
-      mbVO = nmatchesMap < 10;
-      return nmatches > 20;
-    }
-
-    return nmatchesMap >= 10;
   }
 
   // Relocate the camera and get old template if system is lost
@@ -682,6 +622,7 @@ namespace defSLAM
       {
         int nmatches =
             matcher.SearchByBoW(pKF, *mCurrentFrame, vvpMapPointMatches[i]);
+        std::cout << "matches of kf: " << nmatches << std::endl;
         if (nmatches < 15)
         {
           vbDiscarded[i] = true;
@@ -1216,7 +1157,10 @@ namespace defSLAM
     // Create "visual odometry" points if in Localization Mode
     UpdateLastFrame();
 
-    mCurrentFrame->SetPose(mLastFrame.mTcw);
+ //   if(mVelocity.empty())
+      mCurrentFrame->SetPose(mLastFrame.mTcw);
+  //  else
+    //  mCurrentFrame->SetPose(mVelocity*mLastFrame.mTcw);
 
     int toTrack = 0;
 
@@ -1263,7 +1207,7 @@ namespace defSLAM
           mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(),
           this->getRegTemp(), LocalZone);
     }
-
+    //Optimizer::poseOptimization(mCurrentFrame);
     if (debugPoints)
       printCurrentPoints("2_OptimizationMotionModel");
 
@@ -1386,8 +1330,7 @@ namespace defSLAM
     else
     {
       static_cast<DefKeyFrame *>(pKF)->kindKeyframe = DefKeyFrame::kindofKeyFrame::REFINEMENT;
-            std::cout << "KEYFRAME FOR REFINEMENT" << std::endl;
-
+      std::cout << "KEYFRAME FOR REFINEMENT" << std::endl;
     }
       
     //Set image pyramid
@@ -1471,7 +1414,7 @@ namespace defSLAM
         if (pMP->isBad())
           continue;
         refPts.insert(pMP);
-        if (static_cast<DefMapPoint *>(pMP)->getFacet())
+        //if (static_cast<DefMapPoint *>(pMP)->getFacet())
           if (mCurrentFrame->isInFrustum(pMP, 0.5))
           {
             numberLocalMapPoints++;
@@ -1671,6 +1614,7 @@ namespace defSLAM
 
     return toReturn;
   }
+
   void DefKLTTracking::printCurrentPoints(string nameWindow)
   {
     vector<cv::KeyPoint> vCurrKeys = mCurrentFrame->mvKeys;
@@ -1707,10 +1651,11 @@ namespace defSLAM
         }
         else if (mCurrentFrame->vRematched_[i]) // Point rematched from map
         {
-          cv::rectangle(mImOutlier, pt1, pt2, cv::Scalar(255, 0, 0));
-          cv::circle(mImOutlier, vCurrKeys[i].pt, 2, cv::Scalar(255, 0, 0), -1);
-          cv::line(mImOutlier, vCurrKeys[i].pt, kp.pt, cv::Scalar(255, 0, 0));
-          cv::circle(mImOutlier, kp.pt, 2, cv::Scalar(240, 255, 255), -1);
+          cv::rectangle(mImOutlier, pt1, pt2, cv::Scalar(255, 255, 0));
+          cv::circle(mImOutlier, vCurrKeys[i].pt, 2, cv::Scalar(255, 255, 0), -1);
+          cv::line(mImOutlier, vCurrKeys[i].pt, kp.pt, cv::Scalar(255, 255, 0));
+          cv::circle(mImOutlier, kp.pt, 2, cv::Scalar(255, 255, 0), -1);
+          mCurrentFrame->vRematched_[i] = false;
         }
         else // Tracked inlier
         {
@@ -1755,7 +1700,11 @@ namespace defSLAM
         }
       }
     }
-
+    
     cv::imshow(nameWindow, mImColors);
+    std::ostringstream out;
+    out << std::internal << std::setfill('0') << std::setw(5)
+        << uint(mCurrentFrame->mTimeStamp);
+    cv::imwrite(nameWindow + "-" + out.str() + ".png", mImColors);
   }
 } // namespace defSLAM

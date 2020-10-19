@@ -163,7 +163,7 @@ namespace defSLAM
       const int its[4] = {10, 10, 10, 10};
 
       int nBad = 0;
-      for (uint ai = 0; ai < 2; ai++)
+      /*for (uint ai = 0; ai < 2; ai++)
       {
         for (size_t it = 0; it < 4; it++)
         {
@@ -229,11 +229,11 @@ namespace defSLAM
           if (optimizer.edges().size() < 10)
             break;
         }
-      }
+      }*/
 
       vSE3->setEstimate(Converter::toSE3Quat(pFrame->mTcw));
       optimizer.initializeOptimization(0);
-      optimizer.optimize(10);
+      optimizer.optimize(50);
 
       // Recover optimized pose and return number of inliers
       g2o::VertexSE3Expmap *vSE3_recov =

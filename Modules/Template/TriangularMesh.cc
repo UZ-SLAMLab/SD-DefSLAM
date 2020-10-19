@@ -83,7 +83,7 @@ namespace defSLAM
       vertexW.push_back(ptW);
     }
     this->setNodes(vertexW, facets);
-    this->calculateFeaturesCoordinates();
+    this->calculateFeaturesCoordinates(kf);
     this->texture = kf->RGBimage.clone();
     this->getFacetTexture(kf);
   }
@@ -199,6 +199,82 @@ namespace defSLAM
         });
   }
 
+
+  // Embed the points inside the facets by calculating its barycentric coordinates.
+  void TriangularMesh::calculateFeaturesCoordinates(KeyFrame* kf)
+  {
+    std::for_each(
+        mapPoints_.begin(), mapPoints_.end(),
+        [this,kf](MapPoint *const &it) {
+          if ((it))
+          {
+            if (!it->isBad())
+            {
+
+              (*it).lastincorporasion = false;
+              // Barycentric coordinates calculated with each KeyFrame
+              Eigen::Vector3f MapPoint;
+
+              cv::Mat MapPointPosition = (*it).GetWorldPos();
+
+              MapPoint << MapPointPosition.at<float>(0),
+                  MapPointPosition.at<float>(1), MapPointPosition.at<float>(2);
+
+              Node *ClosestNode = static_cast<Node *>(nullptr);
+              double bestdist(100);
+              for (std::set<Node *>::iterator itNd = nodes_.begin();
+                   itNd != nodes_.end(); itNd++)
+              {
+                double x, y, z;
+                (*itNd)->getXYZ(x, y, z);
+                double dist =
+                    std::sqrt(pow(x - MapPoint(0), 2) + pow(y - MapPoint(1), 2) +
+                              pow(z - MapPoint(2), 2));
+                if (dist < bestdist)
+                {
+                  ClosestNode = (*itNd);
+                  bestdist = dist;
+                }
+              }
+              if (ClosestNode)
+              {
+                std::set<Facet *> FacetsNode = ClosestNode->GetFacets();
+                for (std::set<Facet *>::iterator ita = FacetsNode.begin();
+                     ita != FacetsNode.end(); ita++)
+                {
+                  std::set<Node *> node = (*ita)->getNodes();
+                  std::vector<Node *> nods;
+                  std::vector<Eigen::Vector3f> nodsEigen;
+                  for (std::set<Node *>::iterator ite = node.begin();
+                       ite != node.end(); ite++)
+                  {
+                    nods.push_back(*ite);
+                    Eigen::Vector3f node;
+                    node << (*ite)->x, (*ite)->y, (*ite)->z;
+                    nodsEigen.push_back(node);
+                  }
+                  Eigen::Vector3f barycentric;
+                  Eigen::Vector3f barycentric2;
+
+                 // pointInTriangle(MapPoint, nodsEigen[0], nodsEigen[1],
+                  //                nodsEigen[2], barycentric2);
+                  if (pointInTriangle(MapPoint, nodsEigen[0], nodsEigen[1],
+                                  nodsEigen[2],kf, barycentric))
+                  {
+                   // std::cout << barycentric.transpose() << "  " << barycentric2.transpose() << std::endl;
+                    static_cast<DefMapPoint *>(it)->SetCoordinates(
+                        barycentric(0), barycentric(1), barycentric(2));
+                    static_cast<DefMapPoint *>(it)->SetFacet(*ita);
+                    static_cast<DefMapPoint *>(it)->Repose();
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        });
+  }
+
   /******
    *  Estimate barycentric coordinates. It returns true if the point is inside the face.
    * Inspired in code presented in
@@ -228,7 +304,7 @@ namespace defSLAM
     Eigen::Vector3f newPose = triangle_vertex_0 * alpha +
                               triangle_vertex_1 * beta +
                               triangle_vertex_2 * gamma;
-    if ((newPose - query_point).squaredNorm() > 1E-2)
+    if ((newPose - query_point).squaredNorm() > 1E-1)
       return false;
     // The point P′ lies inside T if:
     return ((0 <= alpha) && (alpha <= 1) && (0 <= beta) && (beta <= 1) &&
@@ -246,4 +322,70 @@ namespace defSLAM
       (*itf)->getTextureCoordinates(KF);
     }
   }
+
+    /******
+   *  Estimate barycentric coordinates. It returns true if the point is inside the face.
+   * Inspired in code presented in Ngo
+   *********/
+  bool TriangularMesh::pointInTriangle(const Eigen::Vector3f &query_point,
+                                       const Eigen::Vector3f &triangle_vertex_0,
+                                       const Eigen::Vector3f &triangle_vertex_1,
+                                       const Eigen::Vector3f &triangle_vertex_2,
+                                       KeyFrame* kf,
+                                       Eigen::Vector3f &barycentric)
+  {
+    cv::Mat Twc = kf->GetPoseInverse();
+    cv::Mat source_mat = Twc.col(3);
+    Eigen::Vector4f source_cam;
+    cv::cv2eigen(source_mat, source_cam);
+
+
+    Eigen::Vector4f direction;
+    direction << query_point,
+                   1;
+    Eigen::Vector4f line;
+    line = direction - source_cam;
+
+    Eigen::Vector4f A, B, C;
+    A << triangle_vertex_0,
+                   1;
+    B << triangle_vertex_1,
+                   1;
+    C << triangle_vertex_2,
+                   1;
+    Eigen::Matrix4f ABCd;
+    ABCd << A, B, C, line;
+
+    Eigen::Vector4f result = ABCd.colPivHouseholderQr().solve(source_cam);
+    // Barycentric coordinates of the projection P′of P onto T:
+    // γ=[(u×w)⋅n]/n²
+    float gamma = result(2);
+    // β=[(w×v)⋅n]/n²
+    float beta = result(1);
+    float alpha = result(0);
+    barycentric << alpha, beta, gamma;
+    Eigen::Vector3f newPose = triangle_vertex_0 * alpha +
+                              triangle_vertex_1 * beta +
+                              triangle_vertex_2 * gamma;
+    if ((newPose - query_point).squaredNorm() > 1E-2)
+      return false;
+    // The point P′ lies inside T if:
+    return ((0 <= alpha) && (alpha <= 1) && (0 <= beta) && (beta <= 1) &&
+            (0 <= gamma) && (gamma <= 1));
+  }
+/*
+vec KeypointMatcher3D2D::findIntersectionRayTriangle(const vec& source, const vec& destination, const mat& vABC)
+{
+	vec direction = destination - source;
+	
+	mat A = join_rows(vABC.t(), -direction);					// A = [vABC' -d]
+	A	  = join_cols(A, join_rows(ones(1, 3), zeros(1,1)));	// A = [A; [1 1 1 0]]
+
+	vec b = join_cols(source, ones(1,1));						// b = [source; 1]
+
+	vec X = solve(A, b);										// X = A \ b
+
+	return X.subvec(0,2);
+}*/
+
 } // namespace defSLAM

@@ -150,8 +150,8 @@ namespace defSLAM
         if ((xcrop + tsize) > mask.cols)
           xcrop = mask.cols - tsize - 1;
         auto crop = cv::Rect(xcrop, ycrop, tsize, tsize);
-        cv::Mat Roi = mask(crop);
-        Roi = cv::Scalar(255);
+       // cv::Mat Roi = mask(crop);
+        //Roi = cv::Scalar(255);
         newPoints++;
       }
     }

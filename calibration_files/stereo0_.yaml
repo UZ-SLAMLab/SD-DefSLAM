@@ -161,7 +161,7 @@ Viewer.ViewpointY: -1
 Viewer.ViewpointZ: -1
 Viewer.ViewpointF: 500
 Viewer.TemplateLineWidth: 0.8
-Viewer.SaveResults: 1
+Viewer.SaveResults: 0
 #--------------------------------------------------------------------------------------------
 # Local Mapping Parameters
 #--------------------------------------------------------------------------------------------
@@ -169,3 +169,5 @@ LocalMapping.pointsToTemplate: 130
 LocalMapping.chiLimit: 0.05
 LocalMapping.Bending: 0.70
 LocalMapping.Schwarp.Regularizer: 0.1
+
+Debug.bool: 0

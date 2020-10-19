@@ -34,7 +34,7 @@ namespace stereodisparity
         float *D1_data = (float *)malloc(width * height * sizeof(float));
         float *D2_data = (float *)malloc(width * height * sizeof(float));
 
-        // process
+        // process 
         Elas::parameters param(Elas::setting::MEDICAL);
         Elas elas(param);
         elas.process(I1->data, I2->data, D1_data, D2_data, dims);

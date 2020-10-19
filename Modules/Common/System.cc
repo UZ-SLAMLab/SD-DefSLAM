@@ -654,8 +654,11 @@ namespace defSLAM
     std::string name("ObservationStats.txt");
     std::ofstream myfile;
     myfile.open(name);
-    myfile << "Map Points in the sequence: " << n << endl;
-    myfile << "The mean of observations is: " << sum << endl;
+    for (auto pMP : allPoints)
+    {
+      myfile << pMP->Observations() << endl;
+    }
+    
     myfile.close();
 
   }

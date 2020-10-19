@@ -107,11 +107,14 @@ namespace defSLAM
     // Update data to last frame.
     void UpdateLastFrame() override;
 
+    bool DebugNeedNewKeyFrame();
+
   protected:
     KeyFrame *keyframe; // main keyframe
     uint LocalZone;
     ofstream myfile;
     bool saveResults;
+    bool newReferenceKeyframe_;
 
     ///------------------------------------
     ///          Debugging

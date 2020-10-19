@@ -319,7 +319,7 @@ namespace defSLAM
       error_i.x *= KF->fx;
       error_i.y *= KF->fy;
       counter2++;
-
+     // std::cout << cv::norm(error_i) << std::endl;
       /*if (cv::norm(error_i) > 10)
       {
         mapPoint2->EraseObservation(KF2);
@@ -328,9 +328,9 @@ namespace defSLAM
       }*/
       /// All map points are used for the warp estimation, but only those
       /// whose reference keyframe is the estimated one are saved.
-      //auto pKfref = mapPoint->GetReferenceKeyFrame();
-      // if (pKfref != KFi)
-      //   continue;
+      auto pKfref = mapPoint->GetReferenceKeyFrame();
+      if (pKfref != KFi)
+         continue;
       mapPointsDB_[mapPoint].push_back(std::shared_ptr<DiffProp>(new DiffProp()));
       std::shared_ptr<DiffProp> diffVect = mapPointsDB_[mapPoint].back();
       diffVect->KFToKF = std::pair<KeyFrame *, KeyFrame *>(KFi, KF2i);

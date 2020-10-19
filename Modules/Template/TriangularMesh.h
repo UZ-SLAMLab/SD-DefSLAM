@@ -71,6 +71,10 @@ namespace defSLAM
 
     // Embed the points inside the facets by calculating its barycentric coordinates.
     void calculateFeaturesCoordinates();
+
+  // Embed the points inside the facets by calculating its barycentric coordinates.
+    void calculateFeaturesCoordinates(KeyFrame*);
+
     //Estimate barycentric coordinates. It returns true if the point is inside the face.
     bool pointInTriangle(const Eigen::Vector3f &query_point,
                          const Eigen::Vector3f &triangle_vertex_0,
@@ -78,6 +82,13 @@ namespace defSLAM
                          const Eigen::Vector3f &triangle_vertex_2,
                          Eigen::Vector3f &barycentric);
 
+    //Estimate barycentric coordinates. It returns true if the point is inside the face.
+    bool pointInTriangle(const Eigen::Vector3f &query_point,
+                         const Eigen::Vector3f &triangle_vertex_0,
+                         const Eigen::Vector3f &triangle_vertex_1,
+                         const Eigen::Vector3f &triangle_vertex_2,
+                         KeyFrame* kf,
+                         Eigen::Vector3f & barycentric);
     void discardFaces();
   };
 } // namespace defSLAM

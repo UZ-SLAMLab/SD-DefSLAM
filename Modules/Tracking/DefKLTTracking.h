@@ -69,8 +69,6 @@ namespace defSLAM
   public:
     virtual bool TrackLocalMap();
 
-    virtual bool TrackWithMotionModel();
-
     // Rigid relocalization: retrieve pose with PnP and get template
     // from the keyframe used for relocalization
     virtual bool relocalization();

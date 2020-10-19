@@ -68,7 +68,7 @@ namespace defSLAM
     cout << "- Reg. Laplacian: " << RegLap << endl;
     cout << "- Reg. Temporal: " << RegTemp << endl;
     cout << "- Reg. LocalZone: " << a << endl;
-
+    std::ofstream myfile("matches.txt");
     LocalZone = uint(a);
 
     ReliabilityThreshold = fSettings["Regularizer.Reliability"];
@@ -185,7 +185,7 @@ namespace defSLAM
           mpMapDrawer->UpdatePoints(mCurrentFrame);
           static_cast<DefMapDrawer *>(mpMapDrawer)->updateTemplate();
         }
-
+        mpSystem->saveMapPointsObservations();
         // Clean VO matches
         CleanMatches();
         // Erase Temporal points;
@@ -199,7 +199,7 @@ namespace defSLAM
           this->CreateNewKeyFrame();
         }
 #else
-        if ((mCurrentFrame->mnId % 10) < 1)
+        if (DebugNeedNewKeyFrame())
         {
           this->CreateNewKeyFrame();
         }
@@ -299,8 +299,7 @@ namespace defSLAM
 
     if (debugPoints)
       printCurrentPoints("4_PostOptimizationLocalMap");
-
-    // Count inliers, outliers and make statistics for map point culling.
+   // Optimize Pose
     mnMatchesInliers = 0;
     int mnMatchesOutliers(0);
     int DefnToMatchLOCAL(0);
@@ -331,51 +330,32 @@ namespace defSLAM
         }
       }
     }
+
     auto points = mpMap->GetReferenceMapPoints();
     auto numberLocalMapPoints(0);
+    set<MapPoint *> refPts;
     for (auto pMP : points)
     {
       if (pMP)
       {
         if (pMP->isBad())
           continue;
-        if (static_cast<DefMapPoint *>(pMP)->getFacet())
+        refPts.insert(pMP);
+        //if (static_cast<DefMapPoint *>(pMP)->getFacet())
           if (mCurrentFrame->isInFrustum(pMP, 0.5))
           {
             numberLocalMapPoints++;
           }
       }
     }
-    // Optimize Pose
-    int observedFrame(0);
-    int mI(0);
-    int mO(0);
-    for (int i = 0; i < mCurrentFrame->N; i++)
-    {
-      if (mCurrentFrame->mvpMapPoints[i])
-      {
-        if (mCurrentFrame->mvpMapPoints[i]->isBad())
-          continue;
-        observedFrame++;
-        if (!mCurrentFrame->mvbOutlier[i])
-        {
-          mI++;
-        }
-        else
-        {
-          mO++;
-        }
-      }
-    }
 
-    // Save matching result
+    std::fstream myfile("matches.txt", std::ios::in | std::ios::out | std::ios::ate);
     std::ostringstream out;
     out << std::internal << std::setfill('0') << std::setw(5)
         << uint(mCurrentFrame->mTimeStamp);
-    std::cout << out.str() << " " << mI << " " << mO << " "
-              << numberLocalMapPoints << std::endl;
-    this->matches << out.str() << " " << mI << " " << mO << " "
-                  << numberLocalMapPoints << std::endl;
+    myfile << out.str() << " " << numberLocalMapPoints << " " << mnMatchesInliers << " " << mnMatchesOutliers << std::endl;
+    myfile.close();
+
     // Decide if the tracking was succesful
     // More restrictive if there was a relocalization recently
     if (mCurrentFrame->mnId < mnLastRelocFrameId + mMaxFrames &&
@@ -756,6 +736,15 @@ namespace defSLAM
       return;
 
     KeyFrame *pKF = new GroundTruthKeyFrame(*mCurrentFrame, mpMap, mpKeyFrameDB);
+    if (newReferenceKeyframe_){
+      static_cast<DefKeyFrame *>(pKF)->kindKeyframe = DefKeyFrame::kindofKeyFrame::REFERENCE;
+      std::cout << "KEYFRAME FOR REFERENCE" << std::endl;
+    }
+    else
+    {
+      static_cast<DefKeyFrame *>(pKF)->kindKeyframe = DefKeyFrame::kindofKeyFrame::REFINEMENT;
+            std::cout << "KEYFRAME FOR REFINEMENT" << std::endl;
+    }
     mCurrentFrame->mpReferenceKF = mpReferenceKF;
     mpLocalMapper->InsertKeyFrame(pKF);
     mpLocalMapper->SetNotStop(false);
@@ -799,10 +788,11 @@ namespace defSLAM
         }
         else if (mCurrentFrame->vRematched_[i]) // Point rematched from map
         {
-          cv::rectangle(mImOutlier, pt1, pt2, cv::Scalar(255, 0, 0));
-          cv::circle(mImOutlier, vCurrKeys[i].pt, 2, cv::Scalar(255, 0, 0), -1);
-          cv::line(mImOutlier, vCurrKeys[i].pt, kp.pt, cv::Scalar(255, 0, 0));
-          cv::circle(mImOutlier, kp.pt, 2, cv::Scalar(240, 255, 255), -1);
+          cv::rectangle(mImOutlier, pt1, pt2, cv::Scalar(255, 255, 0));
+          cv::circle(mImOutlier, vCurrKeys[i].pt, 2, cv::Scalar(255, 255, 0), -1);
+          cv::line(mImOutlier, vCurrKeys[i].pt, kp.pt, cv::Scalar(255, 255, 0));
+          cv::circle(mImOutlier, kp.pt, 2, cv::Scalar(255, 255, 0), -1);
+          mCurrentFrame->vRematched_[i] = false;
         }
         else // Tracked inlier
         {
@@ -850,5 +840,24 @@ namespace defSLAM
     }
 
     cv::imshow(nameWindow, mImColors);
+        std::ostringstream out;
+    out << std::internal << std::setfill('0') << std::setw(5)
+        << uint(mCurrentFrame->mTimeStamp);
+    cv::imwrite(nameWindow + "-" + out.str() + ".png", mImColors);
+
+  }
+
+
+  bool DefTracking::DebugNeedNewKeyFrame(){
+    if (mCurrentFrame->mnId%25 == 0){
+      newReferenceKeyframe_ = true;
+      return true;
+    }else if(mCurrentFrame->mnId%5 == 0){
+      newReferenceKeyframe_ = false;
+      return true;
+    }
+    else{
+      return false;
+    }
   }
 } // namespace defSLAM
