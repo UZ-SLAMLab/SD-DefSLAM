@@ -162,75 +162,6 @@ namespace defSLAM
       const float chi2Mono[5] = {5.991, 5.991, 5.991, 5.991, 5.991};
       const int its[4] = {10, 10, 10, 10};
 
-      int nBad = 0;
-      /*for (uint ai = 0; ai < 2; ai++)
-      {
-        for (size_t it = 0; it < 4; it++)
-        {
-          vSE3->setEstimate(Converter::toSE3Quat(pFrame->mTcw));
-          optimizer.initializeOptimization(ai);
-          optimizer.optimize(its[it]);
-          nBad = 0;
-          if (ai == 0)
-          {
-            for (size_t i = 0, iend = vpEdgesMono.size(); i < iend; i++)
-            {
-              g2o::EdgeSE3ProjectXYZOnlyPose *e = vpEdgesMono[i];
-
-              const size_t idx = vnIndexEdgeMono[i];
-
-              if (pFrame->mvbOutlier[idx])
-              {
-                e->computeError();
-              }
-
-              const float chi2 = e->chi2();
-
-              if (chi2 > chi2Mono[it])
-              {
-                pFrame->mvbOutlier[idx] = true;
-                e->setLevel(1);
-                nBad++;
-              }
-              else
-              {
-                pFrame->mvbOutlier[idx] = false;
-                e->setLevel(0);
-              }
-            }
-          }
-          else
-          {
-            for (size_t i = 0, iend = vpEdgesMono.size(); i < iend; i++)
-            {
-              g2o::EdgeSE3ProjectXYZOnlyPose *e = vpEdgesMono[i];
-
-              const size_t idx = vnIndexEdgeMono[i];
-
-              if (pFrame->mvbOutlier[idx])
-              {
-                e->computeError();
-              }
-
-              const float chi2 = e->chi2();
-
-              if (chi2 > chi2Mono[it])
-              {
-                pFrame->mvbOutlier[idx] = true;
-                e->setLevel(2);
-              }
-              else
-              {
-                pFrame->mvbOutlier[idx] = false;
-                nBad--;
-              }
-            }
-          }
-          if (optimizer.edges().size() < 10)
-            break;
-        }
-      }*/
-
       vSE3->setEstimate(Converter::toSE3Quat(pFrame->mTcw));
       optimizer.initializeOptimization(0);
       optimizer.optimize(50);
@@ -242,7 +173,7 @@ namespace defSLAM
       cv::Mat pose = Converter::toCvMat(SE3quat_recov);
       pFrame->SetPose(pose);
 
-      return nInitialCorrespondences - nBad;
+      return nInitialCorrespondences;
     }
 
     // Shape-from-template with camera motion estimation. This function is used in
@@ -635,7 +566,7 @@ namespace defSLAM
           n++;
         }
       }
-      cout << "Reprojection error: " << sumError/n << endl;
+      cout << "Reprojection error: " << sumError / n << endl;
       cout << "Points considered: " << n << endl;
       pFrame->repError = sumError / n;
 

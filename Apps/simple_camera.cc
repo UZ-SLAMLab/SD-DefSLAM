@@ -29,15 +29,19 @@ int main(int argc, char **argv)
     // process frames.
     defSLAM::System SLAM(argv[1], argv[2], true);
 
-    uint i(0);
-    cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
-    cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+    uint i(-1);
+    //cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
+    //cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
 
+    int initial_point(13.5 * 40 * 60);
     while (cap.isOpened())
     {
         cv::Mat imLeft;
+        std::cout << "Loading : " << double(i) / initial_point * 100 << "% " << '\r' << std::flush;
         cap >> imLeft;
-
+        i++;
+        if (i < initial_point)
+            continue;
         if (imLeft.empty())
         {
             cerr << endl
@@ -46,7 +50,6 @@ int main(int argc, char **argv)
         }
 
         SLAM.TrackMonocular(imLeft, i);
-        i++;
     }
 
     SLAM.Shutdown();

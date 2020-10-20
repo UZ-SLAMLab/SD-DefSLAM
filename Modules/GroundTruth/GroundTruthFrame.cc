@@ -34,6 +34,7 @@
 #ifndef ORBSLAM
 #include "DefMapPoint.h"
 #endif
+
 #include "MapPoint.h"
 
 #include "opencv2/calib3d.hpp"

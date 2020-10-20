@@ -190,7 +190,6 @@ namespace defSLAM
         << "DefFramer drawer begins" << endl;
 
     mvCurrentKeys = pTracker->mCurrentFrame->mvKeys;
-    this->mvCurrentKeysCorr = pTracker->mCurrentFrame->mvKeysUnCorr;
     N = mvCurrentKeys.size();
     this->N2 = mvCurrentKeysCorr.size();
 
@@ -211,7 +210,7 @@ namespace defSLAM
       {
         for (auto pMP : points)
         {
-          if (false)//pMP)
+          if (false) //pMP)
           {
             if (pMP->isBad())
               continue;

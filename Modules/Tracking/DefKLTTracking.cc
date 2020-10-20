@@ -147,7 +147,7 @@ namespace defSLAM
 
             if (debugPoints)
               printCurrentPoints("DefSLAM: points post-KLT local map");
-          }           
+          }
         }
         else
         {
@@ -206,7 +206,7 @@ namespace defSLAM
         // Erase Temporal points;
         EraseTemporalPoints();
 
-// Check if we need to insert a new keyframe
+        // Check if we need to insert a new keyframe
         if (DebugNeedNewKeyFrame())
         {
           this->KLT_CreateNewKeyFrame();
@@ -276,15 +276,21 @@ namespace defSLAM
     return bOK;
   }
 
-  bool DefKLTTracking::DebugNeedNewKeyFrame(){
-    if (mCurrentFrame->mnId%25 == 0){
+  bool DefKLTTracking::DebugNeedNewKeyFrame()
+  {
+    std::cout << "id del frame : " << mCurrentFrame->mnId << std::endl;
+    if (mCurrentFrame->mnId % 25 == 0)
+    {
       newReferenceKeyframe_ = true;
       return true;
-    }else if(mCurrentFrame->mnId%5 == 0){
+    }
+    else if (mCurrentFrame->mnId % 5 == 0)
+    {
       newReferenceKeyframe_ = false;
       return true;
     }
-    else{
+    else
+    {
       return false;
     }
   }
@@ -324,14 +330,13 @@ namespace defSLAM
     {
       {
         if (mCurrentFrame->mvpMapPoints[i] && !mCurrentFrame->mvbOutlier[i])
-            nTrackedClose++;
-          else
-            nNonTrackedClose++;
+          nTrackedClose++;
+        else
+          nNonTrackedClose++;
       }
     }
-    
 
-    float outlierPerc = float(nTrackedClose)/float(nNonTrackedClose+nTrackedClose);
+    float outlierPerc = float(nTrackedClose) / float(nNonTrackedClose + nTrackedClose);
 
     // Nodes viewed
     int nodesViewed = 0;
@@ -352,15 +357,18 @@ namespace defSLAM
     cout << "nodes viewed: " << nodesViewed << endl;
     cout << "Ratio of viewed nodes: " << ratioViewed << endl;
     cout << "Reprojection Error: " << mCurrentFrame->repError << endl;
-    cout << "Outlier perc: " << outlierPerc <<" " << perctOutliers_ << endl;
+    cout << "Outlier perc: " << outlierPerc << " " << perctOutliers_ << endl;
 
     bool bNeedToInsertClose = (ratioViewed < 0.75); // 0.4
     // bNeedToInsertClose = true;GrabImageMonocularGT
 
     bool badTemplate = (mCurrentFrame->repError > 1);
-    if (bNeedToInsertClose){
+    if (bNeedToInsertClose)
+    {
       newReferenceKeyframe_ = true;
-    }else{
+    }
+    else
+    {
       newReferenceKeyframe_ = false;
     }
 
@@ -496,18 +504,17 @@ namespace defSLAM
                 DefnToMatchLOCAL++;
             }
           }
-          else
-                        if (static_cast<DefMapPoint *>(
-                      mCurrentFrame->mvpMapPoints[i])
-                      ->getFacet())
+          else if (static_cast<DefMapPoint *>(
+                       mCurrentFrame->mvpMapPoints[i])
+                       ->getFacet())
             mnMatchesInliers++;
         }
         else
         {
-                        if (static_cast<DefMapPoint *>(
-                      mCurrentFrame->mvpMapPoints[i])
-                      ->getFacet())
-          mnMatchesOutliers++;
+          if (static_cast<DefMapPoint *>(
+                  mCurrentFrame->mvpMapPoints[i])
+                  ->getFacet())
+            mnMatchesOutliers++;
         }
       }
     }
@@ -547,7 +554,6 @@ namespace defSLAM
         }
       }
     }
-
 
     std::cout << "Saving matches " << std::endl;
     std::fstream myfile("matches.txt", std::ios::in | std::ios::out | std::ios::ate);
@@ -647,8 +653,8 @@ namespace defSLAM
     bool bMatch = false;
     ORBmatcher matcher2(0.9, true);
 
-    KeyFrame* pKFreloc;
-    KeyFrame* pKFref;
+    KeyFrame *pKFreloc;
+    KeyFrame *pKFref;
 
     while (nCandidates > 0 && !bMatch)
     {
@@ -710,7 +716,6 @@ namespace defSLAM
           pKFref = static_cast<DefKeyFrame *>(pKFreloc)->getReferenceKeyframe();
           cout << "Reference Keyframe: " << pKFref->mnId << endl;
 
-
           std::unique_lock<std::mutex> M(static_cast<DefMap *>(mpMap)->MutexUpdating);
           static_cast<DefMap *>(mpMap)->clearTemplate();
 
@@ -718,8 +723,8 @@ namespace defSLAM
           static_cast<DefMap *>(mpMap)->createTemplate(pKFref);
 
           int nGood = Optimizer::DefPoseOptimization(
-                  mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
-                  LocalZone);
+              mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
+              LocalZone);
 
           if (nGood < 10)
             continue;
@@ -732,7 +737,7 @@ namespace defSLAM
 
             if (nadditional + nGood >= 40)
             {
-              
+
               cout << "1_DEFORMABLE OPT in reloc" << endl;
               nGood = Optimizer::DefPoseOptimization(
                   mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(), 0,
@@ -816,7 +821,7 @@ namespace defSLAM
 
       for (int i = 0; i < mvKLTMPs.size(); i++)
       {
-        MapPoint* pMP = mvKLTMPs[i];
+        MapPoint *pMP = mvKLTMPs[i];
         if (pMP)
           mvKLTStatus[i] = true;
       }
@@ -1157,9 +1162,9 @@ namespace defSLAM
     // Create "visual odometry" points if in Localization Mode
     UpdateLastFrame();
 
- //   if(mVelocity.empty())
-      mCurrentFrame->SetPose(mLastFrame.mTcw);
-  //  else
+    //   if(mVelocity.empty())
+    mCurrentFrame->SetPose(mLastFrame.mTcw);
+    //  else
     //  mCurrentFrame->SetPose(mVelocity*mLastFrame.mTcw);
 
     int toTrack = 0;
@@ -1323,7 +1328,8 @@ namespace defSLAM
 
     //Create new KeyFrame
     KeyFrame *pKF = new GroundTruthKeyFrame(*mCurrentFrame, mpMap, mpKeyFrameDB);
-    if (newReferenceKeyframe_){
+    if (newReferenceKeyframe_)
+    {
       static_cast<DefKeyFrame *>(pKF)->kindKeyframe = DefKeyFrame::kindofKeyFrame::REFERENCE;
       std::cout << "KEYFRAME FOR REFERENCE" << std::endl;
     }
@@ -1332,7 +1338,7 @@ namespace defSLAM
       static_cast<DefKeyFrame *>(pKF)->kindKeyframe = DefKeyFrame::kindofKeyFrame::REFINEMENT;
       std::cout << "KEYFRAME FOR REFINEMENT" << std::endl;
     }
-      
+
     //Set image pyramid
     pKF->imPyr = vector<cv::Mat>(mKLTtracker.refPyr.size());
     for (int i = 0; i < mKLTtracker.refPyr.size(); i++)
@@ -1415,10 +1421,10 @@ namespace defSLAM
           continue;
         refPts.insert(pMP);
         //if (static_cast<DefMapPoint *>(pMP)->getFacet())
-          if (mCurrentFrame->isInFrustum(pMP, 0.5))
-          {
-            numberLocalMapPoints++;
-          }
+        if (mCurrentFrame->isInFrustum(pMP, 0.5))
+        {
+          numberLocalMapPoints++;
+        }
       }
     }
 
@@ -1620,14 +1626,14 @@ namespace defSLAM
     vector<cv::KeyPoint> vCurrKeys = mCurrentFrame->mvKeys;
     int numberKeys = vCurrKeys.size();
     cv::Mat mImOutlier = mImRGB.clone();
-    
+
     cv::namedWindow(nameWindow);
 
     cout << "Updating outliers..." << endl;
     cout << numberKeys << " keypoints" << endl;
     cout << "size of rematched: " << mCurrentFrame->vRematched_.size() << endl;
 
-    const float r = 5;  
+    const float r = 5;
 
     for (int i = 0; i < numberKeys; i++)
     {
@@ -1700,7 +1706,7 @@ namespace defSLAM
         }
       }
     }
-    
+
     cv::imshow(nameWindow, mImColors);
     std::ostringstream out;
     out << std::internal << std::setfill('0') << std::setw(5)

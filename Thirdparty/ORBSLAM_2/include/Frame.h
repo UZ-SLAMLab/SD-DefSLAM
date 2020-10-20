@@ -130,7 +130,6 @@ namespace ORB_SLAM2
         // In the RGB-D case, RGB images can be distorted.
         std::vector<cv::KeyPoint> mvKeys, mvKeysRight;
         std::vector<cv::KeyPoint> mvKeysUn;
-        std::vector<cv::KeyPoint> mvKeysUnCorr;
 
         // Corresponding stereo coordinate and depth for each keypoint.
         // "Monocular" keypoints have a negative value.
@@ -211,7 +210,6 @@ namespace ORB_SLAM2
         cv::Mat mRcw;
         cv::Mat mtcw;
         cv::Mat mRwc;
-        //==mtwc
 
         ///---------------------------------
         ///         KLT stuff
@@ -225,10 +223,10 @@ namespace ORB_SLAM2
         void UndistortKeyPoints(std::vector<cv::KeyPoint> &mvDistorted, std::vector<cv::KeyPoint> &mvUndistorted);
 
         void SetTrackedPoints(std::vector<cv::KeyPoint> &vPoints, const std::vector<bool> &vGood,
-                            const std::vector<MapPoint *> vpMapPoints, const std::vector<cv::Mat>& vHessian);
+                              const std::vector<MapPoint *> vpMapPoints, const std::vector<cv::Mat> &vHessian);
 
         void AppendTrackedPoints(std::vector<cv::KeyPoint> &vPoints, const std::vector<bool> &vGood,
-                                 const vector<MapPoint *> &vpMapPoints, const std::vector<cv::Mat>& vHessian);
+                                 const vector<MapPoint *> &vpMapPoints, const std::vector<cv::Mat> &vHessian);
 
         void extractORBToRelocate();
 

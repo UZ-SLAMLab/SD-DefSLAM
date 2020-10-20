@@ -194,9 +194,9 @@ namespace ORB_SLAM2
     if (sensor == System::MONOCULAR)
       mpIniORBextractor = new ORBextractor(2 * nFeatures, fScaleFactor, nLevels,
                                            fIniThFAST, fMinThFAST);
-                                              cout << endl
-                                              
-    << "ORB Extractor Parameters: " << endl;
+    cout << endl
+
+         << "ORB Extractor Parameters: " << endl;
     cout << "- Number of Features: " << nFeatures << endl;
     cout << "- Scale Levels: " << nLevels << endl;
     cout << "- Scale Factor: " << fScaleFactor << endl;
@@ -294,7 +294,7 @@ namespace ORB_SLAM2
   }
 
   cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im,
-                                       const double &timestamp)
+                                       const double &timestamp, const cv::Mat &mask_)
   {
 
     mImGray = im.clone();
@@ -314,9 +314,8 @@ namespace ORB_SLAM2
       else
         cv::cvtColor(im, mImGray, cv::COLOR_BGRA2GRAY);
     }
-
     mCurrentFrame = new Frame(mImGray, timestamp, mpORBextractorLeft,
-                              mpORBVocabulary, mK, mDistCoef, mbf, mThDepth, im);
+                              mpORBVocabulary, mK, mDistCoef, mbf, mThDepth, mImRGB, mask_);
 
     Track();
 
@@ -665,8 +664,7 @@ namespace ORB_SLAM2
         if (mpMap->KeyFramesInMap() <= 5)
         {
           cout << "Track lost soon after initialisation, reseting..." << endl;
-          //mpSystem->Reset();
-          exit(1);
+          mpSystem->Reset();
           return;
         }
       }
@@ -1847,11 +1845,12 @@ namespace ORB_SLAM2
         usleep(3000);
     }
 
-    // Reset Local Mapping
+// Reset Local Mapping
+#ifdef PARALLEL
     cout << "Reseting Local Mapper...";
     mpLocalMapper->RequestReset();
     cout << " done" << endl;
-
+#endif
     // Reset Loop Closing
     cout << "Reseting Loop Closing...";
     if (mpLoopClosing)

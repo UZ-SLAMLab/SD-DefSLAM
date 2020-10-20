@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10.2 FATAL_ERROR)
 project(DeformableSLAM)
 
-SET(CMAKE_BUILD_TYPE RELEASE)
+SET(CMAKE_BUILD_TYPE DEBUG)
 
 MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
 

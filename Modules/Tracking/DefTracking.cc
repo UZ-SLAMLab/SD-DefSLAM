@@ -35,6 +35,7 @@
 #include <DefMap.h>
 #include <DefMapDrawer.h>
 #include <set_MAC.h>
+
 namespace defSLAM
 {
   class DefLocalMapping;
@@ -275,10 +276,10 @@ namespace defSLAM
     int nPoints = mCurrentFrame->mvpMapPoints.size();
     for (int i = 0; i < nPoints; i++)
     {
-      MapPoint* pMPprev = prevMapPoints[i];
-      MapPoint* pMPcurr = mCurrentFrame->mvpMapPoints[i];
+      MapPoint *pMPprev = prevMapPoints[i];
+      MapPoint *pMPcurr = mCurrentFrame->mvpMapPoints[i];
 
-      if (!pMPprev && pMPcurr) 
+      if (!pMPprev && pMPcurr)
         mCurrentFrame->vRematched_[i] = true;
     }
 
@@ -299,7 +300,7 @@ namespace defSLAM
 
     if (debugPoints)
       printCurrentPoints("4_PostOptimizationLocalMap");
-   // Optimize Pose
+    // Optimize Pose
     mnMatchesInliers = 0;
     int mnMatchesOutliers(0);
     int DefnToMatchLOCAL(0);
@@ -342,10 +343,10 @@ namespace defSLAM
           continue;
         refPts.insert(pMP);
         //if (static_cast<DefMapPoint *>(pMP)->getFacet())
-          if (mCurrentFrame->isInFrustum(pMP, 0.5))
-          {
-            numberLocalMapPoints++;
-          }
+        if (mCurrentFrame->isInFrustum(pMP, 0.5))
+        {
+          numberLocalMapPoints++;
+        }
       }
     }
 
@@ -736,14 +737,15 @@ namespace defSLAM
       return;
 
     KeyFrame *pKF = new GroundTruthKeyFrame(*mCurrentFrame, mpMap, mpKeyFrameDB);
-    if (newReferenceKeyframe_){
+    if (newReferenceKeyframe_)
+    {
       static_cast<DefKeyFrame *>(pKF)->kindKeyframe = DefKeyFrame::kindofKeyFrame::REFERENCE;
       std::cout << "KEYFRAME FOR REFERENCE" << std::endl;
     }
     else
     {
       static_cast<DefKeyFrame *>(pKF)->kindKeyframe = DefKeyFrame::kindofKeyFrame::REFINEMENT;
-            std::cout << "KEYFRAME FOR REFINEMENT" << std::endl;
+      std::cout << "KEYFRAME FOR REFINEMENT" << std::endl;
     }
     mCurrentFrame->mpReferenceKF = mpReferenceKF;
     mpLocalMapper->InsertKeyFrame(pKF);
@@ -751,20 +753,20 @@ namespace defSLAM
     mnLastKeyFrameId = mCurrentFrame->mnId;
     mpLastKeyFrame = pKF;
   }
-  
+
   void DefTracking::printCurrentPoints(string nameWindow)
   {
     vector<cv::KeyPoint> vCurrKeys = mCurrentFrame->mvKeys;
     int numberKeys = vCurrKeys.size();
     cv::Mat mImOutlier = mImRGB.clone();
-    
+
     cv::namedWindow(nameWindow);
 
     cout << "Updating outliers..." << endl;
     cout << numberKeys << " keypoints" << endl;
     cout << "size of rematched: " << mCurrentFrame->vRematched_.size() << endl;
 
-    const float r = 5;  
+    const float r = 5;
 
     for (int i = 0; i < numberKeys; i++)
     {
@@ -810,7 +812,6 @@ namespace defSLAM
     cv::imwrite(nameWindow + "-" + out.str() + ".png", mImOutlier);
 
     cv::imshow(nameWindow, mImOutlier);
-
   }
 
   void DefTracking::printPointsWatchedByKeyframes(string nameWindow)
@@ -840,23 +841,26 @@ namespace defSLAM
     }
 
     cv::imshow(nameWindow, mImColors);
-        std::ostringstream out;
+    std::ostringstream out;
     out << std::internal << std::setfill('0') << std::setw(5)
         << uint(mCurrentFrame->mTimeStamp);
     cv::imwrite(nameWindow + "-" + out.str() + ".png", mImColors);
-
   }
 
-
-  bool DefTracking::DebugNeedNewKeyFrame(){
-    if (mCurrentFrame->mnId%25 == 0){
+  bool DefTracking::DebugNeedNewKeyFrame()
+  {
+    if (mCurrentFrame->mnId % 25 == 0)
+    {
       newReferenceKeyframe_ = true;
       return true;
-    }else if(mCurrentFrame->mnId%5 == 0){
+    }
+    else if (mCurrentFrame->mnId % 5 == 0)
+    {
       newReferenceKeyframe_ = false;
       return true;
     }
-    else{
+    else
+    {
       return false;
     }
   }

@@ -308,7 +308,6 @@ namespace defSLAM
     mptLoopClosing =
         nullptr; // new thread(&ORB_SLAM2::LoopClosing::Run, mpLoopCloser);
 #else
-
     mpLoopCloser = new LoopClosing(mpMap, mpKeyFrameDatabase, mpVocabulary,
                                    mSensor != MONOCULAR);
     mptLoopClosing = new thread(&ORB_SLAM2::LoopClosing::Run, mpLoopCloser);
@@ -347,7 +346,7 @@ namespace defSLAM
     cv::Mat Mask;
     if (_mask.empty())
     {
-      Mask = cv::Mat(im.rows, im.cols, CV_8UC1, cv::Scalar(255));
+      Mask = masker_.mask(im);
     }
     else
     {
@@ -395,12 +394,21 @@ namespace defSLAM
         mbReset = false;
       }
     }
+
+    cv::Mat Tcw = mpTracker->GrabImageMonocular(im, timestamp, Mask);
+
 #ifndef ORBSLAM
-    // static_cast<DefLocalMapping *>(mpLocalMapper)->DoNotSaveResults();
+#ifndef PARALLEL
+    if (mpTracker->mState == Tracking::eTrackingState::OK)
+      static_cast<DefLocalMapping *>(mpLocalMapper)->insideTheLoop();
 #endif
-    cv::Mat Tcw = mpTracker->GrabImageMonocular(im, timestamp);
     if (mpViewer)
+    {
       mpViewer->Updatetimestamp(timestamp);
+      while (!mpViewer->go())
+        usleep(3000);
+    }
+#endif
 
     unique_lock<mutex> lock2(mMutexState);
     mTrackingState = mpTracker->mState;
@@ -640,13 +648,13 @@ namespace defSLAM
     auto allPoints = mpMap->GetAllMapPoints();
     int n = allPoints.size();
     auto sum(0.0);
-    
+
     for (auto pMP : allPoints)
     {
       int nObs = pMP->Observations();
       sum += (double)nObs;
     }
-    
+
     sum = sum / n;
     cout << "The mean of observations is: " << sum << " keyframes/points." << endl;
     cout << "Map Points in the sequence: " << n << endl;
@@ -658,8 +666,7 @@ namespace defSLAM
     {
       myfile << pMP->Observations() << endl;
     }
-    
-    myfile.close();
 
+    myfile.close();
   }
 } // namespace defSLAM

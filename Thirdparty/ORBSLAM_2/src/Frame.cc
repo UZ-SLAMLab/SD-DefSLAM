@@ -58,7 +58,7 @@ namespace ORB_SLAM2
       : mpORBvocabulary(frame.mpORBvocabulary), mpORBextractorLeft(frame.mpORBextractorLeft), mpORBextractorRight(frame.mpORBextractorRight),
         mTimeStamp(frame.mTimeStamp), mK(frame.mK.clone()), mDistCoef(frame.mDistCoef.clone()),
         mbf(frame.mbf), mb(frame.mb), mThDepth(frame.mThDepth), N(frame.N), mvKeys(frame.mvKeys),
-        mvKeysRight(frame.mvKeysRight), mvKeysUn(frame.mvKeysUn), mvKeysUnCorr(frame.mvKeysUnCorr), mvuRight(frame.mvuRight),
+        mvKeysRight(frame.mvKeysRight), mvKeysUn(frame.mvKeysUn), mvuRight(frame.mvuRight),
         mvDepth(frame.mvDepth), mBowVec(frame.mBowVec), mFeatVec(frame.mFeatVec),
         mDescriptors(frame.mDescriptors.clone()), mDescriptorsRight(frame.mDescriptorsRight.clone()),
         mvpMapPoints(frame.mvpMapPoints), mvbOutlier(frame.mvbOutlier), mnId(frame.mnId),
@@ -228,10 +228,6 @@ namespace ORB_SLAM2
 
     UndistortKeyPoints();
 
-    // Patches = vector<cv::Mat>(N,cv::Mat(30,30,CV_8UC1,cv::Scalar(0, 254, 0)));
-
-    // this->ExtractPatches();
-
     // Set no stereo information
     mvuRight = vector<float>(N, -1);
     mvDepth = vector<float>(N, -1);
@@ -262,66 +258,6 @@ namespace ORB_SLAM2
 
     AssignFeaturesToGrid();
   }
-
-  /*Frame::Frame(const cv::Mat &imGray, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth,const cv::Mat &imRGB,const cv::Mat &ImOut,cv::Mat _mask)
-    :mpORBvocabulary(voc),mpORBextractorLeft(extractor),mpORBextractorRight(static_cast<ORBextractor*>(NULL)),
-     mTimeStamp(timeStamp), mK(K.clone()),mDistCoef(distCoef.clone()), mbf(bf), mThDepth(thDepth),ImGray(imGray.clone()),ImRGB(imRGB.clone()),_mask(_mask.clone())/*,ImOut(ImOut.clone())*/
-  //{
-  /* cv::imshow("PointsRecover",ImGray);
-    cv::waitKey(0);*/
-  // Frame ID
-  /* mnId=nNextId++;
-
-    // Scale Level Info
-    mnScaleLevels = mpORBextractorLeft->GetLevels();
-    mfScaleFactor = mpORBextractorLeft->GetScaleFactor();
-    mfLogScaleFactor = log(mfScaleFactor);
-    mvScaleFactors = mpORBextractorLeft->GetScaleFactors();
-    mvInvScaleFactors = mpORBextractorLeft->GetInverseScaleFactors();
-    mvLevelSigma2 = mpORBextractorLeft->GetScaleSigmaSquares();
-    mvInvLevelSigma2 = mpORBextractorLeft->GetInverseScaleSigmaSquares();
-
-    // ORB extraction
-    this->ExtractORB(0,imGray);
-    N = mvKeys.size();
-
-    if(mvKeys.empty())
-        return;
-
-    UndistortKeyPoints();
-   // Patches = vector<cv::Mat>(N,cv::Mat(30,30,CV_8UC1,cv::Scalar(0, 254, 0)));
-
-   // this->ExtractPatches();
-
-    // Set no stereo information
-    mvuRight = vector<float>(N,-1);
-    mvDepth = vector<float>(N,-1);
-
-    mvpMapPoints = vector<MapPoint*>(N,static_cast<MapPoint*>(nullptr));
-    mvbOutlier = vector<bool>(N,false);
-
-    // This is done only for the first Frame (or after a change in the calibration)
-    if(mbInitialComputations)
-    {
-        ComputeImageBounds(imGray);
-
-        mfGridElementWidthInv=static_cast<float>(FRAME_GRID_COLS)/static_cast<float>(mnMaxX-mnMinX);
-        mfGridElementHeightInv=static_cast<float>(FRAME_GRID_ROWS)/static_cast<float>(mnMaxY-mnMinY);
-
-        fx = K.at<float>(0,0);
-        fy = K.at<float>(1,1);
-        cx = K.at<float>(0,2);
-        cy = K.at<float>(1,2);
-        invfx = 1.0f/fx;
-        invfy = 1.0f/fy;
-
-        mbInitialComputations=false;
-    }
-
-    mb = mbf/fx;
-
-    AssignFeaturesToGrid();
-}*/
 
   Frame::~Frame()
   {
@@ -363,7 +299,7 @@ namespace ORB_SLAM2
     if (flag == 0)
     {
       (*mpORBextractorLeft)(im.clone(), _mask, mvKeys, mDescriptors);
-      cout << "Descriptor size: " <<mDescriptors.size() << endl;
+      cout << "Descriptor size: " << mDescriptors.size() << endl;
     }
     else
     {
@@ -441,10 +377,13 @@ namespace ORB_SLAM2
     const float minDistance = pMP->GetMinDistanceInvariance();
     const cv::Mat PO = P - mOw;
     const float dist = cv::norm(PO);
-    if (_mask.at<uchar>(v, u) < 125)
+
+    if (!_mask.empty())
     {
-      return false;
-      ;
+      if (_mask.at<uchar>(v, u) < 125)
+      {
+        return false;
+      }
     }
 
     // Check viewing angle
@@ -956,7 +895,7 @@ namespace ORB_SLAM2
   }
 
   void Frame::SetTrackedPoints(std::vector<cv::KeyPoint> &vPoints, const std::vector<bool> &vGood,
-          const std::vector<MapPoint *> vpMapPoints, const std::vector<cv::Mat>& vHessian)
+                               const std::vector<MapPoint *> vpMapPoints, const std::vector<cv::Mat> &vHessian)
   {
     mvKeys.clear();
     vector<cv::KeyPoint>().swap(mvKeys);
@@ -994,7 +933,7 @@ namespace ORB_SLAM2
   }
 
   void Frame::AppendTrackedPoints(std::vector<cv::KeyPoint> &vPoints, const std::vector<bool> &vGood,
-                                  const vector<MapPoint *> &vpMapPoints, const std::vector<cv::Mat>& vHessian)
+                                  const vector<MapPoint *> &vpMapPoints, const std::vector<cv::Mat> &vHessian)
   {
     for (int i = 0; i < vPoints.size(); i++)
     {

@@ -43,8 +43,7 @@ namespace ORB_SLAM2
         mnBAFixedForKF(0), mnLoopQuery(0), mnLoopWords(0), mnRelocQuery(0),
         mnRelocWords(0), mnBAGlobalForKF(0), fx(F.fx), fy(F.fy), cx(F.cx),
         cy(F.cy), invfx(F.invfx), invfy(F.invfy), mbf(F.mbf), mb(F.mb),
-        mThDepth(F.mThDepth), N(F.N), mvKeys(F.mvKeys), mvKeysUn(F.mvKeysUn),
-        mvKeysUnCorr(F.mvKeysUnCorr), mvuRight(F.mvuRight), mvDepth(F.mvDepth),
+        mThDepth(F.mThDepth), N(F.N), mvKeys(F.mvKeys), mvKeysUn(F.mvKeysUn), mvuRight(F.mvuRight), mvDepth(F.mvDepth),
         mDescriptors(F.mDescriptors.clone()), mBowVec(F.mBowVec),
         mFeatVec(F.mFeatVec), mnScaleLevels(F.mnScaleLevels),
         mfScaleFactor(F.mfScaleFactor), mfLogScaleFactor(F.mfLogScaleFactor),
@@ -55,7 +54,7 @@ namespace ORB_SLAM2
         mpKeyFrameDB(pKFDB), mpORBvocabulary(F.mpORBvocabulary),
         mbFirstConnection(true), mpParent(NULL), mbNotErase(false),
         mbToBeErased(false), mbBad(false), mHalfBaseline(F.mb / 2), mpMap(pMap),
-        RGBimage(1024, 1024, F.ImRGB.type(), cv::Scalar(0, 0, 0)),
+        RGBimage(4096, 4096, F.ImRGB.type(), cv::Scalar(0, 0, 0)),
         imGray(F.ImGray.clone()), mDistCoef(F.mDistCoef), _mask(F._mask)
   {
     mnId = nNextId++;
@@ -67,12 +66,11 @@ namespace ORB_SLAM2
         mGrid[i][j] = F.mGrid[i][j];
     }
     SetPose(F.mTcw);
+    // Warning: RGBimage must be bigger than the RGB image
     cv::Mat a(RGBimage(cv::Range(0, F.ImRGB.rows), cv::Range(0, F.ImRGB.cols)));
     F.ImRGB.copyTo(a);
     F.ImRGB.copyTo(KFimage);
-
     nKLTfeatures = F.N;
-
     ExtractCornersAndDescriptors(F.mpORBextractorLeft);
   }
 
@@ -98,7 +96,7 @@ namespace ORB_SLAM2
 
   void KeyFrame::addToDB()
   {
-      mpKeyFrameDB->add(this);
+    mpKeyFrameDB->add(this);
   }
 
   void KeyFrame::SetPose(const cv::Mat &Tcw_)

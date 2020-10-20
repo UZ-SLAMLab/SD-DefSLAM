@@ -178,7 +178,6 @@ namespace ORB_SLAM2
     // KeyPoints, stereo coordinate and descriptors (all associated by an index)
     std::vector<cv::KeyPoint> mvKeys;
     std::vector<cv::KeyPoint> mvKeysUn;
-    std::vector<cv::KeyPoint> mvKeysUnCorr;
 
     std::vector<float> mvuRight; // negative value for monocular points
     std::vector<float> mvDepth;  // negative value for monocular points

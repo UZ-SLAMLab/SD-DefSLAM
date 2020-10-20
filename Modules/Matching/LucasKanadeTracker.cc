@@ -30,14 +30,16 @@ LucasKanadeTracker::LucasKanadeTracker(const cv::Size _winSize, const int _maxLe
     Idref = vector<vector<Mat>>(maxLevel + 1);
 }
 
-void LucasKanadeTracker::SetReferenceImage(cv::Mat &refIm, std::vector<ORB_SLAM2::MapPoint *> &refMps, std::vector<cv::KeyPoint> &refPts) {
+void LucasKanadeTracker::SetReferenceImage(cv::Mat &refIm, std::vector<ORB_SLAM2::MapPoint *> &refMps, std::vector<cv::KeyPoint> &refPts)
+{
     //Compute reference pyramid
     cv::buildOpticalFlowPyramid(refIm, refPyr, winSize, maxLevel);
 
     //Store points
     prevPts = refPts;
 
-    for(int level = maxLevel; level >= 0; level--){
+    for (int level = maxLevel; level >= 0; level--)
+    {
         vMeanI[level].clear();
         vector<float>().swap(vMeanI[level]);
         vMeanI2[level].clear();
@@ -52,8 +54,10 @@ void LucasKanadeTracker::SetReferenceImage(cv::Mat &refIm, std::vector<ORB_SLAM2
         Iref[level].resize(refMps.size());
         Idref[level].resize(refMps.size());
 
-        for(int i = 0; i < refMps.size(); i++){
-            if(!refMps[i]) continue;
+        for (int i = 0; i < refMps.size(); i++)
+        {
+            if (!refMps[i])
+                continue;
             vMeanI[level][i] = refMps[i]->mvMean[level];
             vMeanI2[level][i] = refMps[i]->mvMean2[level];
             Iref[level][i] = refMps[i]->mvPatch[level].clone();
@@ -180,16 +184,17 @@ void LucasKanadeTracker::SetReferenceImage(Mat &refIm, vector<KeyPoint> &refPts)
     }
 }
 
-int LucasKanadeTracker::PRE_Track(Mat &newIm, std::vector<KeyPoint> &nextPts, vector<bool> &status, std::vector<cv::Mat>& vHessian,
-                                const bool bInitialFlow, const float minSSIM)
+int LucasKanadeTracker::PRE_Track(Mat &newIm, std::vector<KeyPoint> &nextPts, vector<bool> &status, std::vector<cv::Mat> &vHessian,
+                                  const bool bInitialFlow, const float minSSIM)
 {
     //Dimensions of half of the window
     Point2f halfWin((winSize.width - 1) * 0.5f, (winSize.height - 1) * 0.5f);
 
     //covariance
     vector<cv::Mat> jac_(nextPts.size());
-    for(size_t i = 0; i < jac_.size(); i++){
-        jac_[i] = cv::Mat(winSize.area(),2,CV_32F);
+    for (size_t i = 0; i < jac_.size(); i++)
+    {
+        jac_[i] = cv::Mat(winSize.area(), 2, CV_32F);
     }
 
     //Compute pyramid images
@@ -383,8 +388,8 @@ int LucasKanadeTracker::PRE_Track(Mat &newIm, std::vector<KeyPoint> &nextPts, ve
                         iA22 += (float)(dy * dy);
                         iA12 += (float)(dx * dy);
 
-                        jac_[i].at<float>(rr,0) = (float) (diff * dx);
-                        jac_[i].at<float>(rr,1) = (float) (diff * dy);
+                        jac_[i].at<float>(rr, 0) = (float)(diff * dx);
+                        jac_[i].at<float>(rr, 1) = (float)(diff * dy);
                         rr++;
                     }
                 }
@@ -1016,7 +1021,9 @@ void LucasKanadeTracker::AddFromKeyFrame(ORB_SLAM2::KeyFrame *pKF, std::vector<c
     for (int i = pKF->nKLTfeatures; i < pKF->N; i++)
     {
         ORB_SLAM2::MapPoint *pMP = vKfMps[i];
-        if (pMP && !pMP->trackedByKLT)
+        if (!pMP)
+            continue;
+        if (!pMP->trackedByKLT)
         {
             pMP->trackedByKLT = true;
 
@@ -1059,7 +1066,7 @@ int LucasKanadeTracker::TrackWithInfoWithHH(cv::Mat &newIm, std::vector<cv::KeyP
                                             const std::vector<std::vector<float>> vMean,
                                             const std::vector<std::vector<float>> vMean2,
                                             std::vector<cv::Mat> &vH, const float minSSIM,
-                                            std::vector<cv::Mat>& vHessian)
+                                            std::vector<cv::Mat> &vHessian)
 {
     auto startPos = nextPts;
     //Set status of all the points to true
@@ -1067,8 +1074,9 @@ int LucasKanadeTracker::TrackWithInfoWithHH(cv::Mat &newIm, std::vector<cv::KeyP
 
     //covariance
     vector<cv::Mat> jac_(nextPts.size());
-    for(size_t i = 0; i < jac_.size(); i++){
-        jac_[i] = cv::Mat(winSize.area(),2,CV_32F);
+    for (size_t i = 0; i < jac_.size(); i++)
+    {
+        jac_[i] = cv::Mat(winSize.area(), 2, CV_32F);
     }
 
     //Dimensions of half of the window
@@ -1265,8 +1273,8 @@ int LucasKanadeTracker::TrackWithInfoWithHH(cv::Mat &newIm, std::vector<cv::KeyP
                         iA22 += (float)(dy * dy);
                         iA12 += (float)(dx * dy);
 
-                        jac_[i].at<float>(rr,0) = (float) (diff * dx);
-                        jac_[i].at<float>(rr,1) = (float) (diff * dy);
+                        jac_[i].at<float>(rr, 0) = (float)(diff * dx);
+                        jac_[i].at<float>(rr, 1) = (float)(diff * dy);
                         rr++;
                     }
                 }
