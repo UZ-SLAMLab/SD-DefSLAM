@@ -55,7 +55,7 @@ namespace ORB_SLAM2
         mbFirstConnection(true), mpParent(NULL), mbNotErase(false),
         mbToBeErased(false), mbBad(false), mHalfBaseline(F.mb / 2), mpMap(pMap),
         RGBimage(4096, 4096, F.ImRGB.type(), cv::Scalar(0, 0, 0)),
-        imGray(F.ImGray.clone()), mDistCoef(F.mDistCoef), _mask(F._mask)
+        imGray(F.ImGray.clone()), mDistCoef(F.mDistCoef), _mask(F._mask), stereoAvailable(F.StereoAvailable)
   {
     mnId = nNextId++;
     mGrid.resize(mnGridCols);

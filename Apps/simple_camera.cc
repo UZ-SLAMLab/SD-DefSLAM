@@ -33,11 +33,11 @@ int main(int argc, char **argv)
     //cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
     //cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
 
-    int initial_point(13.5 * 40 * 60);
+    uint initial_point(0);
     while (cap.isOpened())
     {
         cv::Mat imLeft;
-        std::cout << "Loading : " << double(i) / initial_point * 100 << "% " << '\r' << std::flush;
+        std::cout << "Loading : " << (double(i) / initial_point) * 100 << "% " << '\r' << std::flush;
         cap >> imLeft;
         i++;
         if (i < initial_point)

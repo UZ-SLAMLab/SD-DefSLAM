@@ -81,6 +81,7 @@ namespace defSLAM
     public:
         void setSaveResults(const bool);
         void setK(const cv::Mat &k);
+        void setD(const cv::Mat &D);
         void setbf(const float);
         void setCameraWidth(const int);
         void setCameraHeight(const int);

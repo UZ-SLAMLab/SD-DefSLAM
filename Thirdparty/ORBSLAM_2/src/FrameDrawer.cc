@@ -70,7 +70,7 @@ namespace ORB_SLAM2
           cv::Mat inverseMask;
           cv::threshold(mask_, inverseMask, 125, 125, cv::THRESH_BINARY_INV);
           cvtColor(inverseMask, red, cv::COLOR_GRAY2BGR);
-          red = (red - cv::Scalar(0, 255, 255)) / 2;
+          red = (red - cv::Scalar(255, 255, 0)) / 2;
           im = im - red;
         }
         vCurrentKeys = mvCurrentKeys;
@@ -141,7 +141,7 @@ namespace ORB_SLAM2
       }
       for (const auto &pair : innovation)
       {
-        std::string s = std::to_string(pair.first); 
+        std::string s = std::to_string(pair.first);
         std::pair<cv::KeyPoint, cv::KeyPoint> kps = pair.second;
 
         cv::line(im, kps.first.pt, kps.second.pt, cv::Scalar(10, 255, 10));
@@ -149,7 +149,7 @@ namespace ORB_SLAM2
       }
       for (const auto &pair : innovationOutlier)
       {
-        std::string s = std::to_string(pair.first); 
+        std::string s = std::to_string(pair.first);
         std::pair<cv::KeyPoint, cv::KeyPoint> kps = pair.second;
 
         cv::line(im, kps.first.pt, kps.second.pt, cv::Scalar(10, 255, 10));

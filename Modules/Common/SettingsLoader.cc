@@ -321,6 +321,12 @@ namespace defSLAM
         K_.convertTo(K_, CV_32F);
     }
 
+    void SettingsLoader::setD(const cv::Mat &D)
+    {
+        D.copyTo(distCoef_);
+        distCoef_.convertTo(distCoef_, CV_32F);
+    }
+
     void SettingsLoader::setbf(const float bf)
     {
         bf_ = bf;

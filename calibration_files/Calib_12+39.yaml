@@ -1,0 +1,86 @@
+%YAML:1.0
+
+#--------------------------------------------------------------------------------------------
+# Camera Parameters. Adjust them!
+#--------------------------------------------------------------------------------------------
+# Camera calibration and distortion parameters (OpenCV) 
+Camera.fx: 717.1835
+Camera.fy: 717.353
+Camera.cx: 729.1716
+Camera.cy: 552.4717
+
+# Distortion
+Camera.k1: -0.1609378
+Camera.k2: 0.0601716
+Camera.k3: -0.07506441
+Camera.k4: 0.03384549
+
+#Camera.k1: 0.0
+#Camera.k2: 0.0
+#Camera.p1: 0.0
+#Camera.p2: 0.0
+
+Camera.width: 1440
+Camera.height: 1080
+
+#Camera.width: 640
+#Camera.height: 480
+
+# Camera frames per second 
+Camera.fps: 40.0
+
+# Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
+Camera.RGB: 1
+
+#--------------------------------------------------------------------------------------------
+# ORB Parameters
+#--------------------------------------------------------------------------------------------
+
+# ORB Extractor: Number of features per image
+ORBextractor.nFeatures: 4000
+
+# ORB Extractor: Scale factor between levels in the scale pyramid 	
+ORBextractor.scaleFactor: 1.2
+
+# ORB Extractor: Number of levels in the scale pyramid	
+ORBextractor.nLevels: 4
+
+# ORB Extractor: Fast threshold
+ORBextractor.iniThFAST: 20
+ORBextractor.minThFAST: 7
+
+#--------------------------------------------------------------------------------------------
+#Regularizers Parameters
+#--------------------------------------------------------------------------------------------
+Regularizer.laplacian : 100
+Regularizer.Inextensibility : 6000
+Regularizer.temporal : 0.05
+Regularizer.LocalZone : 1
+Regularizer.PropagationZone : 0
+
+#--------------------------------------------------------------------------------------------
+# Local Mapping Parameters
+#--------------------------------------------------------------------------------------------
+LocalMapping.pointsToTemplate: 60
+LocalMapping.chiLimit: 0.4
+LocalMapping.Bending: 0.7
+LocalMapping.Schwarp.Regularizer: 0.05
+
+#--------------------------------------------------------------------------------------------
+# Viewer Parameters
+#--------------------------------------------------------------------------------------------
+Viewer.KeyFrameSize: 0.02507008996987384997
+Viewer.KeyFrameLineWidth: 1
+Viewer.GraphLineWidth: 0.9
+Viewer.PointSize: 2
+Viewer.CameraSize: 0.05507008996987384997
+Viewer.CameraLineWidth: 3
+Viewer.ViewpointX: -1.3
+Viewer.ViewpointY: 0
+Viewer.ViewpointZ: -0.4
+Viewer.ViewpointF: 600
+Viewer.SaveResults: 1
+#--------------------------------
+Debug.bool: 0
+Filters.file: /home/jose/DefKLTSLAM/filtersCNN.txt
+

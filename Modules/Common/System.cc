@@ -86,7 +86,7 @@ namespace defSLAM
       cerr << "Failed to open settings file at: " << strSettingsFile << endl;
       exit(-1);
     }
-    std::string lol = fsSettings["Filters.file"].string();
+
     masker_.loadFromTxt(fsSettings["Filters.file"].string());
 
     // Load ORB Vocabulary

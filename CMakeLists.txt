@@ -121,3 +121,7 @@ set_property(TARGET DefSLAMHamyln PROPERTY CXX_STANDARD 14)
 add_executable(DefSLAMHamylnINV Apps/stereo_Hamlyn_inv.cc)
 target_link_libraries(DefSLAMHamylnINV ${PROJECT_NAME} Dataloader ${TORCH_LIBRARIES})
 set_property(TARGET DefSLAMHamylnINV PROPERTY CXX_STANDARD 14)
+
+add_executable(DefSLAM_Endoscope Apps/simple_endoscope.cc)
+target_link_libraries(DefSLAM_Endoscope ${PROJECT_NAME} Dataloader ${TORCH_LIBRARIES})
+set_property(TARGET DefSLAMHamylnINV PROPERTY CXX_STANDARD 14)

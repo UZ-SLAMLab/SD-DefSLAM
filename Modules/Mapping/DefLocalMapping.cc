@@ -243,7 +243,7 @@ namespace defSLAM
         return;
       }
     }
-    if (saveResults_)
+    if (saveResults_ && kfForTemplate->stereoAvailable)
     {
       float scale =
           static_cast<GroundTruthKeyFrame *>(kfForTemplate)->estimateAngleErrorAndScale();
@@ -263,7 +263,7 @@ namespace defSLAM
     //Add all keyframes to DB (relocalization)
     static_cast<DefKeyFrame *>(mpCurrentKeyFrame)->setReferenceKeyframe(referenceKF_);
     mpCurrentKeyFrame->addToDB();
-    
+
     createTemplate_ = true;
   }
 
@@ -388,7 +388,7 @@ namespace defSLAM
    ********************************/
   bool DefLocalMapping::needNewTemplate()
   {
-    return (static_cast<DefKeyFrame*>(mpCurrentKeyFrame)->kindKeyframe == DefKeyFrame::kindofKeyFrame::REFERENCE);
+    return (static_cast<DefKeyFrame *>(mpCurrentKeyFrame)->kindKeyframe == DefKeyFrame::kindofKeyFrame::REFERENCE);
   }
 
   /***************************************

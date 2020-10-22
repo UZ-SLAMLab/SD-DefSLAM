@@ -262,7 +262,8 @@ namespace defSLAM
     else
     {
       // This can happen if tracking is lost
-      cout << "Trcking LOST." << endl;
+      cout << "Tracking LOST." << endl;
+      static_cast<DefMap *>(mpMap)->clearTemplate();
 
       mlRelativeFramePoses.push_back(mlRelativeFramePoses.back());
       mlpReferences.push_back(mlpReferences.back());
@@ -1231,7 +1232,7 @@ namespace defSLAM
 
     cout << "[LucasKanade-MotionModel]: " << vectorklt.size() << " --- " << setklt.size() << endl;
 
-    if (nmatches < 15)
+    if (nmatches < 30)
       return false;
 
     return true;
@@ -1494,10 +1495,10 @@ namespace defSLAM
     // Decide if the tracking was succesful
     // More restrictive if there was a relocalization recently
     if (mCurrentFrame->mnId < mnLastRelocFrameId + mMaxFrames &&
-        mnMatchesInliers < 20)
+        mnMatchesInliers < 80)
       return false;
 
-    if (mnMatchesInliers < 10)
+    if (mnMatchesInliers < 70)
       return false;
     else
       return true;

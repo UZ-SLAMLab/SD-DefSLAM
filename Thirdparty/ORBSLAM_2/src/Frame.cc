@@ -76,6 +76,8 @@ namespace ORB_SLAM2
 
     if (!frame.mTcw.empty())
       SetPose(frame.mTcw);
+
+    StereoAvailable = false;
   }
 
   Frame::Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeStamp, ORBextractor *extractorLeft, ORBextractor *extractorRight, ORBVocabulary *voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth, const cv::Mat &ImRGB, cv::Mat _mask)
@@ -84,6 +86,7 @@ namespace ORB_SLAM2
   {
     // Frame ID
     mnId = nNextId++;
+    StereoAvailable = false;
 
     // Scale Level Info
     mnScaleLevels = mpORBextractorLeft->GetLevels();
@@ -141,6 +144,7 @@ namespace ORB_SLAM2
   {
     // Frame ID
     mnId = nNextId++;
+    StereoAvailable = false;
 
     // Scale Level Info
     mnScaleLevels = mpORBextractorLeft->GetLevels();
@@ -205,6 +209,7 @@ namespace ORB_SLAM2
     mvInvScaleFactors = mpORBextractorLeft->GetInverseScaleFactors();
     mvLevelSigma2 = mpORBextractorLeft->GetScaleSigmaSquares();
     mvInvLevelSigma2 = mpORBextractorLeft->GetInverseScaleSigmaSquares();
+    StereoAvailable = false;
 
     if (action == 1)
     {

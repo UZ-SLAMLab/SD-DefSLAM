@@ -199,13 +199,12 @@ namespace defSLAM
         });
   }
 
-
   // Embed the points inside the facets by calculating its barycentric coordinates.
-  void TriangularMesh::calculateFeaturesCoordinates(KeyFrame* kf)
+  void TriangularMesh::calculateFeaturesCoordinates(KeyFrame *kf)
   {
     std::for_each(
         mapPoints_.begin(), mapPoints_.end(),
-        [this,kf](MapPoint *const &it) {
+        [this, kf](MapPoint *const &it) {
           if ((it))
           {
             if (!it->isBad())
@@ -256,12 +255,12 @@ namespace defSLAM
                   Eigen::Vector3f barycentric;
                   Eigen::Vector3f barycentric2;
 
-                 // pointInTriangle(MapPoint, nodsEigen[0], nodsEigen[1],
+                  // pointInTriangle(MapPoint, nodsEigen[0], nodsEigen[1],
                   //                nodsEigen[2], barycentric2);
                   if (pointInTriangle(MapPoint, nodsEigen[0], nodsEigen[1],
-                                  nodsEigen[2],kf, barycentric))
+                                      nodsEigen[2], kf, barycentric))
                   {
-                   // std::cout << barycentric.transpose() << "  " << barycentric2.transpose() << std::endl;
+                    // std::cout << barycentric.transpose() << "  " << barycentric2.transpose() << std::endl;
                     static_cast<DefMapPoint *>(it)->SetCoordinates(
                         barycentric(0), barycentric(1), barycentric(2));
                     static_cast<DefMapPoint *>(it)->SetFacet(*ita);
@@ -323,7 +322,7 @@ namespace defSLAM
     }
   }
 
-    /******
+  /******
    *  Estimate barycentric coordinates. It returns true if the point is inside the face.
    * Inspired in code presented in Ngo
    *********/
@@ -331,7 +330,7 @@ namespace defSLAM
                                        const Eigen::Vector3f &triangle_vertex_0,
                                        const Eigen::Vector3f &triangle_vertex_1,
                                        const Eigen::Vector3f &triangle_vertex_2,
-                                       KeyFrame* kf,
+                                       KeyFrame *kf,
                                        Eigen::Vector3f &barycentric)
   {
     cv::Mat Twc = kf->GetPoseInverse();
@@ -339,20 +338,19 @@ namespace defSLAM
     Eigen::Vector4f source_cam;
     cv::cv2eigen(source_mat, source_cam);
 
-
     Eigen::Vector4f direction;
     direction << query_point,
-                   1;
+        1;
     Eigen::Vector4f line;
     line = direction - source_cam;
 
     Eigen::Vector4f A, B, C;
     A << triangle_vertex_0,
-                   1;
+        1;
     B << triangle_vertex_1,
-                   1;
+        1;
     C << triangle_vertex_2,
-                   1;
+        1;
     Eigen::Matrix4f ABCd;
     ABCd << A, B, C, line;
 
@@ -373,7 +371,7 @@ namespace defSLAM
     return ((0 <= alpha) && (alpha <= 1) && (0 <= beta) && (beta <= 1) &&
             (0 <= gamma) && (gamma <= 1));
   }
-/*
+  /*
 vec KeypointMatcher3D2D::findIntersectionRayTriangle(const vec& source, const vec& destination, const mat& vABC)
 {
 	vec direction = destination - source;
