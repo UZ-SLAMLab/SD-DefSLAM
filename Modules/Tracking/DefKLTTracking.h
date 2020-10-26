@@ -48,6 +48,11 @@ namespace defSLAM
   using ORB_SLAM2::Tracking;
 
   class DeformationKeyFrame;
+
+  /*
+   * This class encapsulates camera tracking logic. It performs short-term data association using Lucas-Kanade
+   * optical flow algorithm to track FAST corners that will be feed to a deformable pose optimization.
+   */
   class DefKLTTracking : public Tracking
   {
 
@@ -67,6 +72,13 @@ namespace defSLAM
                    bool viewerOn = false);
 
   public:
+
+    // First optimization step. It computes some matches from previous frame and estimates a coarse estimation of
+    // the camera pose with a deformable pose optimization
+    virtual bool TrackWithMotionModel();
+
+    // Second optimization step. It reuses the local map to get new putative matches that will be fed to a
+    // deformable pose optimzation
     virtual bool TrackLocalMap();
 
     // Rigid relocalization: retrieve pose with PnP and get template
@@ -112,24 +124,24 @@ namespace defSLAM
     uint LocalZone;
     ofstream myfile;
 
-    ///-------------------------------
-    ///           KLT stuff
-    ///-------------------------------
+    // Lucas-Kande tracker
     LucasKanadeTracker mKLTtracker;
 
-    std::vector<cv::KeyPoint> mvKLTKeys;
-    std::vector<MapPoint *> mvKLTMPs;
-    std::vector<bool> mvKLTStatus;
-    std::vector<cv::Mat> vHessian_;
+    std::vector<cv::KeyPoint> mvKLTKeys;    //KeyPoints tracked by Lucas-Kanade
+    std::vector<MapPoint *> mvKLTMPs;       //MapPoints associated to KeyPoints tracked
+    std::vector<bool> mvKLTStatus;          //Flags from Lucas-Kanade to tell if a track is good or no
+    std::vector<cv::Mat> vHessian_;         //Hessian from Lucas-Kanade estimations
+
     bool newReferenceKeyframe_;
     float perctOutliers_;
 
   protected:
-    bool KLT_TrackWithMotionModel();
-    void KLT_UpdateSeeds();
-    void KLT_CreateNewKeyFrame();
-    bool KLT_TrackLocalMap();
-    int KLT_SearchLocalMapPoints();
+    // [Not used in the paper version] Projects MapPoints in the current image using as pose the one predicted
+    // by the motion model
+    void UpdateSeeds();
+
+    // Searches new MapPoints in the local map. It projects to the current image and matches them with Lucas-Kanade
+    int SearchLocalMapPoints();
 
     ///------------------------------------
     ///          Debugging

@@ -6,6 +6,10 @@
 
 #include "KeyFrame.h"
 
+/*
+ * This class implements several variants of the Lucas-Kanade optical flow algorithm: illuminance invariance,
+ * with homographies and with patterns instead of square patches.
+ */
 class LucasKanadeTracker
 {
 public:

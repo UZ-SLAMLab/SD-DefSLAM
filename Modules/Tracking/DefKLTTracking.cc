@@ -73,9 +73,7 @@ namespace defSLAM
     saveResults = settingLoader.getSaveResults();
     debugPoints = settingLoader.getDebugPoints();
 
-    ///-------------------------------
     mKLTtracker = LucasKanadeTracker(cv::Size(11, 11), 4, 10, 0.01, 1e-4);
-    ///-------------------------------
   }
 
   void DefKLTTracking::Track()
@@ -143,7 +141,7 @@ namespace defSLAM
 
           if (bOK)
           {
-            bOK = KLT_TrackLocalMap();
+            bOK = TrackLocalMap();
 
             if (debugPoints)
               printCurrentPoints("DefSLAM: points post-KLT local map");
@@ -172,7 +170,7 @@ namespace defSLAM
         // system relocalizes
         // the camera we will use the local map again.
         if (bOK && !mbVO)
-          bOK = KLT_TrackLocalMap();
+          bOK = TrackLocalMap();
       }
 
       if (bOK)
@@ -209,7 +207,7 @@ namespace defSLAM
         // Check if we need to insert a new keyframe
         if (DebugNeedNewKeyFrame())
         {
-          this->KLT_CreateNewKeyFrame();
+          this->CreateNewKeyFrame();
         }
 
         // We allow points with high innovation (considererd outliers by the Huber
@@ -273,7 +271,7 @@ namespace defSLAM
   }
   bool DefKLTTracking::LocalisationAndMapping()
   {
-    bool bOK = KLT_TrackWithMotionModel();
+    bool bOK = TrackWithMotionModel();
     return bOK;
   }
 
@@ -466,115 +464,6 @@ namespace defSLAM
     }
   }
 
-  bool DefKLTTracking::TrackLocalMap()
-  {
-    // We have an estimation of the camera pose and some map points tracked in the
-    // frame. We retrieve the local map and try to find matches to points in the
-    // local map.
-    UpdateLocalMap();
-    SearchLocalPoints();
-    if (static_cast<DefMap *>(mpMap)->GetTemplate())
-    {
-      Optimizer::DefPoseOptimization(
-          mCurrentFrame, mpMap, this->getRegLap(), this->getRegInex(),
-          this->getRegTemp(), LocalZone);
-    }
-    else
-    {
-      ORB_SLAM2::Optimizer::poseOptimization(mCurrentFrame);
-    }
-    // Optimize Pose
-    mnMatchesInliers = 0;
-    int mnMatchesOutliers(0);
-    int DefnToMatchLOCAL(0);
-    for (int i = 0; i < mCurrentFrame->N; i++)
-    {
-      if (mCurrentFrame->mvpMapPoints[i])
-      {
-        if (!mCurrentFrame->mvbOutlier[i])
-        {
-          mCurrentFrame->mvpMapPoints[i]->IncreaseFound();
-          if (!mbOnlyTracking)
-          {
-            if (mCurrentFrame->mvpMapPoints[i]->Observations() > 0)
-            {
-              mnMatchesInliers++;
-              if (static_cast<DefMapPoint *>(
-                      mCurrentFrame->mvpMapPoints[i])
-                      ->getFacet())
-                DefnToMatchLOCAL++;
-            }
-          }
-          else if (static_cast<DefMapPoint *>(
-                       mCurrentFrame->mvpMapPoints[i])
-                       ->getFacet())
-            mnMatchesInliers++;
-        }
-        else
-        {
-          if (static_cast<DefMapPoint *>(
-                  mCurrentFrame->mvpMapPoints[i])
-                  ->getFacet())
-            mnMatchesOutliers++;
-        }
-      }
-    }
-    auto points = mpMap->GetReferenceMapPoints();
-    auto numberLocalMapPoints(0);
-    for (auto pMP : points)
-    {
-      if (pMP)
-      {
-        if (pMP->isBad())
-          continue;
-        if (static_cast<DefMapPoint *>(pMP)->getFacet())
-          if (mCurrentFrame->isInFrustum(pMP, 0.5))
-          {
-            numberLocalMapPoints++;
-          }
-      }
-    }
-    // Optimize Pose
-    int observedFrame(0);
-    int mI(0);
-    int mO(0);
-    for (int i = 0; i < mCurrentFrame->N; i++)
-    {
-      if (mCurrentFrame->mvpMapPoints[i])
-      {
-        if (mCurrentFrame->mvpMapPoints[i]->isBad())
-          continue;
-        observedFrame++;
-        if (!mCurrentFrame->mvbOutlier[i])
-        {
-          mI++;
-        }
-        else
-        {
-          mO++;
-        }
-      }
-    }
-
-    std::cout << "Saving matches " << std::endl;
-    std::fstream myfile("matches.txt", std::ios::in | std::ios::out | std::ios::ate);
-    std::ostringstream out;
-    out << std::internal << std::setfill('0') << std::setw(5)
-        << uint(mCurrentFrame->mTimeStamp);
-    myfile << out.str() << " " << numberLocalMapPoints << " " << mnMatchesInliers << " " << mnMatchesOutliers << std::endl;
-    myfile.close();
-    // Decide if the tracking was succesful
-    // More restrictive if there was a relocalization recently
-    if (mCurrentFrame->mnId < mnLastRelocFrameId + mMaxFrames &&
-        mnMatchesInliers < 20)
-      return false;
-
-    if (mnMatchesInliers < 10)
-      return false;
-    else
-      return true;
-  }
-
   // Relocate the camera and get old template if system is lost
   bool DefKLTTracking::relocalization()
   {
@@ -701,16 +590,6 @@ namespace defSLAM
               mCurrentFrame->mvpMapPoints[j] = NULL;
           }
 
-          /*int nGood = Optimizer::poseOptimization(mCurrentFrame);
-          cout << "Pose optimized with " << nGood << " inliers." << endl;
-
-          if (nGood < 10)
-            continue;
-
-          for (int io = 0; io < mCurrentFrame->N; io++)
-            if (mCurrentFrame->mvbOutlier[io])
-              mCurrentFrame->mvpMapPoints[io] = static_cast<MapPoint *>(nullptr);*/
-
           // Assign temporal template
           pKFreloc = vpCandidateKFs[i];
           cout << "Relocalization Keyframe: " << pKFreloc->mnId << endl;
@@ -786,7 +665,6 @@ namespace defSLAM
           {
             bMatch = true;
             cout << "Relocalization succeded with Keyframe: " << pKFreloc->mnId << endl;
-            //pKFreloc = vpCandidateKFs[i];
             break;
           }
         }
@@ -1014,8 +892,8 @@ namespace defSLAM
 
   void DefKLTTracking::MonocularInitialization()
   {
-    /// Initialize the surface and the points in the surface considering a plane
-    /// parallel to the camera plane
+    // Initialize the surface and the points in the surface considering a plane
+    // parallel to the camera plane
     if (mCurrentFrame->N > 100)
     {
       // Set Frame pose to the origin
@@ -1025,9 +903,7 @@ namespace defSLAM
       KeyFrame *pKFini =
           new GroundTruthKeyFrame(*mCurrentFrame, mpMap, mpKeyFrameDB);
 
-      ///-----------------------------------
       cv::buildOpticalFlowPyramid(mCurrentFrame->ImGray, pKFini->imPyr, mKLTtracker.winSize, mKLTtracker.maxLevel);
-      ///-----------------------------------
 
       // Insert KeyFrame in the map
       mpMap->AddKeyFrame(pKFini);
@@ -1057,13 +933,11 @@ namespace defSLAM
         pKFini->GetMapPoint(i);
       }
 
-      ///------------------------------------
       mvKLTKeys = mCurrentFrame->mvKeys;
       mvKLTMPs = mCurrentFrame->mvpMapPoints;
       mvKLTStatus.resize(mCurrentFrame->N, true);
 
       mKLTtracker.SetReferenceImage(mCurrentFrame->ImGray, mvKLTKeys);
-      ///------------------------------------
 
       double *Array;
       Array = new double[_NumberOfControlPointsU * _NumberOfControlPointsV];
@@ -1144,29 +1018,13 @@ namespace defSLAM
     mlpTemporalPoints.clear();
   }
 
-  void DefKLTTracking::CreateNewKeyFrame()
-  {
-    if (!mpLocalMapper->SetNotStop(true))
-      return;
-
-    KeyFrame *pKF = new GroundTruthKeyFrame(*mCurrentFrame, mpMap, mpKeyFrameDB);
-    mCurrentFrame->mpReferenceKF = mpReferenceKF;
-    mpLocalMapper->InsertKeyFrame(pKF);
-    mpLocalMapper->SetNotStop(false);
-    mnLastKeyFrameId = mCurrentFrame->mnId;
-    mpLastKeyFrame = pKF;
-  }
-
-  bool DefKLTTracking::KLT_TrackWithMotionModel()
+  bool DefKLTTracking::TrackWithMotionModel()
   {
     // Update last frame pose according to its reference keyframe
     // Create "visual odometry" points if in Localization Mode
     UpdateLastFrame();
 
-    //   if(mVelocity.empty())
     mCurrentFrame->SetPose(mLastFrame.mTcw);
-    //  else
-    //  mCurrentFrame->SetPose(mVelocity*mLastFrame.mTcw);
 
     int toTrack = 0;
 
@@ -1182,8 +1040,6 @@ namespace defSLAM
       }
     }
 
-    //KLT_UpdateSeeds();
-
     int nmatches = mKLTtracker.PRE_Track(mCurrentFrame->ImGray, mvKLTKeys, mvKLTStatus, vHessian_, true, 0.85);
 
     for (size_t i = 0; i < mvKLTMPs.size(); i++)
@@ -1194,7 +1050,7 @@ namespace defSLAM
         mvKLTStatus[i] = false;
     }
 
-    cout << "[KLT_TrackWithMotionModel]: points tracked by KLT: " << nmatches << " of " << toTrack << endl;
+    cout << "[TrackWithMotionModel]: points tracked by KLT: " << nmatches << " of " << toTrack << endl;
 
     mCurrentFrame->SetTrackedPoints(mvKLTKeys, mvKLTStatus, mvKLTMPs, vHessian_);
 
@@ -1217,7 +1073,7 @@ namespace defSLAM
     if (debugPoints)
       printCurrentPoints("2_OptimizationMotionModel");
 
-    cout << "[KLT_TrackWithMotionModel]: " << mCurrentFrame->mvpMapPoints.size() << " --- " << setM.size() << endl;
+    cout << "[TrackWithMotionModel]: " << mCurrentFrame->mvpMapPoints.size() << " --- " << setM.size() << endl;
 
     std::set<MapPoint *> setklt;
     vector<MapPoint *> vectorklt;
@@ -1238,7 +1094,7 @@ namespace defSLAM
     return true;
   }
 
-  void DefKLTTracking::KLT_UpdateSeeds()
+  void DefKLTTracking::UpdateSeeds()
   {
     const cv::Mat Rcw = mCurrentFrame->mTcw.rowRange(0, 3).colRange(0, 3);
     const cv::Mat tcw = mCurrentFrame->mTcw.rowRange(0, 3).col(3);
@@ -1296,7 +1152,7 @@ namespace defSLAM
     }
   }
 
-  void DefKLTTracking::KLT_CreateNewKeyFrame()
+  void DefKLTTracking::CreateNewKeyFrame()
   {
     if (!mpLocalMapper->SetNotStop(true))
       return;
@@ -1311,15 +1167,11 @@ namespace defSLAM
     }
     mvKLTKeys = mCurrentFrame->mvKeys;
     mvKLTMPs = mCurrentFrame->mvpMapPoints;
-    //mvKLTStatus.clear();// vector<bool>().swap(mvKLTStatus);
     mvKLTStatus.resize(mvKLTKeys.size(), true);
-    /*for(auto pMP : mvKLTMPs) {
-        if(pMP) pMP->trackedByKLT = true;
-    }*/
+
     for (size_t i = 0; i < mvKLTMPs.size(); i++)
     {
       mvKLTStatus[i] = true;
-      //if(mvKLTMPs[i]) mvKLTMPs[i]->trackedByKLT = true;
       mvKLTMPs[i]->trackedByKLT = true;
     }
 
@@ -1354,13 +1206,13 @@ namespace defSLAM
     mpLastKeyFrame = pKF;
   }
 
-  bool DefKLTTracking::KLT_TrackLocalMap()
+  bool DefKLTTracking::TrackLocalMap()
   {
     // We have an estimation of the camera pose and some map points tracked in the
     // frame. We retrieve the local map and try to find matches to points in the
     // local map.
     UpdateLocalMap();
-    int basePoints = KLT_SearchLocalMapPoints();
+    int basePoints = SearchLocalMapPoints();
     //int basePoints = mCurrentFrame->N;
 
     if (debugPoints)
@@ -1504,7 +1356,7 @@ namespace defSLAM
       return true;
   }
 
-  int DefKLTTracking::KLT_SearchLocalMapPoints()
+  int DefKLTTracking::SearchLocalMapPoints()
   {
     int toReturn = mCurrentFrame->N;
 
@@ -1567,10 +1419,8 @@ namespace defSLAM
         vPrevPts.push_back(kpR);
         vMPs.push_back(pMP);
 
-        ///-------------------------------
-        ///     Compute Homography
-        ///-------------------------------
-        //Get Rfk and tfk
+        // Compute Homography
+        // -Get Rfk and tfk
         cv::Mat Twk = pMP->pKF->GetPoseInverse();
         cv::Mat Tfk = mCurrentFrame->mTcw * Twk;
 
