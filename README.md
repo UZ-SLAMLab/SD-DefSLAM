@@ -1,12 +1,24 @@
-# 1. DefSLAM
-**Authors:** [Jose Lamarca](http://webdiis.unizar.es/~jlamarca/), Shaifali Parashar, Adrien Bartoli and [J. M. M. Montiel](http://webdiis.unizar.es/~josemari/) 
+# 1. SD-DefSLAM
+**Authors:** Juan José Gómez Rodríguez, José Lamarca, Javier Morlana, Juan D. Tardós and [J. M. M. Montiel](http://webdiis.unizar.es/~josemari/) 
 
-DefSLAM is a real-time deformable SLAM library for **Monocular** cameras that computes the camera trajectory and a sparse 3D reconstruction in a deformable environment.
+SD-DefSLAM is a semi-direct real-time deformable SLAM library for **Monocular** cameras that computes the camera trajectory and a sparse 3D reconstruction in a deformable environment.
 
-[![](https://img.youtube.com/vi/6mmhD2_t6Gs/0.jpg)](https://www.youtube.com/watch?v=6mmhD2_t6Gs&t=3s)
+[![](https://img.youtube.com/vi/gkcC0IR3X6A/0.jpg)](https://www.youtube.com/watch?v=gkcC0IR3X6A&feature=youtu.be)
 
 
 ### Related Publications:
+[Lamarca, J., Parashar, S., Bartoli, A., & Montiel, J. M. M. (2020). Defslam: Tracking and mapping of deforming scenes from monocular sequences. IEEE Transactions on Robotics.](https://ieeexplore.ieee.org/abstract/document/9201190?casa_token=CEq8mKJAPFsAAAAA:Eutmf2gfImPc-6RWkhZ-VGBplY_Vuvqlezs4nRD7w0L7F_NOC-sZx8-65EZMEDkHeCpkSNAVOg)
+
+```
+@article{lamarca2020defslam,
+  title={Defslam: Tracking and mapping of deforming scenes from monocular sequences},
+  author={Lamarca, Jose and Parashar, Shaifali and Bartoli, Adrien and Montiel, JMM},
+  journal={IEEE Transactions on Robotics},
+  year={2020},
+  publisher={IEEE}
+}
+```
+
 [Lamarca, Jose, et al. "DefSLAM: Tracking and Mapping of Deforming Scenes from Monocular Sequences." arXiv preprint arXiv:1908.08918 (2019).](https://arxiv.org/abs/1908.08918)
 ```
 @article{lamarca2019defslam,
@@ -48,26 +60,21 @@ It is used just for ground truths. It is not critic for the program. We use [PCL
 We use modified versions of the [DBoW2](https://github.com/dorian3d/DBoW2) library to perform place recognition and [g2o](https://github.com/RainerKuemmerle/g2o) library to perform non-linear optimizations. Both modified libraries (which are BSD) are included in the *Thirdparty* folder. Likewise we include a modified version of ORBSLAM. BOW is only used for ORBSLAM_2.
 
 
-# 3. License
-
-DefSLAM is released under a [GPLv3 license](https://github.com/jlamraca/DefSLAM/blob/master/License-gpl.txt). For a list of all code/library dependencies (and associated licenses), please see [Dependencies.md](https://github.com/jlamarca/DefSLAM/blob/master/Dependencies.md).
-
-
-# 4. Building DefSLAM library and examples
+# 3. Building SD-DefSLAM library and examples
 
 Clone the repository:
 ```
-git clone https://github.com/JoseLamarca/DefSLAM.git
+git clone https://github.com/UZ-SLAMLab/SD-DefSLAM.git
 ```
 
-We provide a script `build.sh` to build the *DefSLAM* including. Please make sure you have installed all required dependencies (see section 2). Execute:
+We provide a script `build.sh` to build the *SD-DefSLAM* including. Please make sure you have installed all required dependencies (see section 2). Execute:
 ```
 cd DefSLAM
 chmod +x build.sh
 ./build.sh
 ```
 
-This will create **libDefSLAM.so**  at *lib* folder and the executables **simplestereo** **simpleCT** and **simple** in *Apps* folder.
+This will create **libDeformableSLAM.so**  at *lib* folder and the executables **simplestereo** **simpleCT** and **simple** in *Apps* folder.
 
 # 5. Datasets
 ## Mandala dataset
