@@ -76,7 +76,7 @@ chmod +x build.sh
 
 This will create **libDeformableSLAM.so**  at *lib* folder and the executables **simplestereo** **simpleCT** and **simple** in *Apps* folder.
 
-# 5. Datasets
+# 4. Datasets
 ## Mandala dataset
 Download the sequences with the link: 
 [Mandala Dataset](https://drive.google.com/file/d/1i3i2f3Ph22DfZ6AfXKjPRb8WrGNw_41C/view?usp=sharing)
