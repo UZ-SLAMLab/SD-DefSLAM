@@ -1,3 +1,6 @@
+// This software is for internal use in the EndoMapper project.
+// Not to be re-distributed.
+
 
 #ifndef __DISPARITYLIBESTIMATOR_H__
 #define __DISPARITYLIBESTIMATOR_H__

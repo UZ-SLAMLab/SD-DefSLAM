@@ -1,4 +1,7 @@
-﻿/**
+﻿// This software is for internal use in the EndoMapper project.
+// Not to be re-distributed.
+
+/**
 * This file is part of DefSLAM.
 *
 * Copyright (C) 2017-2020 Jose Lamarca Peiro <jlamarca at unizar dot es>, J.M.M. Montiel (University
