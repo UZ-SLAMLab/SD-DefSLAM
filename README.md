@@ -87,9 +87,9 @@ The dataset is organized as follows:
 ## Hamlyn dataset  
 1. Download the dataset from the webpage [Hamlyn](http://hamlyn.doc.ic.ac.uk/vision/). 
 
-2. To downloaded in the format run in our paper [Hamlyn not official](https://drive.google.com/file/d/1fG6RNQlBqwDKZSRUuiEuoMbVosMo5u8J/view?usp=sharing)
-
-
+2. Run:
+ 
+ ```./stereo_Hamlyn <ORBfile> <videoFile> <leftCameraCalibration> <rigthCameraCalibration> <cameraExtrinsicCalibration>```
 
 ## Run Example
 Examples of scripts in Apps/rungt.sh

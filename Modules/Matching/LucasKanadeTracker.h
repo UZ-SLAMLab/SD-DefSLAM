@@ -1,5 +1,11 @@
-// This software is for internal use in the EndoMapper project.
-// Not to be re-distributed.
+/*
+ * This file is part of SD-DefSLAM
+ * Copyright (C) 2020 Juan J. Gómez Rodríguez, Jose Lamarca Peiro, J. Morlana,
+ *                    Juan D. Tardós and J.M.M. Montiel, University of Zaragoza
+ *
+ * This software is for internal use in the EndoMapper project.
+ * Not to be re-distributed.
+ */
 
 #ifndef LUCASKANADETRACKER_LUCASKANADETRACKER_H
 #define LUCASKANADETRACKER_LUCASKANADETRACKER_H
