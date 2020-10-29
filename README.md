@@ -7,6 +7,17 @@ SD-DefSLAM is a semi-direct real-time deformable SLAM library for **Monocular** 
 
 
 ### Related Publications:
+[Gómez Rodríguez, Juan J., Lamarca, J., Morlana, J. Tardós, Juan D., Montiel, & J. M. M. (2020) SD-DefSLAM: Semi-Direct Monocular SLAM for Deformable and Intracorporeal Scenes](https://arxiv.org/abs/2010.09409)
+```
+@article{rodriguez2020sd,
+  title={SD-DefSLAM: Semi-Direct Monocular SLAM for Deformable and Intracorporeal Scenes},
+  author={Rodr{\'\i}guez, Juan J G{\'o}mez and Lamarca, Jos{\'e} and Morlana, Javier and Tard{\'o}s, Juan D and Montiel, Jos{\'e} MM},
+  journal={arXiv preprint arXiv:2010.09409},
+  year={2020}
+}
+```
+
+
 [Lamarca, J., Parashar, S., Bartoli, A., & Montiel, J. M. M. (2020). Defslam: Tracking and mapping of deforming scenes from monocular sequences. IEEE Transactions on Robotics.](https://ieeexplore.ieee.org/abstract/document/9201190?casa_token=CEq8mKJAPFsAAAAA:Eutmf2gfImPc-6RWkhZ-VGBplY_Vuvqlezs4nRD7w0L7F_NOC-sZx8-65EZMEDkHeCpkSNAVOg)
 
 ```
@@ -19,25 +30,6 @@ SD-DefSLAM is a semi-direct real-time deformable SLAM library for **Monocular** 
 }
 ```
 
-[Lamarca, Jose, et al. "DefSLAM: Tracking and Mapping of Deforming Scenes from Monocular Sequences." arXiv preprint arXiv:1908.08918 (2019).](https://arxiv.org/abs/1908.08918)
-```
-@article{lamarca2019defslam,
-  title={DefSLAM: Tracking and Mapping of Deforming Scenes from Monocular Sequences},
-  author={Lamarca, Jose and Parashar, Shaifali and Bartoli, Adrien and Montiel, JMM},
-  journal={arXiv preprint arXiv:1908.08918},
-  year={2019}
-}
-```
-
-[Lamarca J., Montiel J.M.M. (2019) Camera Tracking for SLAM in Deformable Maps. In: Leal-Taixé L., Roth S. (eds) Computer Vision – ECCV 2018 Workshops. ECCV 2018. Lecture Notes in Computer Science, vol 11129. Springer, Cham](https://openaccess.thecvf.com/content_ECCVW_2018/papers/11129/Lamarca_Camera_Tracking_for_SLAM_in_Deformable_Maps_ECCVW_2018_paper.pdf)
-```
-@inproceedings{lamarca2018camera,
-  title={Camera tracking for SLAM in deformable maps},
-  author={Lamarca, Jose and Montiel, JMM},
-  booktitle={Proceedings of the European Conference on Computer Vision (ECCV)},
-  year={2018}
-}
-```
 # 2. Prerequisites
 We have tested the library in **16.04** and **18.04**, but it should be easy to compile in other platforms. A powerful computer (e.g. i7) will ensure real-time performance and provide more stable and accurate results.
 
@@ -134,11 +126,12 @@ Script to generate this folders with this format avaiable. Ask me through <jlama
     -- ORBSLAM_2. Base clases of the rigid SLAM library modified to work in deforming 
 		  environments.
 
-  -- Modules. DefSLAM modules, it includes all the modules needed for the library.
+  -- Modules. SD-DefSLAM modules, it includes all the modules needed for the library.
     -- Common. It includes the keyframes, map, map points and Systems.
     -- Mapping.
     -- GroundTruth
     -- Matching
+    -- Masking
     -- Settings. Check advance settings.
     -- Template. Template tools
     -- ToolsPCL. Tools from PCL library used mainly for the ground truth.
