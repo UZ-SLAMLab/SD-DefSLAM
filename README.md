@@ -9,11 +9,11 @@ SD-DefSLAM is a semi-direct real-time deformable SLAM library for **Monocular** 
 ### Related Publications:
 [Gómez Rodríguez, Juan J., Lamarca, J., Morlana, J. Tardós, Juan D., Montiel, & J. M. M. (2020) SD-DefSLAM: Semi-Direct Monocular SLAM for Deformable and Intracorporeal Scenes](https://arxiv.org/abs/2010.09409)
 ```
-@article{rodriguez2020sd,
+@inproceedings{rodriguez2021sd,
   title={SD-DefSLAM: Semi-Direct Monocular SLAM for Deformable and Intracorporeal Scenes},
   author={Rodr{\'\i}guez, Juan J G{\'o}mez and Lamarca, Jos{\'e} and Morlana, Javier and Tard{\'o}s, Juan D and Montiel, Jos{\'e} MM},
-  journal={arXiv preprint arXiv:2010.09409},
-  year={2020}
+  booktitle={IEEE International Conference on Robotics and Automation (ICRA)},
+  year={2021}
 }
 ```
 
@@ -25,6 +25,9 @@ SD-DefSLAM is a semi-direct real-time deformable SLAM library for **Monocular** 
   title={Defslam: Tracking and mapping of deforming scenes from monocular sequences},
   author={Lamarca, Jose and Parashar, Shaifali and Bartoli, Adrien and Montiel, JMM},
   journal={IEEE Transactions on Robotics},
+  volume={37},
+  number={1},
+  pages={291--303},
   year={2020},
   publisher={IEEE}
 }
