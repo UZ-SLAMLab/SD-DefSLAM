@@ -13,6 +13,7 @@ SD-DefSLAM is a semi-direct real-time deformable SLAM library for **Monocular** 
   title={SD-DefSLAM: Semi-Direct Monocular SLAM for Deformable and Intracorporeal Scenes},
   author={Rodr{\'\i}guez, Juan J G{\'o}mez and Lamarca, Jos{\'e} and Morlana, Javier and Tard{\'o}s, Juan D and Montiel, Jos{\'e} MM},
   booktitle={IEEE International Conference on Robotics and Automation (ICRA)},
+  pages={5170--5177},
   year={2021}
 }
 ```
