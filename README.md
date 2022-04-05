@@ -142,7 +142,7 @@ Script to generate this folders with this format avaiable. Ask me through <jlama
     -- Tracking. 
     -- Viewer.
 ```
-## Advance settings for and ORBSLAM:
+## Advanced settings:
 To repeat the experiments and save the results you can activate the flag Viewer.SaveResults in the yalm file. The system is running by default in parallel. To change it, you must change the file set_MAC.h and comment the line #define PARALLEL.
 
 To run ORBSLAM, you can uncomment the line 5 in set_MAC.h.
